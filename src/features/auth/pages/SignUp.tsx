@@ -16,10 +16,8 @@ import AppTheme from '../theme/AppTheme';
 import ColorModeSelect from '../theme/ColorModeSelect';
 import MenuItem from '@mui/material/MenuItem';
 import { signUp, makeAthleteInput, makeCoachInput } from '../services/signupService';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
 import { listPositions, type Position } from '../../athletes/services/positionsService';
-
-
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -63,12 +61,10 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
     position: 'absolute',
     zIndex: -1,
     inset: 0,
-    backgroundImage:
-      'radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))',
+    backgroundImage: 'radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))',
     backgroundRepeat: 'no-repeat',
     ...theme.applyStyles('dark', {
-      backgroundImage:
-        'radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))',
+      backgroundImage: 'radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))',
     }),
   },
 }));
@@ -86,7 +82,7 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
 //     "username": "coach_jose"
 //   }
 
-//ATHLETE FORM 
+//ATHLETE FORM
 // {
 //     "joinCode": "BOU-LAX-2026A-ATH-1",
 //     "role": "athlete",
@@ -102,7 +98,6 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
 //   }
 
 export default function SignUp(props: { disableCustomTheme?: boolean }) {
-  
   const navigate = useNavigate(); // ✅ hook
 
   const [role, setRole] = React.useState<'athlete' | 'coach'>('athlete');
@@ -128,8 +123,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
   const [positionError, setPositionError] = React.useState(false);
   const [positionErrorMessage, setPositionErrorMessage] = React.useState('');
 
-  const debugOrgId =
-    (import.meta.env.VITE_DEBUG_ORG_ID as string | undefined)?.trim() || '';
+  const debugOrgId = (import.meta.env.VITE_DEBUG_ORG_ID as string | undefined)?.trim() || '';
 
   const positionsAuthHeaders = React.useMemo(() => {
     const anon = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
@@ -273,80 +267,79 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
+    event.preventDefault();
 
-        if (!validateInputs()) return;
+    if (!validateInputs()) return;
 
-        const form = new FormData(event.currentTarget);
+    const form = new FormData(event.currentTarget);
 
-        // map form fields to payload
-        const joinCode = String(form.get('typecode') || '').trim(); // "typecode" input -> joinCode
-        const email = String(form.get('email') || '').trim();
-        const password = String(form.get('password') || '');
-        const confirmPassword = String(form.get('confirmPassword') || '');
-        const firstName = String(form.get('firstName') || '').trim();
-        const lastName = String(form.get('lastName') || '').trim();
-        const cellNumber = String(form.get('cellNumber') || '').trim();
+    // map form fields to payload
+    const joinCode = String(form.get('typecode') || '').trim(); // "typecode" input -> joinCode
+    const email = String(form.get('email') || '').trim();
+    const password = String(form.get('password') || '');
+    const confirmPassword = String(form.get('confirmPassword') || '');
+    const firstName = String(form.get('firstName') || '').trim();
+    const lastName = String(form.get('lastName') || '').trim();
+    const cellNumber = String(form.get('cellNumber') || '').trim();
 
-        if (confirmPassword !== password) {
-          setConfirmPasswordError(true);
-          setConfirmPasswordErrorMessage('Passwords do not match.');
-          return;
-        }
+    if (confirmPassword !== password) {
+      setConfirmPasswordError(true);
+      setConfirmPasswordErrorMessage('Passwords do not match.');
+      return;
+    }
 
-        // username may not be present in your current form—fallback to email local-part
-        const usernameField = String(form.get('username') || '').trim();
-        const username = usernameField || (email.includes('@') ? email.split('@')[0] : '');
+    // username may not be present in your current form—fallback to email local-part
+    const usernameField = String(form.get('username') || '').trim();
+    const username = usernameField || (email.includes('@') ? email.split('@')[0] : '');
 
-        // checkbox: FormData returns "on" when checked
-        const termsAccepted =
-          !!form.get('termsAccepted') ||
-          !!(document.getElementById('termsAccepted') as HTMLInputElement | null)?.checked;
+    // checkbox: FormData returns "on" when checked
+    const termsAccepted =
+      !!form.get('termsAccepted') ||
+      !!(document.getElementById('termsAccepted') as HTMLInputElement | null)?.checked;
 
-        // athlete-only fields (gracefully handle if hidden/not present)
-        const graduationYearStr = String(form.get('graduationYear') || '').trim();
-        const graduationYear = graduationYearStr ? Number(graduationYearStr) : NaN;
+    // athlete-only fields (gracefully handle if hidden/not present)
+    const graduationYearStr = String(form.get('graduationYear') || '').trim();
+    const graduationYear = graduationYearStr ? Number(graduationYearStr) : NaN;
 
-        const positionIdRaw =
-          selectedPositionId || String(form.get('position_id') || '');
-        const positionId = positionIdRaw.trim();
+    const positionIdRaw = selectedPositionId || String(form.get('position_id') || '');
+    const positionId = positionIdRaw.trim();
 
-        try {
-          if (role === 'athlete') {
-            const input = makeAthleteInput({
-              joinCode,
-              email,
-              password,
-              firstName,
-              lastName,
-              username,
-              cellNumber,
-              termsAccepted,
-              graduationYear,
-              position_id: positionId,
-            });
-            const res = await signUp(input);
-            navigate('/');
-          } else {
-            const input = makeCoachInput({
-              joinCode,
-              email,
-              password,
-              firstName,
-              lastName,
-              username,
-              cellNumber,
-              termsAccepted,
-            });
-            const res = await signUp(input);
-            navigate('/');
-          }
-        } catch (err: any) {
-          console.error('Signup error:', err);
-          // minimal feedback without altering UI structure
-          alert(err?.message || 'Signup failed');
-        }
-      };
+    try {
+      if (role === 'athlete') {
+        const input = makeAthleteInput({
+          joinCode,
+          email,
+          password,
+          firstName,
+          lastName,
+          username,
+          cellNumber,
+          termsAccepted,
+          graduationYear,
+          position_id: positionId,
+        });
+        const res = await signUp(input);
+        navigate('/');
+      } else {
+        const input = makeCoachInput({
+          joinCode,
+          email,
+          password,
+          firstName,
+          lastName,
+          username,
+          cellNumber,
+          termsAccepted,
+        });
+        const res = await signUp(input);
+        navigate('/');
+      }
+    } catch (err: any) {
+      console.error('Signup error:', err);
+      // minimal feedback without altering UI structure
+      alert(err?.message || 'Signup failed');
+    }
+  };
   return (
     <AppTheme {...props}>
       <CssBaseline enableColorScheme />
@@ -538,7 +531,9 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
 
             <FormControlLabel
               sx={{ gridColumn: { sm: '1 / -1' } }}
-              control={<Checkbox name="termsAccepted" id="termsAccepted" color="primary" required />}
+              control={
+                <Checkbox name="termsAccepted" id="termsAccepted" color="primary" required />
+              }
               label="I agree to the Terms of Service and Privacy Policy."
             />
 
@@ -550,20 +545,20 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
               onClick={validateInputs}
             >
               Sign up
-            </Button>              
+            </Button>
           </Box>
           <Typography sx={{ textAlign: 'center' }}>
-                Already have an account?{' '}
-                <Link
-                component="button"
-                type="button"
-                onClick={() => navigate('/sign-in')}
-                variant="body2"
-                sx={{ alignSelf: 'center' }}
-              >
-                Sign In
-              </Link>
-            </Typography>
+            Already have an account?{' '}
+            <Link
+              component="button"
+              type="button"
+              onClick={() => navigate('/sign-in')}
+              variant="body2"
+              sx={{ alignSelf: 'center' }}
+            >
+              Sign In
+            </Link>
+          </Typography>
         </Card>
       </SignUpContainer>
     </AppTheme>

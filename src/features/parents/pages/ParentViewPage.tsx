@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Box,
   Button,
@@ -9,38 +9,34 @@ import {
   Stack,
   TextField,
   Typography,
-} from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "../../../app/providers/AuthProvider";
-import {
-  getGuardianById,
-  guardianLabel,
-  type GuardianListItem,
-} from "../services/guardianService";
+} from '@mui/material';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
+import { getGuardianById, guardianLabel, type GuardianListItem } from '../services/guardianService';
 import {
   athleteLabel,
   listAthletes,
   type AthleteListItem,
-} from "../../athletes/services/athleteService";
+} from '../../athletes/services/athleteService';
 
 const formatAddress = (guardian: GuardianListItem | null) => {
-  if (!guardian) return "";
-  const line1 = guardian.address_line1?.trim() ?? "";
-  const line2 = guardian.address_line2?.trim() ?? "";
-  const city = guardian.city?.trim() ?? "";
-  const region = guardian.region?.trim() ?? "";
-  const postal = guardian.postal_code?.trim() ?? "";
-  const country = guardian.country?.trim() ?? "";
+  if (!guardian) return '';
+  const line1 = guardian.address_line1?.trim() ?? '';
+  const line2 = guardian.address_line2?.trim() ?? '';
+  const city = guardian.city?.trim() ?? '';
+  const region = guardian.region?.trim() ?? '';
+  const postal = guardian.postal_code?.trim() ?? '';
+  const country = guardian.country?.trim() ?? '';
 
-  const cityRegion = [city, region].filter(Boolean).join(", ");
-  const cityRegionPostal = [cityRegion, postal].filter(Boolean).join(" ");
+  const cityRegion = [city, region].filter(Boolean).join(', ');
+  const cityRegionPostal = [cityRegion, postal].filter(Boolean).join(' ');
   const parts = [line1, line2, cityRegionPostal, country].filter(Boolean);
-  return parts.join(", ");
+  return parts.join(', ');
 };
 
 export default function ParentViewPage() {
   const { id } = useParams<{ id: string }>();
-  const guardianId = id ?? "";
+  const guardianId = id ?? '';
   const navigate = useNavigate();
   const { orgId, loading: authLoading } = useAuth();
   const [guardian, setGuardian] = React.useState<GuardianListItem | null>(null);
@@ -55,11 +51,11 @@ export default function ParentViewPage() {
     const loadGuardian = async () => {
       if (authLoading) return;
       if (!guardianId) {
-        setLoadError("Missing parent id in route.");
+        setLoadError('Missing parent id in route.');
         return;
       }
       if (!orgId) {
-        setLoadError("Missing org_id. Please sign in again.");
+        setLoadError('Missing org_id. Please sign in again.');
         return;
       }
 
@@ -72,9 +68,7 @@ export default function ParentViewPage() {
       } catch (err) {
         if (!active) return;
         setGuardian(null);
-        setLoadError(
-          err instanceof Error ? err.message : "Failed to load parent.",
-        );
+        setLoadError(err instanceof Error ? err.message : 'Failed to load parent.');
       } finally {
         if (active) setLoading(false);
       }
@@ -91,10 +85,10 @@ export default function ParentViewPage() {
     if (authLoading) return;
     let active = true;
 
-    const resolvedOrgId = orgId?.trim() || "";
+    const resolvedOrgId = orgId?.trim() || '';
     if (!resolvedOrgId) {
       setAthletes([]);
-      setAthletesError("Missing org_id. Please sign in again.");
+      setAthletesError('Missing org_id. Please sign in again.');
       return () => {
         active = false;
       };
@@ -110,7 +104,7 @@ export default function ParentViewPage() {
       .catch((err: any) => {
         if (!active) return;
         setAthletes([]);
-        setAthletesError(err?.message || "Failed to load athletes.");
+        setAthletesError(err?.message || 'Failed to load athletes.');
       });
 
     return () => {
@@ -126,16 +120,16 @@ export default function ParentViewPage() {
     return map;
   }, [athletes]);
 
-  const parentName = guardian ? guardianLabel(guardian) : "Parent";
+  const parentName = guardian ? guardianLabel(guardian) : 'Parent';
   const addressLabel = formatAddress(guardian);
 
   return (
     <Box sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
-      <Stack spacing={3} sx={{ maxWidth: 1200, width: "100%", mx: "auto" }}>
+      <Stack spacing={3} sx={{ maxWidth: 1200, width: '100%', mx: 'auto' }}>
         <Stack
-          direction={{ xs: "column", sm: "row" }}
+          direction={{ xs: 'column', sm: 'row' }}
           spacing={2}
-          alignItems={{ sm: "center" }}
+          alignItems={{ sm: 'center' }}
           justifyContent="space-between"
         >
           <Box>
@@ -146,8 +140,8 @@ export default function ParentViewPage() {
               View parent/guardian details.
             </Typography>
           </Box>
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-            <Button variant="outlined" onClick={() => navigate("/parents")}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+            <Button variant="outlined" onClick={() => navigate('/parents')}>
               Back
             </Button>
             <Button
@@ -179,8 +173,8 @@ export default function ParentViewPage() {
             </Typography>
             <Box
               sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
                 gap: 2,
               }}
             >
@@ -192,19 +186,19 @@ export default function ParentViewPage() {
               />
               <TextField
                 label="Email"
-                value={guardian?.email ?? ""}
+                value={guardian?.email ?? ''}
                 fullWidth
                 InputProps={{ readOnly: true }}
               />
               <TextField
                 label="Phone"
-                value={guardian?.phone ?? ""}
+                value={guardian?.phone ?? ''}
                 fullWidth
                 InputProps={{ readOnly: true }}
               />
               <TextField
                 label="User ID"
-                value={guardian?.user_id ?? ""}
+                value={guardian?.user_id ?? ''}
                 fullWidth
                 InputProps={{ readOnly: true }}
               />
@@ -245,13 +239,10 @@ export default function ParentViewPage() {
                   const name = athlete ? athleteLabel(athlete) : entry.athlete_id;
                   const relationship = entry.relationship
                     ? `Relationship: ${entry.relationship}`
-                    : "Relationship: —";
+                    : 'Relationship: —';
                   return (
                     <ListItem key={entry.athlete_id} sx={{ px: 0 }}>
-                      <ListItemText
-                        primary={name}
-                        secondary={relationship}
-                      />
+                      <ListItemText primary={name} secondary={relationship} />
                     </ListItem>
                   );
                 })}

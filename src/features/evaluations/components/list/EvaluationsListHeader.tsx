@@ -1,14 +1,11 @@
-﻿import { Button, Stack, Typography } from '@mui/material'
+﻿import { Button, Stack, Typography } from '@mui/material';
 
 type EvaluationsListHeaderProps = {
-  isMobile: boolean
-  onCreate: () => void
-}
+  isMobile: boolean;
+  onCreate: () => void;
+};
 
-export default function EvaluationsListHeader({
-  isMobile,
-  onCreate,
-}: EvaluationsListHeaderProps) {
+export default function EvaluationsListHeader({ isMobile, onCreate }: EvaluationsListHeaderProps) {
   return (
     <Stack
       direction={{ xs: 'column', sm: 'row' }}
@@ -24,5 +21,5 @@ export default function EvaluationsListHeader({
         Create Evaluation
       </Button>
     </Stack>
-  )
+  );
 }

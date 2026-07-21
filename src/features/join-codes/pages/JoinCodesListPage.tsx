@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Box,
   Button,
@@ -13,34 +13,33 @@ import {
   TextField,
   Tooltip,
   Typography,
-} from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import DeleteIcon from "@mui/icons-material/Delete";
-import SearchIcon from "@mui/icons-material/Search";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../app/providers/AuthProvider";
-import { getAllTeams, type Team } from "../../teams/services/teamsService";
-import { deleteJoinCode, listJoinCodes, type JoinCode } from "../services/joinCodeService";
+} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import DeleteIcon from '@mui/icons-material/Delete';
+import SearchIcon from '@mui/icons-material/Search';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
+import { getAllTeams, type Team } from '../../teams/services/teamsService';
+import { deleteJoinCode, listJoinCodes, type JoinCode } from '../services/joinCodeService';
 
 const formatDateTime = (value?: string | null) => {
-  if (!value) return "";
+  if (!value) return '';
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return value;
   return d.toLocaleString();
 };
 
-const joinParts = (parts: Array<string | null | undefined>) =>
-  parts.filter(Boolean).join(" | ");
+const joinParts = (parts: Array<string | null | undefined>) => parts.filter(Boolean).join(' | ');
 
 const getUsageLabel = (code: JoinCode) => {
   const used =
-    typeof code.uses_count === "number"
+    typeof code.uses_count === 'number'
       ? code.uses_count
-      : typeof code.used_count === "number"
+      : typeof code.used_count === 'number'
         ? code.used_count
         : 0;
-  const max = typeof code.max_uses === "number" ? code.max_uses : null;
+  const max = typeof code.max_uses === 'number' ? code.max_uses : null;
   if (max === null) return `${used} uses`;
   return `${used}/${max} uses`;
 };
@@ -68,8 +67,8 @@ const statusChip = (code: JoinCode) => {
 export default function JoinCodesListPage() {
   const navigate = useNavigate();
   const { orgId, loading: authLoading } = useAuth();
-  const [searchText, setSearchText] = React.useState("");
-  const [searchQuery, setSearchQuery] = React.useState("");
+  const [searchText, setSearchText] = React.useState('');
+  const [searchQuery, setSearchQuery] = React.useState('');
   const [rows, setRows] = React.useState<JoinCode[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [loadError, setLoadError] = React.useState<string | null>(null);
@@ -91,10 +90,10 @@ export default function JoinCodesListPage() {
     if (authLoading) return;
     let active = true;
 
-    const resolvedOrgId = orgId?.trim() || "";
+    const resolvedOrgId = orgId?.trim() || '';
     if (!resolvedOrgId) {
       setIsLoading(false);
-      setLoadError("Missing org_id for this account.");
+      setLoadError('Missing org_id for this account.');
       setRows([]);
       return () => {
         active = false;
@@ -112,7 +111,7 @@ export default function JoinCodesListPage() {
       .catch((err: any) => {
         if (!active) return;
         setRows([]);
-        setLoadError(err?.message || "Failed to load join codes.");
+        setLoadError(err?.message || 'Failed to load join codes.');
       })
       .finally(() => {
         if (active) setIsLoading(false);
@@ -127,10 +126,10 @@ export default function JoinCodesListPage() {
     if (authLoading) return;
     let active = true;
 
-    const resolvedOrgId = orgId?.trim() || "";
+    const resolvedOrgId = orgId?.trim() || '';
     if (!resolvedOrgId) {
       setTeams([]);
-      setTeamsError("Missing org_id. Please sign in again.");
+      setTeamsError('Missing org_id. Please sign in again.');
       setTeamsLoading(false);
       return () => {
         active = false;
@@ -148,7 +147,7 @@ export default function JoinCodesListPage() {
       .catch((err: any) => {
         if (!active) return;
         setTeams([]);
-        setTeamsError(err?.message || "Failed to load teams.");
+        setTeamsError(err?.message || 'Failed to load teams.');
       })
       .finally(() => {
         if (active) setTeamsLoading(false);
@@ -172,14 +171,9 @@ export default function JoinCodesListPage() {
     if (!q) return rows;
 
     return rows.filter((code) => {
-      const teamName = code.team_id ? teamMap.get(code.team_id) ?? "" : "";
-      const fields = [
-        code.code,
-        code.org_id ?? "",
-        code.team_id ?? "",
-        teamName,
-      ]
-        .join(" ")
+      const teamName = code.team_id ? (teamMap.get(code.team_id) ?? '') : '';
+      const fields = [code.code, code.org_id ?? '', code.team_id ?? '', teamName]
+        .join(' ')
         .toLowerCase();
       return fields.includes(q);
     });
@@ -195,8 +189,8 @@ export default function JoinCodesListPage() {
 
   const headerLabel =
     isLoading && displayRows.length === 0
-      ? "Loading join codes..."
-      : `${displayRows.length} join code${displayRows.length === 1 ? "" : "s"}`;
+      ? 'Loading join codes...'
+      : `${displayRows.length} join code${displayRows.length === 1 ? '' : 's'}`;
 
   const handleCopy = async (code: string) => {
     if (!code) return;
@@ -208,9 +202,9 @@ export default function JoinCodesListPage() {
   };
 
   const handleDelete = async (joinCode: JoinCode) => {
-    const resolvedOrgId = orgId?.trim() || "";
+    const resolvedOrgId = orgId?.trim() || '';
     if (!resolvedOrgId) {
-      setLoadError("Missing org_id for this account.");
+      setLoadError('Missing org_id for this account.');
       return;
     }
 
@@ -223,17 +217,17 @@ export default function JoinCodesListPage() {
       await deleteJoinCode(joinCode.code, { orgId: resolvedOrgId });
       setRows((current) => current.filter((item) => item.code !== joinCode.code));
     } catch (err: any) {
-      setLoadError(err?.message || "Failed to delete join code.");
+      setLoadError(err?.message || 'Failed to delete join code.');
     } finally {
       setDeletingCode(null);
     }
   };
 
   return (
-    <Box sx={{ width: "100%" }}>
+    <Box sx={{ width: '100%' }}>
       <Stack
-        direction={{ xs: "column", sm: "row" }}
-        alignItems={{ xs: "flex-start", sm: "center" }}
+        direction={{ xs: 'column', sm: 'row' }}
+        alignItems={{ xs: 'flex-start', sm: 'center' }}
         justifyContent="space-between"
         spacing={1.5}
         sx={{ mb: 1 }}
@@ -249,7 +243,7 @@ export default function JoinCodesListPage() {
         <Button
           variant="contained"
           startIcon={<AddIcon />}
-          onClick={() => navigate("/easy-join-codes/new")}
+          onClick={() => navigate('/easy-join-codes/new')}
         >
           New join code
         </Button>
@@ -271,7 +265,7 @@ export default function JoinCodesListPage() {
         sx={{ mb: 1.5, maxWidth: 520 }}
       />
 
-      <Paper variant="outlined" sx={{ overflow: "hidden" }}>
+      <Paper variant="outlined" sx={{ overflow: 'hidden' }}>
         {isLoading && displayRows.length === 0 ? (
           <Box sx={{ p: 2 }}>
             <Typography variant="body2" color="text.secondary">
@@ -289,26 +283,26 @@ export default function JoinCodesListPage() {
             <Typography variant="body2" color="text.secondary">
               {searchText.trim()
                 ? `No join codes match "${searchText.trim()}".`
-                : "No join codes found."}
+                : 'No join codes found.'}
             </Typography>
           </Box>
         ) : (
           <List disablePadding>
             {displayRows.map((code, idx) => {
               const teamName = code.team_id
-                ? teamMap.get(code.team_id) ?? "Unknown team"
-                : "No team";
+                ? (teamMap.get(code.team_id) ?? 'Unknown team')
+                : 'No team';
               const usageLabel = getUsageLabel(code);
               const expiresLabel = code.expires_at
                 ? `Expires ${formatDateTime(code.expires_at)}`
-                : "No expiration";
+                : 'No expiration';
               const createdLabel = code.created_at
                 ? `Created ${formatDateTime(code.created_at)}`
-                : "";
+                : '';
               const teamLabel = teamsLoading
-                ? "Loading team..."
+                ? 'Loading team...'
                 : teamsError
-                  ? "Team unavailable"
+                  ? 'Team unavailable'
                   : teamName;
               const detailLine = joinParts([usageLabel, expiresLabel, createdLabel]);
 
@@ -325,17 +319,14 @@ export default function JoinCodesListPage() {
                         <Typography
                           variant="subtitle1"
                           fontWeight={700}
-                          sx={{ fontFamily: "monospace", wordBreak: "break-all" }}
+                          sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}
                         >
                           {code.code}
                         </Typography>
                         <Stack direction="row" spacing={0.75} alignItems="center">
                           {statusChip(code)}
                           <Tooltip title="Copy join code">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleCopy(code.code)}
-                            >
+                            <IconButton size="small" onClick={() => handleCopy(code.code)}>
                               <ContentCopyIcon fontSize="inherit" />
                             </IconButton>
                           </Tooltip>
@@ -366,7 +357,7 @@ export default function JoinCodesListPage() {
                         <Typography
                           variant="caption"
                           color="text.secondary"
-                          sx={{ fontFamily: "monospace", wordBreak: "break-all" }}
+                          sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}
                         >
                           Org: {code.org_id}
                         </Typography>
@@ -376,7 +367,7 @@ export default function JoinCodesListPage() {
                         <Typography
                           variant="caption"
                           color="text.secondary"
-                          sx={{ fontFamily: "monospace", wordBreak: "break-all" }}
+                          sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}
                         >
                           Team ID: {code.team_id}
                         </Typography>

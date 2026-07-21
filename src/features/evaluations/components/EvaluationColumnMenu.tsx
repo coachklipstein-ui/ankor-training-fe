@@ -4,21 +4,21 @@
   GridColumnMenuHideItem,
   GridColumnMenuColumnsItem,
   type GridColumnMenuProps,
-} from '@mui/x-data-grid'
-import { ListItemIcon, ListItemText, MenuItem } from '@mui/material'
-import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck'
+} from '@mui/x-data-grid';
+import { ListItemIcon, ListItemText, MenuItem } from '@mui/material';
+import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck';
 
 type EvaluationColumnMenuProps = GridColumnMenuProps & {
-  onBulkActions?: (field: string) => void
-}
+  onBulkActions?: (field: string) => void;
+};
 
 export default function EvaluationColumnMenu(props: EvaluationColumnMenuProps) {
-  const { hideMenu, colDef, onBulkActions, ...other } = props
+  const { hideMenu, colDef, onBulkActions, ...other } = props;
 
   const handleBulkActionsClick = () => {
-    onBulkActions?.(String(colDef.field))
-    hideMenu?.()
-  }
+    onBulkActions?.(String(colDef.field));
+    hideMenu?.();
+  };
 
   return (
     <GridColumnMenuContainer hideMenu={hideMenu} colDef={colDef} {...other}>
@@ -33,5 +33,5 @@ export default function EvaluationColumnMenu(props: EvaluationColumnMenuProps) {
         <ListItemText primary="Bulk actions" />
       </MenuItem>
     </GridColumnMenuContainer>
-  )
+  );
 }

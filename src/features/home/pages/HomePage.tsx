@@ -6,7 +6,7 @@
 //  • Index route placeholder (centered)
 // -------------------------------------------------------------
 
-import * as React from 'react'
+import * as React from 'react';
 import {
   AppBar,
   Toolbar,
@@ -30,38 +30,38 @@ import {
   MenuItem,
   Chip,
   Avatar,
-} from '@mui/material'
-import { styled, useTheme } from '@mui/material/styles'
-import MenuIcon from '@mui/icons-material/Menu'
-import SettingsIcon from '@mui/icons-material/Settings'
-import ApartmentIcon from '@mui/icons-material/Apartment'
-import GroupIcon from '@mui/icons-material/Group'
-import BuildIcon from '@mui/icons-material/Build'
-import EventNoteIcon from '@mui/icons-material/EventNote'
-import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'
+} from '@mui/material';
+import { styled, useTheme } from '@mui/material/styles';
+import MenuIcon from '@mui/icons-material/Menu';
+import SettingsIcon from '@mui/icons-material/Settings';
+import ApartmentIcon from '@mui/icons-material/Apartment';
+import GroupIcon from '@mui/icons-material/Group';
+import BuildIcon from '@mui/icons-material/Build';
+import EventNoteIcon from '@mui/icons-material/EventNote';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 
 // 🔴 REMOVED: Lacrosse icon
 // import SportsIcon from '@mui/icons-material/Sports'
-import EmojiPeopleIcon from '@mui/icons-material/EmojiPeople'
-import GroupsIcon from '@mui/icons-material/Groups'
-import FamilyRestroomIcon from '@mui/icons-material/FamilyRestroom'
-import VpnKeyIcon from '@mui/icons-material/VpnKey'
-import FitnessCenterIcon from '@mui/icons-material/FitnessCenter'
-import AssignmentIcon from '@mui/icons-material/Assignment'
-import ExpandLess from '@mui/icons-material/ExpandLess'
-import ExpandMore from '@mui/icons-material/ExpandMore'
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import NotificationsIcon from '@mui/icons-material/Notifications'
-import PeopleAltIcon from '@mui/icons-material/PeopleAlt'
-import InsightsIcon from '@mui/icons-material/Insights' // ✅ NEW: icon for report
-import HomeIcon from '@mui/icons-material/Home'
-import { Link as RouterLink, Outlet, useLocation } from 'react-router-dom'
-import { useAuth } from '../../../app/providers/AuthProvider'
-import { supabase } from '../../../lib/supabaseClient'
+import EmojiPeopleIcon from '@mui/icons-material/EmojiPeople';
+import GroupsIcon from '@mui/icons-material/Groups';
+import FamilyRestroomIcon from '@mui/icons-material/FamilyRestroom';
+import VpnKeyIcon from '@mui/icons-material/VpnKey';
+import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import InsightsIcon from '@mui/icons-material/Insights'; // ✅ NEW: icon for report
+import HomeIcon from '@mui/icons-material/Home';
+import { Link as RouterLink, Outlet, useLocation } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
+import { supabase } from '../../../lib/supabaseClient';
 
-const DRAWER_WIDTH = 280
-const LOGO_SRC = '/logo-ankor.png' // put your logo file under /public as logo-ankor.png
+const DRAWER_WIDTH = 280;
+const LOGO_SRC = '/logo-ankor.png'; // put your logo file under /public as logo-ankor.png
 
 type MenuKey =
   | 'settings.organization'
@@ -79,7 +79,7 @@ type MenuKey =
   | 'reports.evaluation'
   | 'reports.coach-evaluation'
   | 'reports.athletes-evaluation'
-  | 'practice-plans'
+  | 'practice-plans';
 
 const COACH_MENU_KEYS = new Set<MenuKey>([
   'skills',
@@ -93,41 +93,41 @@ const COACH_MENU_KEYS = new Set<MenuKey>([
   'evaluations',
   'reports.coach-evaluation',
   'practice-plans',
-])
+]);
 
 const ATHLETE_MENU_KEYS = new Set<MenuKey>([
   'skills',
   'drills',
   'reports.evaluation',
   'practice-plans',
-])
+]);
 
-type RoleBucket = 'admin' | 'coach' | 'athlete' | 'unknown'
+type RoleBucket = 'admin' | 'coach' | 'athlete' | 'unknown';
 
 function getRoleBucket(role?: string | null): RoleBucket {
-  const normalized = (role ?? '').trim().toLowerCase()
-  if (!normalized) return 'unknown'
-  if (normalized.includes('admin')) return 'admin'
-  if (normalized.includes('coach')) return 'coach'
-  if (normalized.includes('parent')) return 'athlete'
-  if (normalized.includes('athlete')) return 'athlete'
-  return 'unknown'
+  const normalized = (role ?? '').trim().toLowerCase();
+  if (!normalized) return 'unknown';
+  if (normalized.includes('admin')) return 'admin';
+  if (normalized.includes('coach')) return 'coach';
+  if (normalized.includes('parent')) return 'athlete';
+  if (normalized.includes('athlete')) return 'athlete';
+  return 'unknown';
 }
 
 function formatRoleLabel(role?: string | null) {
-  const trimmed = (role ?? '').trim()
-  if (!trimmed) return undefined
-  return trimmed.replace(/\b\w/g, (char) => char.toUpperCase())
+  const trimmed = (role ?? '').trim();
+  if (!trimmed) return undefined;
+  return trimmed.replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
-  open?: boolean
+  open?: boolean;
 }>(({ theme, open }) => ({
   flexGrow: 1,
   padding: theme.spacing(3),
   paddingLeft: open ? theme.spacing(2) : theme.spacing(3),
   marginLeft: 0,
-}))
+}));
 
 const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -135,7 +135,7 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   justifyContent: 'space-between',
   padding: theme.spacing(0, 1.5),
   ...theme.mixins.toolbar,
-}))
+}));
 
 function NavItem({
   to,
@@ -144,11 +144,11 @@ function NavItem({
   selected,
   onClick,
 }: {
-  to: string
-  icon: React.ReactNode
-  label: string
-  selected?: boolean
-  onClick?: () => void
+  to: string;
+  icon: React.ReactNode;
+  label: string;
+  selected?: boolean;
+  onClick?: () => void;
 }) {
   return (
     <ListItemButton
@@ -161,7 +161,7 @@ function NavItem({
       <ListItemIcon sx={{ minWidth: 40 }}>{icon}</ListItemIcon>
       <ListItemText primary={label} />
     </ListItemButton>
-  )
+  );
 }
 
 // -------------------------------------------------------------
@@ -169,101 +169,87 @@ function NavItem({
 // -------------------------------------------------------------
 
 type NotificationItem = {
-  id: string
-  title: string
-  description?: string
-  topic: string
-  createdAt: string
-  read: boolean
-  link?: string
-}
+  id: string;
+  title: string;
+  description?: string;
+  topic: string;
+  createdAt: string;
+  read: boolean;
+  link?: string;
+};
 
 type NotificationRow = {
-  id: string | number
-  user_id?: string | null
-  type?: string | null
-  evaluation_id?: string | number | null
-  payload?: Record<string, unknown> | string | null
-  created_at?: string | null
-  read?: boolean | null
-  read_at?: string | null
-}
+  id: string | number;
+  user_id?: string | null;
+  type?: string | null;
+  evaluation_id?: string | number | null;
+  payload?: Record<string, unknown> | string | null;
+  created_at?: string | null;
+  read?: boolean | null;
+  read_at?: string | null;
+};
 
 const parsePayload = (value: NotificationRow['payload']) => {
-  if (!value) return {}
-  if (typeof value === 'object') return value as Record<string, unknown>
+  if (!value) return {};
+  if (typeof value === 'object') return value as Record<string, unknown>;
   if (typeof value === 'string') {
     try {
-      const parsed = JSON.parse(value)
-      if (parsed && typeof parsed === 'object') return parsed as Record<string, unknown>
+      const parsed = JSON.parse(value);
+      if (parsed && typeof parsed === 'object') return parsed as Record<string, unknown>;
     } catch {
-      return {}
+      return {};
     }
   }
-  return {}
-}
+  return {};
+};
 
 const formatTopic = (value?: string | null) => {
-  const normalized = (value ?? '').replace(/[_-]+/g, ' ').trim()
-  return normalized || 'general'
-}
+  const normalized = (value ?? '').replace(/[_-]+/g, ' ').trim();
+  return normalized || 'general';
+};
 
-const toTitleCase = (value: string) =>
-  value.replace(/\b\w/g, (char) => char.toUpperCase())
+const toTitleCase = (value: string) => value.replace(/\b\w/g, (char) => char.toUpperCase());
 
 const buildReportLink = (evaluationId?: string | number | null) => {
   if (evaluationId === undefined || evaluationId === null || evaluationId === '') {
-    return '/reports/evaluation-reports'
+    return '/reports/evaluation-reports';
   }
-  return `/reports/evaluation-reports/${evaluationId}`
-}
+  return `/reports/evaluation-reports/${evaluationId}`;
+};
 
-const toEvaluationId = (
-  value: unknown,
-): string | number | null | undefined => {
-  if (typeof value === 'string') return value.trim() || null
-  if (typeof value === 'number') return Number.isNaN(value) ? null : value
-  return null
-}
+const toEvaluationId = (value: unknown): string | number | null | undefined => {
+  if (typeof value === 'string') return value.trim() || null;
+  if (typeof value === 'number') return Number.isNaN(value) ? null : value;
+  return null;
+};
 
 const toNotificationItem = (row: NotificationRow): NotificationItem => {
-  const payload = parsePayload(row.payload)
-  const rawTitle =
-    payload.title ?? payload.subject ?? payload.name ?? payload.message
+  const payload = parsePayload(row.payload);
+  const rawTitle = payload.title ?? payload.subject ?? payload.name ?? payload.message;
   const title =
     typeof rawTitle === 'string' && rawTitle.trim()
       ? rawTitle.trim()
       : row.type
-      ? toTitleCase(formatTopic(row.type))
-      : 'Notification'
-  const rawDescription =
-    payload.description ?? payload.body ?? payload.details ?? payload.summary
+        ? toTitleCase(formatTopic(row.type))
+        : 'Notification';
+  const rawDescription = payload.description ?? payload.body ?? payload.details ?? payload.summary;
   const description =
-    typeof rawDescription === 'string' && rawDescription.trim()
-      ? rawDescription.trim()
-      : undefined
+    typeof rawDescription === 'string' && rawDescription.trim() ? rawDescription.trim() : undefined;
   const topic =
     typeof payload.topic === 'string' && payload.topic.trim()
       ? payload.topic.trim()
       : row.type
-      ? formatTopic(row.type)
-      : 'general'
+        ? formatTopic(row.type)
+        : 'general';
   const linkFromPayload =
-    typeof payload.link === 'string' && payload.link.trim()
-      ? payload.link.trim()
-      : undefined
-  const evaluationId =
-    row.evaluation_id ?? toEvaluationId(payload.evaluation_id)
-  const link = linkFromPayload ?? buildReportLink(evaluationId)
+    typeof payload.link === 'string' && payload.link.trim() ? payload.link.trim() : undefined;
+  const evaluationId = row.evaluation_id ?? toEvaluationId(payload.evaluation_id);
+  const link = linkFromPayload ?? buildReportLink(evaluationId);
   const createdAt =
     row.created_at ||
     (typeof payload.created_at === 'string' ? payload.created_at : null) ||
-    new Date().toISOString()
-  const read =
-    Boolean(row.read) ||
-    Boolean(row.read_at) ||
-    Boolean(payload.read) ||
-    false
+    new Date().toISOString();
+  const read = Boolean(row.read) || Boolean(row.read_at) || Boolean(payload.read) || false;
 
   return {
     id: String(row.id),
@@ -273,59 +259,57 @@ const toNotificationItem = (row: NotificationRow): NotificationItem => {
     createdAt,
     read,
     link,
-  }
-}
+  };
+};
 
 function NotificationBell() {
-  const { user } = useAuth()
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
-  const [items, setItems] = React.useState<NotificationItem[]>([])
-  const [loading, setLoading] = React.useState(false)
+  const { user } = useAuth();
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [items, setItems] = React.useState<NotificationItem[]>([]);
+  const [loading, setLoading] = React.useState(false);
 
-  const open = Boolean(anchorEl)
-  const unreadCount = items.filter((n) => !n.read).length
-  const userId = user?.id ?? null
+  const open = Boolean(anchorEl);
+  const unreadCount = items.filter((n) => !n.read).length;
+  const userId = user?.id ?? null;
 
   React.useEffect(() => {
-    let cancelled = false
+    let cancelled = false;
 
     if (!userId) {
-      setItems([])
-      setLoading(false)
-      return
+      setItems([]);
+      setLoading(false);
+      return;
     }
 
     const loadNotifications = async () => {
-      setLoading(true)
+      setLoading(true);
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
-        .limit(50)
+        .limit(50);
 
-      if (cancelled) return
+      if (cancelled) return;
       if (error) {
-        console.error('Failed to load notifications', error)
-        setItems([])
+        console.error('Failed to load notifications', error);
+        setItems([]);
       } else {
-        const mapped = (data ?? []).map((row) =>
-          toNotificationItem(row as NotificationRow),
-        )
-        setItems(mapped)
+        const mapped = (data ?? []).map((row) => toNotificationItem(row as NotificationRow));
+        setItems(mapped);
       }
-      setLoading(false)
-    }
+      setLoading(false);
+    };
 
-    loadNotifications()
+    loadNotifications();
 
     return () => {
-      cancelled = true
-    }
-  }, [userId])
+      cancelled = true;
+    };
+  }, [userId]);
 
   React.useEffect(() => {
-    if (!userId) return
+    if (!userId) return;
 
     const channel = supabase
       .channel(`notifications:${userId}`)
@@ -338,49 +322,43 @@ function NotificationBell() {
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
-          const row = payload.new as NotificationRow
-          const nextItem = toNotificationItem(row)
+          const row = payload.new as NotificationRow;
+          const nextItem = toNotificationItem(row);
           setItems((prev) => {
-            if (prev.some((item) => item.id === nextItem.id)) return prev
-            return [nextItem, ...prev]
-          })
+            if (prev.some((item) => item.id === nextItem.id)) return prev;
+            return [nextItem, ...prev];
+          });
         },
       )
-      .subscribe()
+      .subscribe();
 
     return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [userId])
+      supabase.removeChannel(channel);
+    };
+  }, [userId]);
 
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget)
-  }
+    setAnchorEl(event.currentTarget);
+  };
 
   const handleClose = () => {
-    setAnchorEl(null)
-  }
+    setAnchorEl(null);
+  };
 
   const handleMarkAllRead = () => {
-    setItems((prev) => prev.map((n) => ({ ...n, read: true })))
-  }
+    setItems((prev) => prev.map((n) => ({ ...n, read: true })));
+  };
 
   const handleItemClick = (id: string) => {
-    setItems((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
-    )
-    handleClose()
-  }
+    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    handleClose();
+  };
 
   return (
     <>
       <Tooltip title="Notifications">
         <IconButton color="inherit" onClick={handleOpen} sx={{ mr: 1 }}>
-          <Badge
-            color="error"
-            badgeContent={unreadCount || undefined}
-            overlap="circular"
-          >
+          <Badge color="error" badgeContent={unreadCount || undefined} overlap="circular">
             <NotificationsIcon />
           </Badge>
         </IconButton>
@@ -458,11 +436,7 @@ function NotificationBell() {
                   <Typography variant="body2" fontWeight={n.read ? 400 : 600} noWrap>
                     {n.title}
                   </Typography>
-                  <Chip
-                    size="small"
-                    label={n.topic}
-                    sx={{ textTransform: 'capitalize' }}
-                  />
+                  <Chip size="small" label={n.topic} sx={{ textTransform: 'capitalize' }} />
                 </Box>
               }
               secondary={
@@ -480,7 +454,7 @@ function NotificationBell() {
         ))}
       </Menu>
     </>
-  )
+  );
 }
 
 // -------------------------------------------------------------
@@ -488,58 +462,43 @@ function NotificationBell() {
 // -------------------------------------------------------------
 
 type User = {
-  id: string
-  name: string
-  email: string
-  avatarUrl?: string | null
-  role?: string
-}
+  id: string;
+  name: string;
+  email: string;
+  avatarUrl?: string | null;
+  role?: string;
+};
 
-function UserProfileMenu({
-  user,
-  onLogout,
-}: {
-  user: User
-  onLogout?: () => void
-}) {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
-  const open = Boolean(anchorEl)
+function UserProfileMenu({ user, onLogout }: { user: User; onLogout?: () => void }) {
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
 
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget)
-  }
+    setAnchorEl(event.currentTarget);
+  };
 
   const handleClose = () => {
-    setAnchorEl(null)
-  }
+    setAnchorEl(null);
+  };
 
   const handleLogoutClick = () => {
-    onLogout?.()
-    handleClose()
-  }
+    onLogout?.();
+    handleClose();
+  };
 
   const initials = React.useMemo(() => {
-    if (!user.name) return ''
-    const parts = user.name.trim().split(' ')
-    const first = parts[0]?.[0] ?? ''
-    const last = parts.length > 1 ? parts[parts.length - 1][0] ?? '' : ''
-    return (first + last).toUpperCase()
-  }, [user.name])
+    if (!user.name) return '';
+    const parts = user.name.trim().split(' ');
+    const first = parts[0]?.[0] ?? '';
+    const last = parts.length > 1 ? (parts[parts.length - 1][0] ?? '') : '';
+    return (first + last).toUpperCase();
+  }, [user.name]);
 
   return (
     <>
       <Tooltip title={user.name}>
-        <IconButton
-          color="inherit"
-          onClick={handleOpen}
-          size="small"
-          sx={{ ml: 1 }}
-        >
-          <Avatar
-            src={user.avatarUrl || undefined}
-            alt={user.name}
-            sx={{ width: 32, height: 32 }}
-          >
+        <IconButton color="inherit" onClick={handleOpen} size="small" sx={{ ml: 1 }}>
+          <Avatar src={user.avatarUrl || undefined} alt={user.name} sx={{ width: 32, height: 32 }}>
             {initials}
           </Avatar>
         </IconButton>
@@ -563,23 +522,14 @@ function UserProfileMenu({
             gap: 1.5,
           }}
         >
-          <Avatar
-            src={user.avatarUrl || undefined}
-            alt={user.name}
-            sx={{ width: 40, height: 40 }}
-          >
+          <Avatar src={user.avatarUrl || undefined} alt={user.name} sx={{ width: 40, height: 40 }}>
             {initials}
           </Avatar>
           <Box sx={{ minWidth: 0 }}>
             <Typography variant="subtitle1" fontWeight={600} noWrap>
               {user.name}
             </Typography>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              noWrap
-              sx={{ maxWidth: 180 }}
-            >
+            <Typography variant="body2" color="text.secondary" noWrap sx={{ maxWidth: 180 }}>
               {user.email}
             </Typography>
             {user.role && (
@@ -599,7 +549,7 @@ function UserProfileMenu({
         </MenuItem>
       </Menu>
     </>
-  )
+  );
 }
 
 // -------------------------------------------------------------
@@ -607,77 +557,71 @@ function UserProfileMenu({
 // -------------------------------------------------------------
 
 export default function HomeLayout() {
-  const theme = useTheme()
-  const isMdUp = useMediaQuery(theme.breakpoints.up('md'))
-  const [mobileOpen, setMobileOpen] = React.useState(false)
-  const [settingsOpen, setSettingsOpen] = React.useState(true)
-  const location = useLocation()
-  const { profile, user, signOut } = useAuth()
+  const theme = useTheme();
+  const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
+  const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [settingsOpen, setSettingsOpen] = React.useState(true);
+  const location = useLocation();
+  const { profile, user, signOut } = useAuth();
 
-  const roleBucket = React.useMemo(
-    () => getRoleBucket(profile?.role),
-    [profile?.role],
-  )
+  const roleBucket = React.useMemo(() => getRoleBucket(profile?.role), [profile?.role]);
 
   const canAccess = React.useCallback(
     (key: MenuKey) => {
-      if (roleBucket === 'admin' || roleBucket === 'unknown') return true
-      if (roleBucket === 'coach') return COACH_MENU_KEYS.has(key)
-      if (roleBucket === 'athlete') return ATHLETE_MENU_KEYS.has(key)
-      return false
+      if (roleBucket === 'admin' || roleBucket === 'unknown') return true;
+      if (roleBucket === 'coach') return COACH_MENU_KEYS.has(key);
+      if (roleBucket === 'athlete') return ATHLETE_MENU_KEYS.has(key);
+      return false;
     },
     [roleBucket],
-  )
+  );
 
   const profileUser = React.useMemo<User>(() => {
     const metadataName =
       typeof user?.user_metadata?.full_name === 'string'
         ? user.user_metadata.full_name
         : typeof user?.user_metadata?.name === 'string'
-        ? user.user_metadata.name
-        : ''
-    const rawName =
-      profile?.full_name?.trim() || metadataName.trim() || user?.email || 'User'
-    const name = rawName.trim() || 'User'
-    const email = profile?.email ?? user?.email ?? ''
-    const roleLabel = formatRoleLabel(profile?.role)
+          ? user.user_metadata.name
+          : '';
+    const rawName = profile?.full_name?.trim() || metadataName.trim() || user?.email || 'User';
+    const name = rawName.trim() || 'User';
+    const email = profile?.email ?? user?.email ?? '';
+    const roleLabel = formatRoleLabel(profile?.role);
     return {
       id: profile?.id ?? user?.id ?? 'unknown',
       name,
       email,
       avatarUrl: null,
       role: roleLabel,
-    }
-  }, [profile, user])
+    };
+  }, [profile, user]);
 
   const showSettings =
     canAccess('settings.organization') ||
     canAccess('settings.users') ||
-    canAccess('settings.admin')
+    canAccess('settings.admin');
 
-  const toggleMobile = () => setMobileOpen((p) => !p)
+  const toggleMobile = () => setMobileOpen((p) => !p);
 
   const isActive = (path: string) =>
-    location.pathname === path || location.pathname.startsWith(path + '/')
+    location.pathname === path || location.pathname.startsWith(path + '/');
 
   const showMobileBottomNav =
-    !isMdUp &&
-    (roleBucket === 'coach' || roleBucket === 'athlete' || roleBucket === 'admin')
+    !isMdUp && (roleBucket === 'coach' || roleBucket === 'athlete' || roleBucket === 'admin');
 
   const evaluationNavPath =
-    roleBucket === 'athlete' ? '/reports/evaluation-reports' : '/evaluations'
-  const evaluationNavLabel =
-    roleBucket === 'athlete' ? 'Evaluation reports' : 'Evaluations'
+    roleBucket === 'athlete' ? '/reports/evaluation-reports' : '/evaluations';
+  const evaluationNavLabel = roleBucket === 'athlete' ? 'Evaluation reports' : 'Evaluations';
 
   const bottomNavValue = isActive('/')
     ? '/'
     : isActive(evaluationNavPath)
-    ? evaluationNavPath
-    : isActive('/practice-plans')
-    ? '/practice-plans'
-    : isActive('/drills')
-    ? '/drills'
-    : ''
+      ? evaluationNavPath
+      : isActive('/practice-plans')
+        ? '/practice-plans'
+        : isActive('/drills')
+          ? '/drills'
+          : '';
 
   const drawerContent = (
     <Box role="navigation" sx={{ width: DRAWER_WIDTH }}>
@@ -700,13 +644,7 @@ export default function HomeLayout() {
       <Divider />
 
       {/* Menu */}
-      <List
-        subheader={
-          <Typography sx={{ px: 2, pt: 2, pb: 1, fontWeight: 700 }}>
-            Menu
-          </Typography>
-        }
-      >
+      <List subheader={<Typography sx={{ px: 2, pt: 2, pb: 1, fontWeight: 700 }}>Menu</Typography>}>
         <NavItem
           to="/"
           icon={<HomeIcon />}
@@ -785,11 +723,7 @@ export default function HomeLayout() {
       <Divider sx={{ my: 1 }} />
 
       {/* Menu 2 */}
-      <List
-        subheader={
-          <Typography sx={{ px: 2, pt: 2, pb: 1, fontWeight: 700 }}></Typography>
-        }
-      >
+      <List subheader={<Typography sx={{ px: 2, pt: 2, pb: 1, fontWeight: 700 }}></Typography>}>
         {canAccess('athletes') && (
           <NavItem
             to="/athletes"
@@ -889,7 +823,7 @@ export default function HomeLayout() {
         </Typography>
       </Box>
     </Box>
-  )
+  );
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -1023,12 +957,9 @@ export default function HomeLayout() {
         </Box>
       )}
     </Box>
-  )
+  );
 }
 
 function PeopleIconSafe() {
-  return <PeopleAltIcon />
+  return <PeopleAltIcon />;
 }
-
-
-

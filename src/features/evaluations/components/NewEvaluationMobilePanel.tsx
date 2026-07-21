@@ -1,4 +1,4 @@
-import * as React from 'react'
+import * as React from 'react';
 import {
   Box,
   Button,
@@ -11,43 +11,39 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Typography,
-} from '@mui/material'
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import ExpandLessIcon from '@mui/icons-material/ExpandLess'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import { getRatingScale } from '../utils/getRatingScale'
-import type {
-  Athlete,
-  ScorecardCategory,
-  ScorecardSubskill,
-} from '../types'
+} from '@mui/material';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { getRatingScale } from '../utils/getRatingScale';
+import type { Athlete, ScorecardCategory, ScorecardSubskill } from '../types';
 
-const BASELINE_RATING_OPTIONS = [1, 2, 3, 4, 5]
+const BASELINE_RATING_OPTIONS = [1, 2, 3, 4, 5];
 
 type NewEvaluationMobilePanelProps = {
-  isReady: boolean
-  selectedAthletes: Athlete[]
-  activeAthleteId: string | null
-  onAthleteChange: (nextId: string | null) => void
-  currentCategory: ScorecardCategory | null
-  activeCategoryIndex: number
-  totalCategories: number
-  mobileCategoryScore: number | null
-  onCategoryScoreChange: (value: number | null) => void
-  subskillsExpanded: boolean
-  onToggleSubskills: () => void
-  currentSubskills: ScorecardSubskill[] | undefined
-  subskillRatings: Record<string, number | null>
-  onSubskillRatingChange: (subskillId: string, rating: number | null) => void
-  hasPreviousCategory: boolean
-  hasNextCategory: boolean
-  onPreviousCategory: () => void
-  onNextCategory: () => void
-  onSave: () => void
-  saving: boolean
-  disableSave: boolean
-}
+  isReady: boolean;
+  selectedAthletes: Athlete[];
+  activeAthleteId: string | null;
+  onAthleteChange: (nextId: string | null) => void;
+  currentCategory: ScorecardCategory | null;
+  activeCategoryIndex: number;
+  totalCategories: number;
+  mobileCategoryScore: number | null;
+  onCategoryScoreChange: (value: number | null) => void;
+  subskillsExpanded: boolean;
+  onToggleSubskills: () => void;
+  currentSubskills: ScorecardSubskill[] | undefined;
+  subskillRatings: Record<string, number | null>;
+  onSubskillRatingChange: (subskillId: string, rating: number | null) => void;
+  hasPreviousCategory: boolean;
+  hasNextCategory: boolean;
+  onPreviousCategory: () => void;
+  onNextCategory: () => void;
+  onSave: () => void;
+  saving: boolean;
+  disableSave: boolean;
+};
 
 export default function NewEvaluationMobilePanel({
   isReady,
@@ -75,7 +71,7 @@ export default function NewEvaluationMobilePanel({
   const activeAthlete = React.useMemo(
     () => selectedAthletes.find((athlete) => athlete.id === activeAthleteId) ?? null,
     [selectedAthletes, activeAthleteId],
-  )
+  );
 
   return (
     <Stack spacing={2}>
@@ -89,7 +85,11 @@ export default function NewEvaluationMobilePanel({
             Select a scorecard, team, and athletes to start rating subskills.
           </Typography>
         ) : (
-          <Stack direction="row" spacing={2} sx={{ alignItems: 'stretch', overflowX: 'auto', pb: 1 }}>
+          <Stack
+            direction="row"
+            spacing={2}
+            sx={{ alignItems: 'stretch', overflowX: 'auto', pb: 1 }}
+          >
             <Box sx={{ minWidth: 180, flexShrink: 0 }}>
               <Typography variant="subtitle2" gutterBottom>
                 Athletes
@@ -187,20 +187,16 @@ export default function NewEvaluationMobilePanel({
                           .slice()
                           .sort((a, b) => a.position - b.position)
                           .map((skill) => {
-                            const subskillId = skill.skill_id ?? skill.id
-                            const subskillKey = `${currentCategory.id}-${subskillId}`
-                            const ratingScale = getRatingScale(
-                              skill.rating_min,
-                              skill.rating_max,
-                            )
-                            const baselineRating = mobileCategoryScore ?? null
+                            const subskillId = skill.skill_id ?? skill.id;
+                            const subskillKey = `${currentCategory.id}-${subskillId}`;
+                            const ratingScale = getRatingScale(skill.rating_min, skill.rating_max);
+                            const baselineRating = mobileCategoryScore ?? null;
                             const useBaseline =
-                              baselineRating !== null &&
-                              ratingScale.includes(baselineRating)
+                              baselineRating !== null && ratingScale.includes(baselineRating);
                             const ratingValue =
                               subskillRatings[subskillId] ??
                               subskillRatings[skill.id] ??
-                              (useBaseline ? baselineRating : null)
+                              (useBaseline ? baselineRating : null);
 
                             return (
                               <Paper key={subskillKey} variant="outlined" sx={{ p: 1.5 }}>
@@ -242,7 +238,7 @@ export default function NewEvaluationMobilePanel({
                                   ))}
                                 </ToggleButtonGroup>
                               </Paper>
-                            )
+                            );
                           })}
                       </Stack>
                     )}
@@ -294,7 +290,6 @@ export default function NewEvaluationMobilePanel({
           </Stack>
         )}
       </Paper>
-
     </Stack>
-  )
+  );
 }

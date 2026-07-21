@@ -1,31 +1,19 @@
-import * as React from 'react'
-import {
-  Alert,
-  Box,
-  Button,
-  MenuItem,
-  Paper,
-  Stack,
-  TextField,
-  Typography,
-} from '@mui/material'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import SaveIcon from '@mui/icons-material/Save'
-import { useNavigate, useParams } from 'react-router-dom'
-import {
-  getOrganizationById,
-  updateOrganization,
-} from '../services/organizationsService'
+import * as React from 'react';
+import { Alert, Box, Button, MenuItem, Paper, Stack, TextField, Typography } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import SaveIcon from '@mui/icons-material/Save';
+import { useNavigate, useParams } from 'react-router-dom';
+import { getOrganizationById, updateOrganization } from '../services/organizationsService';
 
 type OrganizationForm = {
-  name: string
-  slug: string
-  sportMode: '' | 'single' | 'multi'
-  programGender: 'boys' | 'girls' | 'coed'
-  sportId: string
-  maxBelowThresholdRatingsAllowed: string
-  maxWorkoutReps: string
-}
+  name: string;
+  slug: string;
+  sportMode: '' | 'single' | 'multi';
+  programGender: 'boys' | 'girls' | 'coed';
+  sportId: string;
+  maxBelowThresholdRatingsAllowed: string;
+  maxWorkoutReps: string;
+};
 
 const EMPTY_FORM: OrganizationForm = {
   name: '',
@@ -35,41 +23,41 @@ const EMPTY_FORM: OrganizationForm = {
   sportId: '',
   maxBelowThresholdRatingsAllowed: '',
   maxWorkoutReps: '',
-}
+};
 
 function parseNullableNonNegativeInteger(value: string, label: string) {
-  if (!value.trim()) return null
-  const parsed = Number(value)
+  if (!value.trim()) return null;
+  const parsed = Number(value);
   if (!Number.isInteger(parsed) || parsed < 0) {
-    throw new Error(`${label} must be a non-negative whole number.`)
+    throw new Error(`${label} must be a non-negative whole number.`);
   }
-  return parsed
+  return parsed;
 }
 
 export default function EditOrgPage() {
-  const { id = '' } = useParams<{ id: string }>()
-  const navigate = useNavigate()
-  const [form, setForm] = React.useState<OrganizationForm>(EMPTY_FORM)
-  const [loading, setLoading] = React.useState(true)
-  const [saving, setSaving] = React.useState(false)
-  const [error, setError] = React.useState<string | null>(null)
-  const [success, setSuccess] = React.useState<string | null>(null)
+  const { id = '' } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [form, setForm] = React.useState<OrganizationForm>(EMPTY_FORM);
+  const [loading, setLoading] = React.useState(true);
+  const [saving, setSaving] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [success, setSuccess] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    let active = true
+    let active = true;
 
     const loadOrganization = async () => {
       if (!id) {
-        setError('Missing organization id in route.')
-        setLoading(false)
-        return
+        setError('Missing organization id in route.');
+        setLoading(false);
+        return;
       }
 
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
       try {
-        const organization = await getOrganizationById(id)
-        if (!active) return
+        const organization = await getOrganizationById(id);
+        if (!active) return;
         setForm({
           name: organization.name,
           slug: organization.slug,
@@ -79,57 +67,53 @@ export default function EditOrgPage() {
           maxBelowThresholdRatingsAllowed:
             organization.maxBelowThresholdRatingsAllowed?.toString() ?? '',
           maxWorkoutReps: organization.maxWorkoutReps?.toString() ?? '',
-        })
+        });
       } catch (err) {
         if (active) {
-          setError(
-            err instanceof Error ? err.message : 'Failed to load organization.',
-          )
+          setError(err instanceof Error ? err.message : 'Failed to load organization.');
         }
       } finally {
-        if (active) setLoading(false)
+        if (active) setLoading(false);
       }
-    }
+    };
 
-    void loadOrganization()
+    void loadOrganization();
 
     return () => {
-      active = false
-    }
-  }, [id])
+      active = false;
+    };
+  }, [id]);
 
   const setField =
-    (field: keyof OrganizationForm) =>
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setForm((current) => ({ ...current, [field]: event.target.value }))
-    }
+    (field: keyof OrganizationForm) => (event: React.ChangeEvent<HTMLInputElement>) => {
+      setForm((current) => ({ ...current, [field]: event.target.value }));
+    };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setError(null)
-    setSuccess(null)
+    event.preventDefault();
+    setError(null);
+    setSuccess(null);
 
     if (!form.name.trim()) {
-      setError('Name is required.')
-      return
+      setError('Name is required.');
+      return;
     }
     if (!form.slug.trim()) {
-      setError('Slug is required.')
-      return
+      setError('Slug is required.');
+      return;
     }
 
     try {
-      const maxBelowThresholdRatingsAllowed =
-        parseNullableNonNegativeInteger(
-          form.maxBelowThresholdRatingsAllowed,
-          'Maximum below-threshold ratings',
-        )
+      const maxBelowThresholdRatingsAllowed = parseNullableNonNegativeInteger(
+        form.maxBelowThresholdRatingsAllowed,
+        'Maximum below-threshold ratings',
+      );
       const maxWorkoutReps = parseNullableNonNegativeInteger(
         form.maxWorkoutReps,
         'Maximum workout reps',
-      )
+      );
 
-      setSaving(true)
+      setSaving(true);
       const updated = await updateOrganization(id, {
         name: form.name.trim(),
         slug: form.slug.trim(),
@@ -138,7 +122,7 @@ export default function EditOrgPage() {
         sport_id: form.sportId.trim() || null,
         maxBelowThresholdRatingsAllowed,
         maxWorkoutReps,
-      })
+      });
 
       setForm({
         name: updated.name,
@@ -146,19 +130,16 @@ export default function EditOrgPage() {
         sportMode: updated.sport_mode ?? '',
         programGender: updated.program_gender,
         sportId: updated.sport_id ?? '',
-        maxBelowThresholdRatingsAllowed:
-          updated.maxBelowThresholdRatingsAllowed?.toString() ?? '',
+        maxBelowThresholdRatingsAllowed: updated.maxBelowThresholdRatingsAllowed?.toString() ?? '',
         maxWorkoutReps: updated.maxWorkoutReps?.toString() ?? '',
-      })
-      setSuccess('Organization updated.')
+      });
+      setSuccess('Organization updated.');
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to update organization.',
-      )
+      setError(err instanceof Error ? err.message : 'Failed to update organization.');
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   return (
     <Box sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
@@ -283,5 +264,5 @@ export default function EditOrgPage() {
         </Paper>
       </Stack>
     </Box>
-  )
+  );
 }

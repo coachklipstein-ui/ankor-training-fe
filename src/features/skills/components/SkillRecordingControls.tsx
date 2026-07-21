@@ -1,5 +1,5 @@
-import * as React from "react";
-import { Box, Button, Stack, Typography } from "@mui/material";
+import * as React from 'react';
+import { Box, Button, Stack, Typography } from '@mui/material';
 
 type SkillRecordingControlsProps = {
   canRecord: boolean;
@@ -36,18 +36,14 @@ export default function SkillRecordingControls({
 }: SkillRecordingControlsProps) {
   return (
     <Stack spacing={1.5}>
-      <Stack
-        direction={{ xs: "column", sm: "row" }}
-        spacing={1.5}
-        alignItems={{ sm: "center" }}
-      >
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems={{ sm: 'center' }}>
         <Button
-          variant={recording ? "contained" : "outlined"}
-          color={recording ? "error" : "primary"}
+          variant={recording ? 'contained' : 'outlined'}
+          color={recording ? 'error' : 'primary'}
           onClick={recording ? onStop : onStart}
           disabled={!canRecord || uploading}
         >
-          {recording ? "Stop & upload" : "Record video"}
+          {recording ? 'Stop & upload' : 'Record video'}
         </Button>
 
         <Button
@@ -74,8 +70,8 @@ export default function SkillRecordingControls({
         {!canRecord && (
           <Typography variant="body2" color="text.secondary">
             {videoLimitReached
-              ? "This skill already has a video."
-              : "Video upload requires a skill id and org id."}
+              ? 'This skill already has a video.'
+              : 'Video upload requires a skill id and org id.'}
           </Typography>
         )}
       </Stack>
@@ -116,15 +112,15 @@ function VideoPreviewBox({
   return (
     <Box
       sx={{
-        border: "1px dashed",
-        borderColor: "divider",
+        border: '1px dashed',
+        borderColor: 'divider',
         borderRadius: 2,
         p: 1,
-        textAlign: "center",
-        color: "text.secondary",
+        textAlign: 'center',
+        color: 'text.secondary',
       }}
     >
-      <Box sx={{ position: "relative", paddingTop: "56.25%" }}>
+      <Box sx={{ position: 'relative', paddingTop: '56.25%' }}>
         {recording ? (
           <Box
             component="video"
@@ -133,11 +129,11 @@ function VideoPreviewBox({
             playsInline
             autoPlay
             sx={{
-              position: "absolute",
+              position: 'absolute',
               inset: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
               borderRadius: 8,
             }}
           />
@@ -147,22 +143,22 @@ function VideoPreviewBox({
             src={recordedUrl}
             controls
             sx={{
-              position: "absolute",
+              position: 'absolute',
               inset: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
               borderRadius: 8,
             }}
           />
         ) : (
           <Box
             sx={{
-              position: "absolute",
+              position: 'absolute',
               inset: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
             <Typography variant="caption">{label}</Typography>

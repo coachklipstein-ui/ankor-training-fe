@@ -8,20 +8,20 @@
   Paper,
   Stack,
   Typography,
-} from '@mui/material'
-import DeleteIcon from '@mui/icons-material/Delete'
-import type { EvaluationListRow } from '../../api/evaluationsApi'
-import { formatDateTime } from '../../utils/formatDateTime'
-import { getEvaluationStatusUi } from '../../utils/evaluationStatus'
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import type { EvaluationListRow } from '../../api/evaluationsApi';
+import { formatDateTime } from '../../utils/formatDateTime';
+import { getEvaluationStatusUi } from '../../utils/evaluationStatus';
 
 type EvaluationsListMobileProps = {
-  rows: EvaluationListRow[]
-  loading: boolean
-  onView: (id: string) => void
-  onEdit: (id: string) => void
-  onDelete: (row: EvaluationListRow) => void
-  deletingId: string | null
-}
+  rows: EvaluationListRow[];
+  loading: boolean;
+  onView: (id: string) => void;
+  onEdit: (id: string) => void;
+  onDelete: (row: EvaluationListRow) => void;
+  deletingId: string | null;
+};
 
 export default function EvaluationsListMobile({
   rows,
@@ -48,8 +48,8 @@ export default function EvaluationsListMobile({
       ) : (
         <List disablePadding>
           {rows.map((row, idx) => {
-            const created = formatDateTime(row.created_at)
-            const statusUi = getEvaluationStatusUi((row as any).status ?? null)
+            const created = formatDateTime(row.created_at);
+            const statusUi = getEvaluationStatusUi((row as any).status ?? null);
 
             return (
               <Box key={row.id}>
@@ -79,8 +79,8 @@ export default function EvaluationsListMobile({
                           size="small"
                           variant="outlined"
                           onClick={(event) => {
-                            event.stopPropagation()
-                            onView(row.id)
+                            event.stopPropagation();
+                            onView(row.id);
                           }}
                         >
                           View
@@ -89,8 +89,8 @@ export default function EvaluationsListMobile({
                           size="small"
                           variant="contained"
                           onClick={(event) => {
-                            event.stopPropagation()
-                            onEdit(row.id)
+                            event.stopPropagation();
+                            onEdit(row.id);
                           }}
                         >
                           Edit
@@ -102,8 +102,8 @@ export default function EvaluationsListMobile({
                           startIcon={<DeleteIcon />}
                           disabled={deletingId === row.id}
                           onClick={(event) => {
-                            event.stopPropagation()
-                            onDelete(row)
+                            event.stopPropagation();
+                            onDelete(row);
                           }}
                         >
                           Delete
@@ -151,10 +151,10 @@ export default function EvaluationsListMobile({
 
                 {idx < rows.length - 1 && <Divider />}
               </Box>
-            )
+            );
           })}
         </List>
       )}
     </Paper>
-  )
+  );
 }

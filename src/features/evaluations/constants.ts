@@ -3,6 +3,6 @@ export const POSITION_OPTIONS = [
   { label: 'Midfield', value: 'midfield' },
   { label: 'Defense', value: 'defense' },
   { label: 'Goalie', value: 'goalie' },
-] as const
+] as const;
 
-export type PositionOption = (typeof POSITION_OPTIONS)[number]
+export type PositionOption = (typeof POSITION_OPTIONS)[number];

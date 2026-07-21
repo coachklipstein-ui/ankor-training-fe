@@ -1,26 +1,20 @@
-import * as React from "react";
-import { Box, Button, Stack, TextField, Typography } from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "../../../app/providers/AuthProvider";
-import { SPORT_OPTIONS } from "../constants";
-import { getTeamById, updateTeam, type Team } from "../services/teamsService";
-import TeamFormFields from "../components/TeamFormFields";
-import {
-  createInitialTeamForm,
-  toTeamFormState,
-  type TeamFormState,
-} from "../utils/teamForm";
-import { validateTeamForm } from "../utils/validation";
+import * as React from 'react';
+import { Box, Button, Stack, TextField, Typography } from '@mui/material';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
+import { SPORT_OPTIONS } from '../constants';
+import { getTeamById, updateTeam, type Team } from '../services/teamsService';
+import TeamFormFields from '../components/TeamFormFields';
+import { createInitialTeamForm, toTeamFormState, type TeamFormState } from '../utils/teamForm';
+import { validateTeamForm } from '../utils/validation';
 
 export default function EditTeamPage() {
   const { id } = useParams<{ id: string }>();
-  const teamId = id ?? "";
+  const teamId = id ?? '';
   const navigate = useNavigate();
   const { orgId, loading: authLoading } = useAuth();
   const [team, setTeam] = React.useState<Team | null>(null);
-  const [form, setForm] = React.useState<TeamFormState>(
-    createInitialTeamForm(),
-  );
+  const [form, setForm] = React.useState<TeamFormState>(createInitialTeamForm());
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [saving, setSaving] = React.useState(false);
   const [submitError, setSubmitError] = React.useState<string | null>(null);
@@ -42,11 +36,11 @@ export default function EditTeamPage() {
     const loadTeam = async () => {
       if (authLoading) return;
       if (!teamId) {
-        setLoadError("Missing team id in route.");
+        setLoadError('Missing team id in route.');
         return;
       }
       if (!orgId) {
-        setLoadError("Missing org_id. Please sign in again.");
+        setLoadError('Missing org_id. Please sign in again.');
         return;
       }
 
@@ -59,7 +53,7 @@ export default function EditTeamPage() {
       } catch (err) {
         if (!active) return;
         setTeam(null);
-        setLoadError(err instanceof Error ? err.message : "Failed to load team.");
+        setLoadError(err instanceof Error ? err.message : 'Failed to load team.');
       } finally {
         if (active) setLoading(false);
       }
@@ -78,11 +72,10 @@ export default function EditTeamPage() {
     initializedRef.current = true;
   }, [team]);
 
-  const handleChange = (field: keyof TeamFormState) => (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    setForm((prev) => ({ ...prev, [field]: event.target.value }));
-  };
+  const handleChange =
+    (field: keyof TeamFormState) => (event: React.ChangeEvent<HTMLInputElement>) => {
+      setForm((prev) => ({ ...prev, [field]: event.target.value }));
+    };
 
   const handleActiveChange = (value: boolean) => {
     setForm((prev) => ({ ...prev, isActive: value }));
@@ -96,11 +89,11 @@ export default function EditTeamPage() {
     if (Object.keys(nextErrors).length > 0) return;
 
     if (!teamId) {
-      setSubmitError("Missing team id in route.");
+      setSubmitError('Missing team id in route.');
       return;
     }
     if (!orgId) {
-      setSubmitError("Missing org_id. Please sign in again.");
+      setSubmitError('Missing org_id. Please sign in again.');
       return;
     }
 
@@ -118,8 +111,7 @@ export default function EditTeamPage() {
       setTeam(updated);
       setSubmitError(null);
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to update team.";
+      const message = err instanceof Error ? err.message : 'Failed to update team.';
       setSubmitError(message);
     } finally {
       setSaving(false);
@@ -132,12 +124,12 @@ export default function EditTeamPage() {
         spacing={3}
         component="form"
         onSubmit={handleSubmit}
-        sx={{ maxWidth: 1100, width: "100%", mx: "auto" }}
+        sx={{ maxWidth: 1100, width: '100%', mx: 'auto' }}
       >
         <Stack
-          direction={{ xs: "column", sm: "row" }}
+          direction={{ xs: 'column', sm: 'row' }}
           spacing={2}
-          alignItems={{ sm: "center" }}
+          alignItems={{ sm: 'center' }}
           justifyContent="space-between"
         >
           <Box>
@@ -148,8 +140,8 @@ export default function EditTeamPage() {
               Update team details.
             </Typography>
           </Box>
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-            <Button variant="outlined" onClick={() => navigate("/teams")}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+            <Button variant="outlined" onClick={() => navigate('/teams')}>
               Back
             </Button>
             <Button
@@ -160,7 +152,7 @@ export default function EditTeamPage() {
               View
             </Button>
             <Button type="submit" variant="contained" disabled={saving || loading}>
-              {saving ? "Saving..." : "Update"}
+              {saving ? 'Saving...' : 'Update'}
             </Button>
           </Stack>
         </Stack>
@@ -185,13 +177,13 @@ export default function EditTeamPage() {
 
         <TextField
           label="Team ID"
-          value={team?.id ?? ""}
+          value={team?.id ?? ''}
           fullWidth
           InputProps={{ readOnly: true }}
         />
         <TextField
           label="Organization ID"
-          value={team?.org_id ?? ""}
+          value={team?.org_id ?? ''}
           fullWidth
           InputProps={{ readOnly: true }}
         />

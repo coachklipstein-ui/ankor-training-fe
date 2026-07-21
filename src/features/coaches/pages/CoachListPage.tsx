@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Avatar,
   Box,
@@ -15,35 +15,29 @@ import {
   Stack,
   TextField,
   Typography,
-} from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import SearchIcon from "@mui/icons-material/Search";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../app/providers/AuthProvider";
-import {
-  coachLabel,
-  deleteCoach,
-  listCoaches,
-  type CoachListItem,
-} from "../services/coachService";
+} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import SearchIcon from '@mui/icons-material/Search';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
+import { coachLabel, deleteCoach, listCoaches, type CoachListItem } from '../services/coachService';
 
-const joinParts = (parts: Array<string | null | undefined>) =>
-  parts.filter(Boolean).join(" | ");
+const joinParts = (parts: Array<string | null | undefined>) => parts.filter(Boolean).join(' | ');
 
 const getInitials = (name: string) => {
   const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  const first = parts[0]?.[0] ?? "";
-  const last = parts.length > 1 ? parts[parts.length - 1]?.[0] ?? "" : "";
+  if (parts.length === 0) return '?';
+  const first = parts[0]?.[0] ?? '';
+  const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? '') : '';
   return `${first}${last}`.toUpperCase();
 };
 
 export default function CoachListPage() {
   const { orgId, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [searchText, setSearchText] = React.useState("");
-  const [searchQuery, setSearchQuery] = React.useState("");
+  const [searchText, setSearchText] = React.useState('');
+  const [searchQuery, setSearchQuery] = React.useState('');
   const [rows, setRows] = React.useState<CoachListItem[]>([]);
   const [totalCount, setTotalCount] = React.useState<number | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -72,9 +66,9 @@ export default function CoachListPage() {
     if (authLoading) return;
     let active = true;
 
-    const resolvedOrgId = orgId?.trim() || "";
+    const resolvedOrgId = orgId?.trim() || '';
     if (!resolvedOrgId) {
-      setLoadError("Missing org_id for this account.");
+      setLoadError('Missing org_id for this account.');
       setRows([]);
       setTotalCount(null);
       return () => {
@@ -88,7 +82,7 @@ export default function CoachListPage() {
     setTotalCount(null);
 
     const query = searchQuery.trim();
-    const isEmailQuery = query.includes("@");
+    const isEmailQuery = query.includes('@');
     const name = query && !isEmailQuery ? query : undefined;
     const email = query && isEmailQuery ? query : undefined;
     const offset = Math.max(0, (page - 1) * pageSize);
@@ -103,14 +97,14 @@ export default function CoachListPage() {
       .then((result) => {
         if (!active) return;
         setRows(result.items);
-        const count = typeof result.count === "number" ? result.count : null;
+        const count = typeof result.count === 'number' ? result.count : null;
         setTotalCount(count);
       })
       .catch((err: any) => {
         if (!active) return;
         setRows([]);
         setTotalCount(null);
-        setLoadError(err?.message || "Failed to load coaches.");
+        setLoadError(err?.message || 'Failed to load coaches.');
       })
       .finally(() => {
         if (active) setIsLoading(false);
@@ -122,22 +116,18 @@ export default function CoachListPage() {
   }, [authLoading, orgId, searchQuery, page, pageSize]);
 
   const displayRows = React.useMemo(() => {
-    return [...rows].sort((a, b) =>
-      coachLabel(a).localeCompare(coachLabel(b)),
-    );
+    return [...rows].sort((a, b) => coachLabel(a).localeCompare(coachLabel(b)));
   }, [rows]);
 
   const total = totalCount ?? null;
   const showing = displayRows.length;
   const startIndex = showing > 0 ? (page - 1) * pageSize + 1 : 0;
   const endIndex = showing > 0 ? startIndex + showing - 1 : 0;
-  const countLabel =
-    total !== null ? `${startIndex}-${endIndex} of ${total}` : `${showing}`;
+  const countLabel = total !== null ? `${startIndex}-${endIndex} of ${total}` : `${showing}`;
 
   const totalPages = total !== null ? Math.max(1, Math.ceil(total / pageSize)) : 1;
   const hasNextPage = total !== null ? page < totalPages : rows.length === pageSize;
-  const pageCount =
-    total !== null ? totalPages : Math.max(1, page + (hasNextPage ? 1 : 0));
+  const pageCount = total !== null ? totalPages : Math.max(1, page + (hasNextPage ? 1 : 0));
 
   React.useEffect(() => {
     if (total !== null && page > totalPages) {
@@ -154,9 +144,9 @@ export default function CoachListPage() {
   );
 
   const handleDelete = async (coach: CoachListItem) => {
-    const resolvedOrgId = orgId?.trim() || "";
+    const resolvedOrgId = orgId?.trim() || '';
     if (!resolvedOrgId) {
-      setLoadError("Missing org_id for this account.");
+      setLoadError('Missing org_id for this account.');
       return;
     }
 
@@ -169,20 +159,20 @@ export default function CoachListPage() {
       await deleteCoach(coach.id, { orgId: resolvedOrgId });
       setRows((current) => current.filter((item) => item.id !== coach.id));
       setTotalCount((current) =>
-        typeof current === "number" ? Math.max(0, current - 1) : current,
+        typeof current === 'number' ? Math.max(0, current - 1) : current,
       );
     } catch (err: any) {
-      setLoadError(err?.message || "Failed to delete coach.");
+      setLoadError(err?.message || 'Failed to delete coach.');
     } finally {
       setDeletingId(null);
     }
   };
 
   return (
-    <Box sx={{ width: "100%" }}>
+    <Box sx={{ width: '100%' }}>
       <Stack
-        direction={{ xs: "column", sm: "row" }}
-        alignItems={{ xs: "flex-start", sm: "center" }}
+        direction={{ xs: 'column', sm: 'row' }}
+        alignItems={{ xs: 'flex-start', sm: 'center' }}
         justifyContent="space-between"
         spacing={1.5}
         sx={{ mb: 1 }}
@@ -198,7 +188,7 @@ export default function CoachListPage() {
         <Button
           variant="contained"
           startIcon={<AddIcon />}
-          onClick={() => navigate("/coaches/new")}
+          onClick={() => navigate('/coaches/new')}
         >
           New coach
         </Button>
@@ -220,7 +210,7 @@ export default function CoachListPage() {
         sx={{ mb: 1.5, maxWidth: 520 }}
       />
 
-      <Paper variant="outlined" sx={{ overflow: "hidden" }}>
+      <Paper variant="outlined" sx={{ overflow: 'hidden' }}>
         {isLoading && displayRows.length === 0 ? (
           <Box sx={{ p: 2 }}>
             <Typography variant="body2" color="text.secondary">
@@ -236,9 +226,7 @@ export default function CoachListPage() {
         ) : displayRows.length === 0 ? (
           <Box sx={{ p: 2 }}>
             <Typography variant="body2" color="text.secondary">
-              {searchText.trim()
-                ? `No coaches match "${searchText.trim()}".`
-                : "No coaches found."}
+              {searchText.trim() ? `No coaches match "${searchText.trim()}".` : 'No coaches found.'}
             </Typography>
           </Box>
         ) : (
@@ -246,9 +234,9 @@ export default function CoachListPage() {
             <List disablePadding>
               {displayRows.map((row, idx) => {
                 const name = coachLabel(row);
-                const phone = row.phone || row.cell_number || "";
+                const phone = row.phone || row.cell_number || '';
                 const lineOne = joinParts([row.email, phone]);
-                const lineTwo = row.title ? `Title: ${row.title}` : "";
+                const lineTwo = row.title ? `Title: ${row.title}` : '';
 
                 return (
                   <React.Fragment key={row.id}>
@@ -281,12 +269,12 @@ export default function CoachListPage() {
                               )}
                             </Stack>
                           }
-                          secondaryTypographyProps={{ component: "div" }}
+                          secondaryTypographyProps={{ component: 'div' }}
                         />
                         <Stack
-                          direction={{ xs: "column", sm: "row" }}
+                          direction={{ xs: 'column', sm: 'row' }}
                           spacing={1}
-                          sx={{ alignSelf: "center", ml: 1 }}
+                          sx={{ alignSelf: 'center', ml: 1 }}
                         >
                           <Button
                             size="small"
@@ -341,7 +329,7 @@ export default function CoachListPage() {
             )}
 
             {displayRows.length > 0 && (
-              <Box sx={{ p: 2, display: "flex", justifyContent: "center" }}>
+              <Box sx={{ p: 2, display: 'flex', justifyContent: 'center' }}>
                 <Pagination
                   count={pageCount}
                   page={page}

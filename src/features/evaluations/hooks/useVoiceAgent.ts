@@ -1,13 +1,13 @@
-import * as React from 'react'
-import { ensureValidSession } from '../../../shared/auth/authClient'
+import * as React from 'react';
+import { ensureValidSession } from '../../../shared/auth/authClient';
 import {
   decodeBase64ToInt16,
   downsampleTo16k,
   encodeInt16ToBase64,
   float32ToInt16,
   pcm16ToFloat32,
-} from '../voice/audio'
-import { getVoiceAgentWebSocketUrl } from '../voice/config'
+} from '../voice/audio';
+import { getVoiceAgentWebSocketUrl } from '../voice/config';
 import type {
   VoiceAgentContext,
   VoiceAgentStatus,
@@ -15,33 +15,33 @@ import type {
   VoiceConversationMessage,
   VoiceServerMessage,
   VoiceStateSummary,
-} from '../voice/types'
+} from '../voice/types';
 
 const DEFAULT_SUMMARY: VoiceStateSummary = {
   missingFields: [],
   ambiguousFields: [],
   readyForConfirmation: false,
-}
+};
 
-const MAX_MESSAGES = 80
-const RECONNECT_DELAYS_MS = [1000, 2000, 5000, 10000, 15000]
+const MAX_MESSAGES = 80;
+const RECONNECT_DELAYS_MS = [1000, 2000, 5000, 10000, 15000];
 
 type UseVoiceAgentOptions = {
-  orgId: string | null
-  teamId: string | null
-  coachId: string | null
-  locale?: string
-  enabled?: boolean
-}
+  orgId: string | null;
+  teamId: string | null;
+  coachId: string | null;
+  locale?: string;
+  enabled?: boolean;
+};
 
 type PlaybackChunk = {
-  floats: Float32Array
-  sampleRate: number
-}
+  floats: Float32Array;
+  sampleRate: number;
+};
 
 type StopRecordingOptions = {
-  notifyServer: boolean
-}
+  notifyServer: boolean;
+};
 
 function createConversationMessage(
   role: VoiceConversationMessage['role'],
@@ -54,61 +54,63 @@ function createConversationMessage(
     text,
     source,
     createdAt: new Date().toISOString(),
-  }
+  };
 }
 
 function appendConversationMessage(
   previous: VoiceConversationMessage[],
   message: VoiceConversationMessage,
 ) {
-  const next = [...previous, message]
-  return next.slice(-MAX_MESSAGES)
+  const next = [...previous, message];
+  return next.slice(-MAX_MESSAGES);
 }
 
 function normalizeStateField(value: unknown): string {
-  if (typeof value === 'string') return value
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value)
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
   if (Array.isArray(value)) {
-    return value.map((item) => normalizeStateField(item)).filter(Boolean).join(', ')
+    return value
+      .map((item) => normalizeStateField(item))
+      .filter(Boolean)
+      .join(', ');
   }
   if (value && typeof value === 'object') {
-    const record = value as Record<string, unknown>
+    const record = value as Record<string, unknown>;
     const preferred = [record.label, record.field, record.name, record.value].find(
       (item) => typeof item === 'string' && item.trim(),
-    )
-    if (typeof preferred === 'string') return preferred
+    );
+    if (typeof preferred === 'string') return preferred;
     try {
-      return JSON.stringify(record)
+      return JSON.stringify(record);
     } catch {
-      return 'Unknown field'
+      return 'Unknown field';
     }
   }
-  return 'Unknown field'
+  return 'Unknown field';
 }
 
 function normalizeSummary(summary?: Record<string, unknown>): VoiceStateSummary {
   const missingFields = Array.isArray(summary?.missing_fields)
     ? summary.missing_fields.map((item) => normalizeStateField(item))
-    : []
+    : [];
   const ambiguousFields = Array.isArray(summary?.ambiguous_fields)
     ? summary.ambiguous_fields.map((item) => normalizeStateField(item))
-    : []
+    : [];
 
   return {
     missingFields,
     ambiguousFields,
     readyForConfirmation: Boolean(summary?.ready_for_confirmation),
-  }
+  };
 }
 
 function getAudioContextClass() {
-  if (typeof window === 'undefined') return null
+  if (typeof window === 'undefined') return null;
   return (
     window.AudioContext ??
-    (window as typeof window & { webkitAudioContext?: typeof AudioContext })
-      .webkitAudioContext ??
+    (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext ??
     null
-  )
+  );
 }
 
 export function useVoiceAgent({
@@ -118,58 +120,53 @@ export function useVoiceAgent({
   locale = 'en-US',
   enabled = true,
 }: UseVoiceAgentOptions) {
-  const wsUrl = React.useMemo(() => getVoiceAgentWebSocketUrl(), [])
+  const wsUrl = React.useMemo(() => getVoiceAgentWebSocketUrl(), []);
   const sessionContext = React.useMemo<VoiceAgentContext | null>(() => {
-    const nextOrgId = orgId?.trim() || ''
-    if (!nextOrgId) return null
+    const nextOrgId = orgId?.trim() || '';
+    if (!nextOrgId) return null;
 
     return {
       orgId: nextOrgId,
       teamId: teamId?.trim() || null,
       coachId: coachId?.trim() || null,
       locale: locale.trim() || 'en-US',
-    }
-  }, [coachId, locale, orgId, teamId])
-  const sessionContextKey = React.useMemo(
-    () => JSON.stringify(sessionContext),
-    [sessionContext],
-  )
+    };
+  }, [coachId, locale, orgId, teamId]);
+  const sessionContextKey = React.useMemo(() => JSON.stringify(sessionContext), [sessionContext]);
 
-  const socketRef = React.useRef<WebSocket | null>(null)
-  const reconnectTimerRef = React.useRef<number | null>(null)
-  const shouldReconnectRef = React.useRef(false)
-  const manualDisconnectRef = React.useRef(false)
-  const connectingRef = React.useRef(false)
-  const authCompleteRef = React.useRef(false)
-  const sessionContextKeyRef = React.useRef<string | null>(null)
-  const audioContextRef = React.useRef<AudioContext | null>(null)
-  const micStreamRef = React.useRef<MediaStream | null>(null)
-  const sourceNodeRef = React.useRef<MediaStreamAudioSourceNode | null>(null)
-  const processorNodeRef = React.useRef<ScriptProcessorNode | null>(null)
-  const playbackQueueRef = React.useRef<PlaybackChunk[]>([])
-  const playbackBusyRef = React.useRef(false)
-  const reconnectAttemptRef = React.useRef(0)
-  const audioSequenceRef = React.useRef(0)
+  const socketRef = React.useRef<WebSocket | null>(null);
+  const reconnectTimerRef = React.useRef<number | null>(null);
+  const shouldReconnectRef = React.useRef(false);
+  const manualDisconnectRef = React.useRef(false);
+  const connectingRef = React.useRef(false);
+  const authCompleteRef = React.useRef(false);
+  const sessionContextKeyRef = React.useRef<string | null>(null);
+  const audioContextRef = React.useRef<AudioContext | null>(null);
+  const micStreamRef = React.useRef<MediaStream | null>(null);
+  const sourceNodeRef = React.useRef<MediaStreamAudioSourceNode | null>(null);
+  const processorNodeRef = React.useRef<ScriptProcessorNode | null>(null);
+  const playbackQueueRef = React.useRef<PlaybackChunk[]>([]);
+  const playbackBusyRef = React.useRef(false);
+  const reconnectAttemptRef = React.useRef(0);
+  const audioSequenceRef = React.useRef(0);
 
   const [status, setStatus] = React.useState<VoiceAgentStatus>(() =>
     wsUrl ? 'idle' : 'unconfigured',
-  )
-  const [error, setError] = React.useState<string | null>(null)
-  const [sessionId, setSessionId] = React.useState<string | null>(null)
-  const [summary, setSummary] = React.useState<VoiceStateSummary>(DEFAULT_SUMMARY)
-  const [partialTranscript, setPartialTranscript] = React.useState('')
-  const [finalTranscript, setFinalTranscript] = React.useState('')
-  const [messages, setMessages] = React.useState<VoiceConversationMessage[]>([])
-  const [isRecording, setIsRecording] = React.useState(false)
-  const [isReady, setIsReady] = React.useState(false)
+  );
+  const [error, setError] = React.useState<string | null>(null);
+  const [sessionId, setSessionId] = React.useState<string | null>(null);
+  const [summary, setSummary] = React.useState<VoiceStateSummary>(DEFAULT_SUMMARY);
+  const [partialTranscript, setPartialTranscript] = React.useState('');
+  const [finalTranscript, setFinalTranscript] = React.useState('');
+  const [messages, setMessages] = React.useState<VoiceConversationMessage[]>([]);
+  const [isRecording, setIsRecording] = React.useState(false);
+  const [isReady, setIsReady] = React.useState(false);
 
-  const isConfigured = Boolean(wsUrl)
-  const audioContextClass = React.useMemo(() => getAudioContextClass(), [])
+  const isConfigured = Boolean(wsUrl);
+  const audioContextClass = React.useMemo(() => getAudioContextClass(), []);
   const isMicSupported = Boolean(
-    audioContextClass &&
-      typeof navigator !== 'undefined' &&
-      navigator.mediaDevices?.getUserMedia,
-  )
+    audioContextClass && typeof navigator !== 'undefined' && navigator.mediaDevices?.getUserMedia,
+  );
 
   const appendMessage = React.useCallback(
     (
@@ -177,123 +174,116 @@ export function useVoiceAgent({
       text: string,
       source: VoiceConversationMessage['source'],
     ) => {
-      const trimmed = text.trim()
-      if (!trimmed) return
+      const trimmed = text.trim();
+      if (!trimmed) return;
       setMessages((previous) =>
-        appendConversationMessage(
-          previous,
-          createConversationMessage(role, trimmed, source),
-        ),
-      )
+        appendConversationMessage(previous, createConversationMessage(role, trimmed, source)),
+      );
     },
     [],
-  )
+  );
 
   const ensureAudioContext = React.useCallback(async () => {
     if (!audioContextClass) {
-      throw new Error('Web Audio is not available in this browser.')
+      throw new Error('Web Audio is not available in this browser.');
     }
 
     if (!audioContextRef.current) {
-      audioContextRef.current = new audioContextClass()
+      audioContextRef.current = new audioContextClass();
     }
 
     if (audioContextRef.current.state === 'suspended') {
-      await audioContextRef.current.resume()
+      await audioContextRef.current.resume();
     }
 
-    return audioContextRef.current
-  }, [audioContextClass])
+    return audioContextRef.current;
+  }, [audioContextClass]);
 
   const playNextChunk = React.useCallback(async () => {
     if (playbackQueueRef.current.length === 0) {
-      playbackBusyRef.current = false
-      return
+      playbackBusyRef.current = false;
+      return;
     }
 
-    playbackBusyRef.current = true
+    playbackBusyRef.current = true;
 
     try {
-      const audioContext = await ensureAudioContext()
-      const nextChunk = playbackQueueRef.current.shift()
+      const audioContext = await ensureAudioContext();
+      const nextChunk = playbackQueueRef.current.shift();
       if (!nextChunk) {
-        playbackBusyRef.current = false
-        return
+        playbackBusyRef.current = false;
+        return;
       }
 
-      const buffer = audioContext.createBuffer(
-        1,
-        nextChunk.floats.length,
-        nextChunk.sampleRate,
-      )
-      buffer.copyToChannel(nextChunk.floats, 0, 0)
+      const buffer = audioContext.createBuffer(1, nextChunk.floats.length, nextChunk.sampleRate);
+      buffer.copyToChannel(nextChunk.floats, 0, 0);
 
-      const source = audioContext.createBufferSource()
-      source.buffer = buffer
-      source.connect(audioContext.destination)
+      const source = audioContext.createBufferSource();
+      source.buffer = buffer;
+      source.connect(audioContext.destination);
       source.onended = () => {
-        void playNextChunk()
-      }
-      source.start()
+        void playNextChunk();
+      };
+      source.start();
     } catch (err: any) {
-      playbackBusyRef.current = false
-      setError(err?.message || 'Failed to play audio from the voice agent.')
+      playbackBusyRef.current = false;
+      setError(err?.message || 'Failed to play audio from the voice agent.');
     }
-  }, [ensureAudioContext])
+  }, [ensureAudioContext]);
 
   const enqueuePlayback = React.useCallback(
     (base64: string, sampleRate = 16000) => {
-      const pcm16 = decodeBase64ToInt16(base64)
+      const pcm16 = decodeBase64ToInt16(base64);
       playbackQueueRef.current.push({
         floats: pcm16ToFloat32(pcm16),
         sampleRate,
-      })
+      });
 
       if (!playbackBusyRef.current) {
-        void playNextChunk()
+        void playNextChunk();
       }
     },
     [playNextChunk],
-  )
+  );
 
   const clearReconnectTimer = React.useCallback(() => {
     if (reconnectTimerRef.current !== null) {
-      window.clearTimeout(reconnectTimerRef.current)
-      reconnectTimerRef.current = null
+      window.clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
     }
-  }, [])
+  }, []);
 
   const sendRaw = React.useCallback((payload: VoiceClientMessage) => {
-    const socket = socketRef.current
+    const socket = socketRef.current;
     if (!socket || socket.readyState !== WebSocket.OPEN) {
-      return false
+      return false;
     }
 
-    socket.send(JSON.stringify(payload))
-    return true
-  }, [])
+    socket.send(JSON.stringify(payload));
+    return true;
+  }, []);
 
   const resetLocalSessionState = React.useCallback(() => {
-    setSummary(DEFAULT_SUMMARY)
-    setPartialTranscript('')
-    setFinalTranscript('')
-  }, [])
+    setSummary(DEFAULT_SUMMARY);
+    setPartialTranscript('');
+    setFinalTranscript('');
+  }, []);
 
   const sendSessionInit = React.useCallback(
     (options?: { resetFirst?: boolean; announceReset?: boolean }) => {
       if (!sessionContext || !authCompleteRef.current) {
-        return false
+        return false;
       }
 
       if (options?.resetFirst) {
-        sendRaw({ type: 'session_control', action: 'reset' })
-        resetLocalSessionState()
+        sendRaw({ type: 'session_control', action: 'reset' });
+        resetLocalSessionState();
         if (options.announceReset) {
           appendMessage(
             'system',
             'Voice session restarted with the latest evaluation context.',
             'event',
-          )
+          );
         }
       }
 
@@ -304,299 +294,276 @@ export function useVoiceAgent({
         coach_id: sessionContext.coachId,
         evaluation_flow: 'create_evaluation',
         locale: sessionContext.locale,
-      })
+      });
 
-      if (!sent) return false
+      if (!sent) return false;
 
-      sessionContextKeyRef.current = sessionContextKey
-      setIsReady(true)
-      setStatus('connected')
-      return true
+      sessionContextKeyRef.current = sessionContextKey;
+      setIsReady(true);
+      setStatus('connected');
+      return true;
     },
-    [
-      appendMessage,
-      resetLocalSessionState,
-      sendRaw,
-      sessionContext,
-      sessionContextKey,
-    ],
-  )
+    [appendMessage, resetLocalSessionState, sendRaw, sessionContext, sessionContextKey],
+  );
 
   const stopRecordingInternal = React.useCallback(
     ({ notifyServer }: StopRecordingOptions = { notifyServer: true }) => {
       if (processorNodeRef.current) {
-        processorNodeRef.current.disconnect()
-        processorNodeRef.current.onaudioprocess = null
-        processorNodeRef.current = null
+        processorNodeRef.current.disconnect();
+        processorNodeRef.current.onaudioprocess = null;
+        processorNodeRef.current = null;
       }
 
       if (sourceNodeRef.current) {
-        sourceNodeRef.current.disconnect()
-        sourceNodeRef.current = null
+        sourceNodeRef.current.disconnect();
+        sourceNodeRef.current = null;
       }
 
       if (micStreamRef.current) {
-        micStreamRef.current.getTracks().forEach((track) => track.stop())
-        micStreamRef.current = null
+        micStreamRef.current.getTracks().forEach((track) => track.stop());
+        micStreamRef.current = null;
       }
 
       if (notifyServer) {
-        sendRaw({ type: 'client_event', name: 'end_of_utterance' })
+        sendRaw({ type: 'client_event', name: 'end_of_utterance' });
       }
 
-      setIsRecording(false)
+      setIsRecording(false);
     },
     [sendRaw],
-  )
+  );
 
   const disconnectInternal = React.useCallback(
     (options?: { manual?: boolean; suppressReconnect?: boolean }) => {
-      clearReconnectTimer()
-      stopRecordingInternal({ notifyServer: false })
-      playbackQueueRef.current = []
-      playbackBusyRef.current = false
-      authCompleteRef.current = false
-      sessionContextKeyRef.current = null
-      setIsReady(false)
-      setSessionId(null)
+      clearReconnectTimer();
+      stopRecordingInternal({ notifyServer: false });
+      playbackQueueRef.current = [];
+      playbackBusyRef.current = false;
+      authCompleteRef.current = false;
+      sessionContextKeyRef.current = null;
+      setIsReady(false);
+      setSessionId(null);
 
       if (options?.manual) {
-        manualDisconnectRef.current = true
+        manualDisconnectRef.current = true;
       }
 
       if (options?.suppressReconnect) {
-        shouldReconnectRef.current = false
+        shouldReconnectRef.current = false;
       }
 
-      const socket = socketRef.current
-      socketRef.current = null
+      const socket = socketRef.current;
+      socketRef.current = null;
 
       if (socket) {
-        socket.onopen = null
-        socket.onmessage = null
-        socket.onerror = null
-        socket.onclose = null
+        socket.onopen = null;
+        socket.onmessage = null;
+        socket.onerror = null;
+        socket.onclose = null;
 
-        if (
-          socket.readyState === WebSocket.OPEN ||
-          socket.readyState === WebSocket.CONNECTING
-        ) {
-          socket.close()
+        if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
+          socket.close();
         }
       }
     },
     [clearReconnectTimer, stopRecordingInternal],
-  )
+  );
 
   const connect = React.useCallback(async () => {
-    if (!enabled) return
+    if (!enabled) return;
     if (!wsUrl) {
-      setStatus('unconfigured')
-      setError('ANKOR_VOICE_AGENT_URL is missing.')
-      return
+      setStatus('unconfigured');
+      setError('ANKOR_VOICE_AGENT_URL is missing.');
+      return;
     }
     if (!sessionContext) {
-      setStatus('idle')
-      setError('Organization context is required before the voice agent can connect.')
-      return
+      setStatus('idle');
+      setError('Organization context is required before the voice agent can connect.');
+      return;
     }
 
-    const currentSocket = socketRef.current
+    const currentSocket = socketRef.current;
     if (
       connectingRef.current ||
       currentSocket?.readyState === WebSocket.OPEN ||
       currentSocket?.readyState === WebSocket.CONNECTING
     ) {
-      return
+      return;
     }
 
-    connectingRef.current = true
-    clearReconnectTimer()
-    manualDisconnectRef.current = false
-    setError(null)
-    setStatus(reconnectAttemptRef.current > 0 ? 'reconnecting' : 'connecting')
+    connectingRef.current = true;
+    clearReconnectTimer();
+    manualDisconnectRef.current = false;
+    setError(null);
+    setStatus(reconnectAttemptRef.current > 0 ? 'reconnecting' : 'connecting');
 
     try {
-      const session = await ensureValidSession()
-      const accessToken = session?.accessToken?.trim()
+      const session = await ensureValidSession();
+      const accessToken = session?.accessToken?.trim();
 
       if (!accessToken) {
-        throw new Error('Missing Supabase access token.')
+        throw new Error('Missing Supabase access token.');
       }
 
-      const socket = new WebSocket(wsUrl)
-      socketRef.current = socket
+      const socket = new WebSocket(wsUrl);
+      socketRef.current = socket;
 
       socket.onopen = () => {
-        if (socketRef.current !== socket) return
-        setStatus('authenticating')
+        if (socketRef.current !== socket) return;
+        setStatus('authenticating');
         socket.send(
           JSON.stringify({
             type: 'auth',
             access_token: accessToken,
           }),
-        )
-      }
+        );
+      };
 
       socket.onmessage = (event) => {
-        if (socketRef.current !== socket) return
+        if (socketRef.current !== socket) return;
 
-        let message: VoiceServerMessage
+        let message: VoiceServerMessage;
 
         try {
-          message = JSON.parse(event.data) as VoiceServerMessage
+          message = JSON.parse(event.data) as VoiceServerMessage;
         } catch {
-          setError('Received an invalid response from the voice agent.')
-          appendMessage(
-            'error',
-            'Received an invalid response from the voice agent.',
-            'event',
-          )
-          return
+          setError('Received an invalid response from the voice agent.');
+          appendMessage('error', 'Received an invalid response from the voice agent.', 'event');
+          return;
         }
 
         switch (message.type) {
           case 'auth_ok': {
-            authCompleteRef.current = true
-            reconnectAttemptRef.current = 0
-            setSessionId(message.session_id || null)
-            setError(null)
-            appendMessage('system', 'Voice agent connected.', 'event')
-            sendSessionInit()
-            break
+            authCompleteRef.current = true;
+            reconnectAttemptRef.current = 0;
+            setSessionId(message.session_id || null);
+            setError(null);
+            appendMessage('system', 'Voice agent connected.', 'event');
+            sendSessionInit();
+            break;
           }
 
           case 'auth_error': {
-            authCompleteRef.current = false
-            setIsReady(false)
-            setStatus('error')
-            setError(message.message || 'Voice agent authentication failed.')
+            authCompleteRef.current = false;
+            setIsReady(false);
+            setStatus('error');
+            setError(message.message || 'Voice agent authentication failed.');
             appendMessage(
               'error',
               message.message || 'Voice agent authentication failed.',
               'event',
-            )
-            break
+            );
+            break;
           }
 
           case 'state_update': {
-            setSummary(
-              normalizeSummary(
-                message.summary as Record<string, unknown> | undefined,
-              ),
-            )
-            break
+            setSummary(normalizeSummary(message.summary as Record<string, unknown> | undefined));
+            break;
           }
 
           case 'partial_transcript': {
-            setPartialTranscript(message.text || '')
-            break
+            setPartialTranscript(message.text || '');
+            break;
           }
 
           case 'final_transcript': {
-            const transcript = message.text || ''
-            setPartialTranscript('')
-            setFinalTranscript(transcript)
-            appendMessage('user', transcript, 'transcript')
-            break
+            const transcript = message.text || '';
+            setPartialTranscript('');
+            setFinalTranscript(transcript);
+            appendMessage('user', transcript, 'transcript');
+            break;
           }
 
           case 'agent_message': {
-            appendMessage('agent', message.text || '', 'text')
-            break
+            appendMessage('agent', message.text || '', 'text');
+            break;
           }
 
           case 'agent_audio_chunk': {
             if (message.data) {
-              enqueuePlayback(message.data, message.sample_rate_hz || 16000)
+              enqueuePlayback(message.data, message.sample_rate_hz || 16000);
             }
-            break
+            break;
           }
 
           case 'tool_call': {
-            appendMessage('system', `Tool call: ${message.name}`, 'event')
-            break
+            appendMessage('system', `Tool call: ${message.name}`, 'event');
+            break;
           }
 
           case 'tool_result': {
-            appendMessage('system', `Tool result: ${message.name}`, 'event')
-            break
+            appendMessage('system', `Tool result: ${message.name}`, 'event');
+            break;
           }
 
           case 'error': {
-            const nextError = message.message || 'Voice agent error.'
-            setError(nextError)
+            const nextError = message.message || 'Voice agent error.';
+            setError(nextError);
             appendMessage(
               'error',
               message.code ? `${message.code}: ${nextError}` : nextError,
               'event',
-            )
-            break
+            );
+            break;
           }
 
           case 'pong':
           default:
-            break
+            break;
         }
-      }
+      };
 
       socket.onerror = () => {
-        if (socketRef.current !== socket) return
-        setError('Voice agent socket error.')
-      }
+        if (socketRef.current !== socket) return;
+        setError('Voice agent socket error.');
+      };
 
       socket.onclose = () => {
         if (socketRef.current === socket) {
-          socketRef.current = null
+          socketRef.current = null;
         }
 
-        authCompleteRef.current = false
-        sessionContextKeyRef.current = null
-        setIsReady(false)
-        stopRecordingInternal({ notifyServer: false })
+        authCompleteRef.current = false;
+        sessionContextKeyRef.current = null;
+        setIsReady(false);
+        stopRecordingInternal({ notifyServer: false });
 
         if (!shouldReconnectRef.current || manualDisconnectRef.current) {
-          setStatus('disconnected')
-          return
+          setStatus('disconnected');
+          return;
         }
 
-        const attemptIndex = Math.min(
-          reconnectAttemptRef.current,
-          RECONNECT_DELAYS_MS.length - 1,
-        )
-        const delay = RECONNECT_DELAYS_MS[attemptIndex]
-        reconnectAttemptRef.current += 1
-        setStatus('reconnecting')
+        const attemptIndex = Math.min(reconnectAttemptRef.current, RECONNECT_DELAYS_MS.length - 1);
+        const delay = RECONNECT_DELAYS_MS[attemptIndex];
+        reconnectAttemptRef.current += 1;
+        setStatus('reconnecting');
         appendMessage(
           'system',
           `Voice agent disconnected. Retrying in ${Math.round(delay / 1000)}s.`,
           'event',
-        )
-        clearReconnectTimer()
+        );
+        clearReconnectTimer();
         reconnectTimerRef.current = window.setTimeout(() => {
-          reconnectTimerRef.current = null
-          void connect()
-        }, delay)
-      }
+          reconnectTimerRef.current = null;
+          void connect();
+        }, delay);
+      };
     } catch (err: any) {
-      setStatus('error')
-      setError(err?.message || 'Failed to connect to the voice agent.')
+      setStatus('error');
+      setError(err?.message || 'Failed to connect to the voice agent.');
 
       if (shouldReconnectRef.current && !manualDisconnectRef.current) {
-        const attemptIndex = Math.min(
-          reconnectAttemptRef.current,
-          RECONNECT_DELAYS_MS.length - 1,
-        )
-        const delay = RECONNECT_DELAYS_MS[attemptIndex]
-        reconnectAttemptRef.current += 1
-        clearReconnectTimer()
+        const attemptIndex = Math.min(reconnectAttemptRef.current, RECONNECT_DELAYS_MS.length - 1);
+        const delay = RECONNECT_DELAYS_MS[attemptIndex];
+        reconnectAttemptRef.current += 1;
+        clearReconnectTimer();
         reconnectTimerRef.current = window.setTimeout(() => {
-          reconnectTimerRef.current = null
-          void connect()
-        }, delay)
+          reconnectTimerRef.current = null;
+          void connect();
+        }, delay);
       }
     } finally {
-      connectingRef.current = false
+      connectingRef.current = false;
     }
   }, [
     appendMessage,
@@ -607,64 +574,64 @@ export function useVoiceAgent({
     sessionContext,
     stopRecordingInternal,
     wsUrl,
-  ])
+  ]);
 
   const disconnect = React.useCallback(() => {
-    shouldReconnectRef.current = false
-    reconnectAttemptRef.current = 0
-    disconnectInternal({ manual: true, suppressReconnect: true })
-    setStatus('disconnected')
-  }, [disconnectInternal])
+    shouldReconnectRef.current = false;
+    reconnectAttemptRef.current = 0;
+    disconnectInternal({ manual: true, suppressReconnect: true });
+    setStatus('disconnected');
+  }, [disconnectInternal]);
 
   const reconnect = React.useCallback(async () => {
-    shouldReconnectRef.current = true
-    reconnectAttemptRef.current = 0
-    disconnectInternal({ manual: false, suppressReconnect: false })
-    await connect()
-  }, [connect, disconnectInternal])
+    shouldReconnectRef.current = true;
+    reconnectAttemptRef.current = 0;
+    disconnectInternal({ manual: false, suppressReconnect: false });
+    await connect();
+  }, [connect, disconnectInternal]);
 
   const resetSession = React.useCallback(() => {
-    if (!isReady) return false
-    return sendSessionInit({ resetFirst: true, announceReset: true })
-  }, [isReady, sendSessionInit])
+    if (!isReady) return false;
+    return sendSessionInit({ resetFirst: true, announceReset: true });
+  }, [isReady, sendSessionInit]);
 
   const sendText = React.useCallback(
     async (text: string) => {
-      const trimmed = text.trim()
-      if (!trimmed) return false
+      const trimmed = text.trim();
+      if (!trimmed) return false;
 
       if (!isReady) {
-        setError('Voice agent is not connected yet.')
-        return false
+        setError('Voice agent is not connected yet.');
+        return false;
       }
 
-      await ensureAudioContext().catch(() => null)
+      await ensureAudioContext().catch(() => null);
 
-      const sent = sendRaw({ type: 'input_text', text: trimmed })
+      const sent = sendRaw({ type: 'input_text', text: trimmed });
       if (!sent) {
-        setError('Voice agent is not connected yet.')
-        return false
+        setError('Voice agent is not connected yet.');
+        return false;
       }
 
-      appendMessage('user', trimmed, 'text')
-      return true
+      appendMessage('user', trimmed, 'text');
+      return true;
     },
     [appendMessage, ensureAudioContext, isReady, sendRaw],
-  )
+  );
 
   const startRecording = React.useCallback(async () => {
     if (!isReady) {
-      throw new Error('Voice agent is not connected yet.')
+      throw new Error('Voice agent is not connected yet.');
     }
     if (!isMicSupported) {
-      throw new Error('Microphone streaming is not supported in this browser.')
+      throw new Error('Microphone streaming is not supported in this browser.');
     }
     if (isRecording) {
-      return
+      return;
     }
 
     try {
-      const audioContext = await ensureAudioContext()
+      const audioContext = await ensureAudioContext();
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           channelCount: 1,
@@ -672,15 +639,15 @@ export function useVoiceAgent({
           noiseSuppression: true,
           autoGainControl: true,
         },
-      })
+      });
 
-      const sourceNode = audioContext.createMediaStreamSource(stream)
-      const processorNode = audioContext.createScriptProcessor(2048, 1, 1)
+      const sourceNode = audioContext.createMediaStreamSource(stream);
+      const processorNode = audioContext.createScriptProcessor(2048, 1, 1);
 
       processorNode.onaudioprocess = (event) => {
-        const input = event.inputBuffer.getChannelData(0)
-        const downsampled = downsampleTo16k(input, audioContext.sampleRate)
-        const pcm16 = float32ToInt16(downsampled)
+        const input = event.inputBuffer.getChannelData(0);
+        const downsampled = downsampleTo16k(input, audioContext.sampleRate);
+        const pcm16 = float32ToInt16(downsampled);
 
         sendRaw({
           type: 'input_audio_chunk',
@@ -690,80 +657,80 @@ export function useVoiceAgent({
           format: 'pcm16le',
           seq: audioSequenceRef.current,
           timestamp_ms: Date.now(),
-        })
+        });
 
-        audioSequenceRef.current += 1
-      }
+        audioSequenceRef.current += 1;
+      };
 
-      sourceNode.connect(processorNode)
-      processorNode.connect(audioContext.destination)
+      sourceNode.connect(processorNode);
+      processorNode.connect(audioContext.destination);
 
-      micStreamRef.current = stream
-      sourceNodeRef.current = sourceNode
-      processorNodeRef.current = processorNode
-      setError(null)
-      setIsRecording(true)
+      micStreamRef.current = stream;
+      sourceNodeRef.current = sourceNode;
+      processorNodeRef.current = processorNode;
+      setError(null);
+      setIsRecording(true);
     } catch (err: any) {
-      stopRecordingInternal({ notifyServer: false })
-      setError(err?.message || 'Failed to access the microphone.')
-      throw err
+      stopRecordingInternal({ notifyServer: false });
+      setError(err?.message || 'Failed to access the microphone.');
+      throw err;
     }
-  }, [ensureAudioContext, isMicSupported, isReady, isRecording, sendRaw])
+  }, [ensureAudioContext, isMicSupported, isReady, isRecording, sendRaw]);
 
   React.useEffect(() => {
-    shouldReconnectRef.current = enabled
+    shouldReconnectRef.current = enabled;
 
     if (!enabled) {
-      disconnectInternal({ manual: true, suppressReconnect: true })
-      setStatus(isConfigured ? 'idle' : 'unconfigured')
-      return
+      disconnectInternal({ manual: true, suppressReconnect: true });
+      setStatus(isConfigured ? 'idle' : 'unconfigured');
+      return;
     }
 
     if (!isConfigured) {
-      disconnectInternal({ manual: true, suppressReconnect: true })
-      setStatus('unconfigured')
-      setError('ANKOR_VOICE_AGENT_URL is missing.')
-      return
+      disconnectInternal({ manual: true, suppressReconnect: true });
+      setStatus('unconfigured');
+      setError('ANKOR_VOICE_AGENT_URL is missing.');
+      return;
     }
 
     if (!sessionContext) {
-      disconnectInternal({ manual: true, suppressReconnect: true })
-      setStatus('idle')
-      return
+      disconnectInternal({ manual: true, suppressReconnect: true });
+      setStatus('idle');
+      return;
     }
 
-    void connect()
+    void connect();
 
     return () => {
-      shouldReconnectRef.current = false
-      disconnectInternal({ manual: true, suppressReconnect: true })
-    }
-  }, [connect, disconnectInternal, enabled, isConfigured, sessionContext])
+      shouldReconnectRef.current = false;
+      disconnectInternal({ manual: true, suppressReconnect: true });
+    };
+  }, [connect, disconnectInternal, enabled, isConfigured, sessionContext]);
 
   React.useEffect(() => {
     if (!isReady || !authCompleteRef.current || !sessionContext) {
-      return
+      return;
     }
 
     if (sessionContextKeyRef.current === sessionContextKey) {
-      return
+      return;
     }
 
-    sendSessionInit({ resetFirst: true, announceReset: true })
-  }, [isReady, sendSessionInit, sessionContext, sessionContextKey])
+    sendSessionInit({ resetFirst: true, announceReset: true });
+  }, [isReady, sendSessionInit, sessionContext, sessionContextKey]);
 
   React.useEffect(() => {
     return () => {
-      stopRecordingInternal({ notifyServer: false })
-      playbackQueueRef.current = []
-      playbackBusyRef.current = false
+      stopRecordingInternal({ notifyServer: false });
+      playbackQueueRef.current = [];
+      playbackBusyRef.current = false;
 
       if (audioContextRef.current) {
-        void audioContextRef.current.close().catch(() => undefined)
-        audioContextRef.current = null
+        void audioContextRef.current.close().catch(() => undefined);
+        audioContextRef.current = null;
       }
-    }
-  }, [stopRecordingInternal])
+    };
+  }, [stopRecordingInternal]);
 
   return {
     wsUrl,
@@ -785,5 +752,5 @@ export function useVoiceAgent({
     sendText,
     startRecording,
     stopRecording: () => stopRecordingInternal({ notifyServer: true }),
-  }
+  };
 }

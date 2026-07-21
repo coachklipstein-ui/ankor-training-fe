@@ -1,6 +1,6 @@
 // src/pages/EditEvaluationsPage.tsx
 
-import * as React from "react";
+import * as React from 'react';
 import {
   Box,
   Stack,
@@ -20,52 +20,50 @@ import {
   Collapse,
   Snackbar,
   Alert,
-} from "@mui/material";
-import { useTheme } from "@mui/material/styles";
-import { useAuth } from "../../../app/providers/AuthProvider";
-import EvaluationBulkActionsDialog from "../components/EvaluationBulkActionsDialog";
-import EvaluationColumnMenu from "../components/EvaluationColumnMenu";
-import EvaluationSubskillsDialog from "../components/EvaluationSubskillsDialog";
-import { useEvaluationLookups } from "../hooks/useEvaluationLookups";
-import { useSkillsDialog } from "../hooks/useSkillsDialog";
-import { getRatingScale } from "../utils/getRatingScale";
-import { mapTeamAthletesToAthletes } from "../utils/mapTeamAthletes";
+} from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { useAuth } from '../../../app/providers/AuthProvider';
+import EvaluationBulkActionsDialog from '../components/EvaluationBulkActionsDialog';
+import EvaluationColumnMenu from '../components/EvaluationColumnMenu';
+import EvaluationSubskillsDialog from '../components/EvaluationSubskillsDialog';
+import { useEvaluationLookups } from '../hooks/useEvaluationLookups';
+import { useSkillsDialog } from '../hooks/useSkillsDialog';
+import { getRatingScale } from '../utils/getRatingScale';
+import { mapTeamAthletesToAthletes } from '../utils/mapTeamAthletes';
 import type {
   Athlete,
   EvaluationsState,
   ScorecardCategory,
   ScorecardSubskill,
   SubskillEvaluationsState,
-} from "../types";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import { useNavigate, useParams } from "react-router-dom"; 
+} from '../types';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import { useNavigate, useParams } from 'react-router-dom';
 // ≡ƒö╣ Services
 import {
   listScorecardCategoriesByTemplate,
   listScorecardSubskillsByCategory,
-} from "../../scorecards/services/scorecardService";
-import { getAthletesByTeam } from "../../teams/services/teamsService";
+} from '../../scorecards/services/scorecardService';
+import { getAthletesByTeam } from '../../teams/services/teamsService';
 import {
   getEvaluationById,
   rpcBulkUpdateEvaluations,
   submitEvaluation,
   type EvaluationMatrixOperation,
-} from "../api/evaluationsApi";
+} from '../api/evaluationsApi';
 
 // ---------- Component ----------
 
-
 export default function EditEvaluationsPage() {
-const { id } = useParams<{ id: string }>(); // evaluation id from route
-const navigate = useNavigate();
-
+  const { id } = useParams<{ id: string }>(); // evaluation id from route
+  const navigate = useNavigate();
 
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { profile, coachId } = useAuth();
   const orgId = profile?.default_org_id?.trim() || null;
 
@@ -81,28 +79,25 @@ const navigate = useNavigate();
   >({});
 
   // ≡ƒö╣ UI selections
-  const [selectedScorecardId, setSelectedScorecardId] =
-    React.useState<string>("");
-  const [selectedTeamId, setSelectedTeamId] = React.useState<string>("");
+  const [selectedScorecardId, setSelectedScorecardId] = React.useState<string>('');
+  const [selectedTeamId, setSelectedTeamId] = React.useState<string>('');
   const [selectedAthletes, setSelectedAthletes] = React.useState<Athlete[]>([]);
 
   // Γ£à Mobile: active athlete/category controls
-  const [activeAthleteId, setActiveAthleteId] = React.useState<string | null>(
-    null,
-  );
+  const [activeAthleteId, setActiveAthleteId] = React.useState<string | null>(null);
   const [activeCategoryIndex, setActiveCategoryIndex] = React.useState(0);
-  const [expandedSubskillsByCategory, setExpandedSubskillsByCategory] =
-    React.useState<Record<string, boolean>>({});
+  const [expandedSubskillsByCategory, setExpandedSubskillsByCategory] = React.useState<
+    Record<string, boolean>
+  >({});
 
   // ≡ƒö╣ Evaluations
   const [evaluations, setEvaluations] = React.useState<EvaluationsState>({});
-  const [subskillEvaluations, setSubskillEvaluations] =
-    React.useState<SubskillEvaluationsState>({});
+  const [subskillEvaluations, setSubskillEvaluations] = React.useState<SubskillEvaluationsState>(
+    {},
+  );
 
   // ≡ƒö╣ Original snapshot (for diffing)
-  const [originalAthleteIds, setOriginalAthleteIds] = React.useState<string[]>(
-    [],
-  );
+  const [originalAthleteIds, setOriginalAthleteIds] = React.useState<string[]>([]);
   const [originalSubskillEvaluations, setOriginalSubskillEvaluations] =
     React.useState<SubskillEvaluationsState>({});
 
@@ -116,18 +111,14 @@ const navigate = useNavigate();
   const [loadingDetail, setLoadingDetail] = React.useState(false);
   const [detailError, setDetailError] = React.useState<string | null>(null);
 
-
   const [toastOpen, setToastOpen] = React.useState(false);
-  const [toastMessage, setToastMessage] = React.useState("");
+  const [toastMessage, setToastMessage] = React.useState('');
   const [toastSeverity, setToastSeverity] = React.useState<
-    "success" | "error" | "info" | "warning"
-  >("success");
+    'success' | 'error' | 'info' | 'warning'
+  >('success');
 
   const showToast = React.useCallback(
-    (
-      message: string,
-      severity: "success" | "error" | "info" | "warning" = "success",
-    ) => {
+    (message: string, severity: 'success' | 'error' | 'info' | 'warning' = 'success') => {
       setToastMessage(message);
       setToastSeverity(severity);
       setToastOpen(true);
@@ -135,22 +126,18 @@ const navigate = useNavigate();
     [],
   );
 
-
   // ≡ƒö╣ Bulk actions dialog state
   const [bulkDialogOpen, setBulkDialogOpen] = React.useState(false);
-  const [bulkValue, setBulkValue] = React.useState<number | "">("");
-  const [bulkSelectedAthleteIds, setBulkSelectedAthleteIds] = React.useState<
-    string[]
-  >([]);
-  const [bulkSourceAthleteId, setBulkSourceAthleteId] =
-    React.useState<string | null>(null);
+  const [bulkValue, setBulkValue] = React.useState<number | ''>('');
+  const [bulkSelectedAthleteIds, setBulkSelectedAthleteIds] = React.useState<string[]>([]);
+  const [bulkSourceAthleteId, setBulkSourceAthleteId] = React.useState<string | null>(null);
   const [bulkCategoryIds, setBulkCategoryIds] = React.useState<string[]>([]);
 
   // ---------- Load existing evaluation detail ----------
 
   React.useEffect(() => {
     if (!id) {
-      setDetailError("Missing evaluation id in route");
+      setDetailError('Missing evaluation id in route');
       return;
     }
     if (!orgId) {
@@ -164,9 +151,9 @@ const navigate = useNavigate();
 
         const detail = await getEvaluationById(id, { orgId });
 
-        const templateId = detail.template_id ?? "";
+        const templateId = detail.template_id ?? '';
         setSelectedScorecardId(templateId);
-        setSelectedTeamId(detail.teams_id ?? "");
+        setSelectedTeamId(detail.teams_id ?? '');
 
         const categories = (detail.categories ?? []) as ScorecardCategory[];
         setCategoriesByTemplate((prev) => ({
@@ -177,13 +164,12 @@ const navigate = useNavigate();
         // Map athletes from detail
         const mappedAthletes: Athlete[] = (detail.athletes ?? []).map((a) => {
           const fullName =
-            [a.first_name, a.last_name].filter(Boolean).join(" ") ||
-            "Unnamed athlete";
+            [a.first_name, a.last_name].filter(Boolean).join(' ') || 'Unnamed athlete';
 
           return {
             id: a.id,
             full_name: fullName,
-            team_id: detail.teams_id ?? "",
+            team_id: detail.teams_id ?? '',
           };
         });
 
@@ -213,7 +199,7 @@ const navigate = useNavigate();
         const subskillToCategory = new Map<string, string>();
 
         for (const r of subskillResults) {
-          if (r.status === "fulfilled") {
+          if (r.status === 'fulfilled') {
             const { categoryId, subskills } = r.value;
             const casted = subskills as ScorecardSubskill[];
             nextSubskillsByCategory[categoryId] = casted;
@@ -244,8 +230,7 @@ const navigate = useNavigate();
           if (prev == null) {
             evalState[item.athlete_id][categoryId] = item.rating ?? null;
           } else if (item.rating != null) {
-            evalState[item.athlete_id][categoryId] =
-              (Number(prev) + Number(item.rating)) / 2;
+            evalState[item.athlete_id][categoryId] = (Number(prev) + Number(item.rating)) / 2;
           }
 
           if (!subskillEvalState[item.athlete_id]) {
@@ -260,8 +245,8 @@ const navigate = useNavigate();
         setSubskillEvaluations(subskillEvalState);
         setOriginalSubskillEvaluations(subskillEvalState);
       } catch (err) {
-        console.error("Failed to load evaluation detail", err);
-        setDetailError("Failed to load evaluation");
+        console.error('Failed to load evaluation detail', err);
+        setDetailError('Failed to load evaluation');
       } finally {
         setLoadingDetail(false);
       }
@@ -278,10 +263,7 @@ const navigate = useNavigate();
   );
 
   const activeCategories: ScorecardCategory[] = React.useMemo(
-    () =>
-      selectedScorecardId
-        ? categoriesByTemplate[selectedScorecardId] ?? []
-        : [],
+    () => (selectedScorecardId ? (categoriesByTemplate[selectedScorecardId] ?? []) : []),
     [categoriesByTemplate, selectedScorecardId],
   );
 
@@ -352,9 +334,7 @@ const navigate = useNavigate();
 
   const currentCategory =
     activeCategories.length > 0
-      ? activeCategories[
-          Math.min(activeCategoryIndex, activeCategories.length - 1)
-        ]
+      ? activeCategories[Math.min(activeCategoryIndex, activeCategories.length - 1)]
       : null;
 
   const currentSubskills =
@@ -381,7 +361,7 @@ const navigate = useNavigate();
           [categoryId]: (skills ?? []) as ScorecardSubskill[],
         }));
       } catch (err) {
-        console.error("Failed to lazy-load subskills (mobile)", err);
+        console.error('Failed to lazy-load subskills (mobile)', err);
         setSubskillsByCategory((prev) => ({ ...prev, [categoryId]: [] }));
       }
     },
@@ -406,12 +386,7 @@ const navigate = useNavigate();
   );
 
   const handleMobileSubskillRatingChange = React.useCallback(
-    (
-      athleteId: string,
-      categoryId: string,
-      subskillId: string,
-      rating: number | null,
-    ) => {
+    (athleteId: string, categoryId: string, subskillId: string, rating: number | null) => {
       const baseline = evaluations[athleteId]?.[categoryId] ?? null;
 
       setSubskillEvaluations((prev) => {
@@ -443,12 +418,13 @@ const navigate = useNavigate();
     [evaluations],
   );
 
-  const mobileExpanded =
-    currentCategory ? !!expandedSubskillsByCategory[currentCategory.id] : false;
+  const mobileExpanded = currentCategory
+    ? !!expandedSubskillsByCategory[currentCategory.id]
+    : false;
 
   const mobileCategoryScore =
     activeAthleteId && currentCategory
-      ? evaluations[activeAthleteId]?.[currentCategory.id] ?? null
+      ? (evaluations[activeAthleteId]?.[currentCategory.id] ?? null)
       : null;
 
   const activeAthlete = React.useMemo(
@@ -460,20 +436,15 @@ const navigate = useNavigate();
     if (!isMobile || !currentCategory) return;
     if (!expandedSubskillsByCategory[currentCategory.id]) return;
     void ensureMobileSubskillsLoaded(currentCategory.id);
-  }, [
-    isMobile,
-    currentCategory?.id,
-    expandedSubskillsByCategory,
-    ensureMobileSubskillsLoaded,
-  ]);
+  }, [isMobile, currentCategory?.id, expandedSubskillsByCategory, ensureMobileSubskillsLoaded]);
 
   // ---------- Columns & rows ----------
 
   const columns: GridColDef[] = React.useMemo(() => {
     const baseColumns: GridColDef[] = [
       {
-        field: "categoryName",
-        headerName: "Category",
+        field: 'categoryName',
+        headerName: 'Category',
         flex: 1.4,
         sortable: false,
       },
@@ -485,7 +456,7 @@ const navigate = useNavigate();
       flex: 1,
       sortable: false,
       editable: true,
-      type: "number",
+      type: 'number',
       valueParser: (value) => {
         const num = Number(value);
         return Number.isNaN(num) ? null : num;
@@ -498,13 +469,14 @@ const navigate = useNavigate();
   const rows = React.useMemo(
     () =>
       activeCategories.map((cat) => {
-        const scoresByAthlete = selectedAthletes.reduce<
-          Record<string, number | null>
-        >((acc, athlete) => {
-          const evalForAthlete = evaluations[athlete.id] ?? {};
-          acc[athlete.id] = evalForAthlete[cat.id] ?? null;
-          return acc;
-        }, {});
+        const scoresByAthlete = selectedAthletes.reduce<Record<string, number | null>>(
+          (acc, athlete) => {
+            const evalForAthlete = evaluations[athlete.id] ?? {};
+            acc[athlete.id] = evalForAthlete[cat.id] ?? null;
+            return acc;
+          },
+          {},
+        );
 
         return {
           id: cat.id,
@@ -533,7 +505,7 @@ const navigate = useNavigate();
       if (!changedField) return newRow;
 
       if (newValue !== null && (newValue < 1 || newValue > 5)) {
-        window.alert("Values should be from 1 to 5.");
+        window.alert('Values should be from 1 to 5.');
         return oldRow;
       }
 
@@ -584,7 +556,7 @@ const navigate = useNavigate();
     (athleteField: string) => {
       setBulkSourceAthleteId(athleteField);
       setBulkDialogOpen(true);
-      setBulkValue("");
+      setBulkValue('');
       setBulkSelectedAthleteIds(selectedAthletes.map((a) => a.id));
       setBulkCategoryIds(activeCategories.map((c) => c.id));
     },
@@ -593,9 +565,7 @@ const navigate = useNavigate();
 
   const handleToggleBulkAthlete = (athleteId: string) => {
     setBulkSelectedAthleteIds((prev) =>
-      prev.includes(athleteId)
-        ? prev.filter((id) => id !== athleteId)
-        : [...prev, athleteId],
+      prev.includes(athleteId) ? prev.filter((id) => id !== athleteId) : [...prev, athleteId],
     );
   };
 
@@ -608,11 +578,7 @@ const navigate = useNavigate();
   };
 
   const handleApplyBulkEvaluation = () => {
-    if (
-      bulkValue === "" ||
-      bulkSelectedAthleteIds.length === 0 ||
-      bulkCategoryIds.length === 0
-    ) {
+    if (bulkValue === '' || bulkSelectedAthleteIds.length === 0 || bulkCategoryIds.length === 0) {
       setBulkDialogOpen(false);
       return;
     }
@@ -695,7 +661,7 @@ const navigate = useNavigate();
         setSubskillsByCategory((prev) => {
           const next = { ...prev };
           for (const r of results) {
-            if (r.status === "fulfilled") {
+            if (r.status === 'fulfilled') {
               const { categoryId, subskills } = r.value;
               next[categoryId] = subskills as ScorecardSubskill[];
             }
@@ -703,7 +669,7 @@ const navigate = useNavigate();
           return next;
         });
       } catch (err) {
-        console.error("Failed to load scorecard categories/subskills", err);
+        console.error('Failed to load scorecard categories/subskills', err);
       }
     })();
   };
@@ -727,7 +693,7 @@ const navigate = useNavigate();
         setAthletes(mapped);
         setSelectedAthletes(mapped);
       } catch (err) {
-        console.error("Failed to load athletes for team", err);
+        console.error('Failed to load athletes for team', err);
         setAthletes([]);
         setSelectedAthletes([]);
       }
@@ -737,32 +703,26 @@ const navigate = useNavigate();
   // ≡ƒö╣ Save (matrix PATCH) in "operations: [ ... ]" shape
   const handleSaveEvaluations = async () => {
     if (!id) {
-      console.warn("No evaluation id provided in route");
+      console.warn('No evaluation id provided in route');
       return;
     }
 
-    if (
-      !selectedScorecardId ||
-      selectedAthletes.length === 0 ||
-      activeCategories.length === 0
-    ) {
-      console.warn(
-        "Nothing to save: missing scorecard, athletes, or categories",
-      );
+    if (!selectedScorecardId || selectedAthletes.length === 0 || activeCategories.length === 0) {
+      console.warn('Nothing to save: missing scorecard, athletes, or categories');
       return;
     }
 
     if (!orgId) {
-      console.warn("Missing org_id from profile.");
+      console.warn('Missing org_id from profile.');
       return;
     }
     if (!coachId) {
-      console.warn("Missing coach id from profile.");
+      console.warn('Missing coach id from profile.');
       return;
     }
 
     if (hasExceededLowRatings) {
-      showToast("You can only give 5 ratings below 3.", "error");
+      showToast('You can only give 5 ratings below 3.', 'error');
       return;
     }
 
@@ -776,7 +736,7 @@ const navigate = useNavigate();
       originalAthleteIds.forEach((athleteId) => {
         if (!currentAthleteIds.has(athleteId)) {
           operations.push({
-            type: "remove_athlete",
+            type: 'remove_athlete',
             athlete_id: athleteId,
           });
         }
@@ -802,9 +762,7 @@ const navigate = useNavigate();
             const currentRating = currentSubskillRating ?? categoryScore ?? null;
 
             const previousRating =
-              originalSubskillEvaluations[athleteId]?.[categoryId]?.[
-                subskillId
-              ] ?? null;
+              originalSubskillEvaluations[athleteId]?.[categoryId]?.[subskillId] ?? null;
 
             // Case 1: nothing before, nothing now -> no-op
             if (currentRating == null && previousRating == null) {
@@ -814,7 +772,7 @@ const navigate = useNavigate();
             // Case 2: there WAS a rating, now cleared -> send rating: null to delete
             if (currentRating == null && previousRating != null) {
               operations.push({
-                type: "upsert_rating",
+                type: 'upsert_rating',
                 athlete_id: athleteId,
                 subskill_id: subskillId,
                 rating: null,
@@ -829,7 +787,7 @@ const navigate = useNavigate();
               if (Number.isNaN(ratingNum)) return;
 
               operations.push({
-                type: "upsert_rating",
+                type: 'upsert_rating',
                 athlete_id: athleteId,
                 subskill_id: subskillId,
                 rating: ratingNum,
@@ -841,7 +799,7 @@ const navigate = useNavigate();
       });
 
       if (operations.length === 0) {
-        console.warn("Nothing to save: no matrix operations built");
+        console.warn('Nothing to save: no matrix operations built');
         return;
       }
 
@@ -856,21 +814,21 @@ const navigate = useNavigate();
 
       const updated = await rpcBulkUpdateEvaluations(id, payload, { orgId });
 
-    // TODO: toast / navigate back if you want
+      // TODO: toast / navigate back if you want
     } catch (err) {
-      console.error("Failed to update evaluation", err);
+      console.error('Failed to update evaluation', err);
     } finally {
       setSaving(false);
     }
   };
   const handleSubmitEvaluation = async () => {
     if (!id) {
-      console.warn("No evaluation id provided in route");
+      console.warn('No evaluation id provided in route');
       return;
     }
 
     if (hasExceededLowRatings) {
-      showToast("You can only give 5 ratings below 3.", "error");
+      showToast('You can only give 5 ratings below 3.', 'error');
       return;
     }
 
@@ -878,21 +836,19 @@ const navigate = useNavigate();
       setSubmitting(true);
       await submitEvaluation(id, { orgId });
 
-      showToast("Evaluation has been completed successfully.", "success");
+      showToast('Evaluation has been completed successfully.', 'success');
 
       // Navigate to evaluations list page after a short delay (so user sees the toast)
       window.setTimeout(() => {
-        navigate("/evaluations", { replace: true });
+        navigate('/evaluations', { replace: true });
       }, 900);
     } catch (err) {
-      console.error("Failed to submit evaluation", err);
-      showToast("Failed to submit evaluation.", "error");
+      console.error('Failed to submit evaluation', err);
+      showToast('Failed to submit evaluation.', 'error');
     } finally {
       setSubmitting(false);
     }
   };
-
-
 
   return (
     <Box sx={{ p: 3 }}>
@@ -914,7 +870,7 @@ const navigate = useNavigate();
 
         {/* Step 1 & 2: Filters / Selections */}
         <Paper sx={{ p: 2 }}>
-          <Stack spacing={2} direction={{ xs: "column", md: "row" }}>
+          <Stack spacing={2} direction={{ xs: 'column', md: 'row' }}>
             {/* 1. Pick Scorecard */}
             <TextField
               select
@@ -974,11 +930,7 @@ const navigate = useNavigate();
               }}
               renderTags={(value, getTagProps) =>
                 value.map((option, index) => (
-                  <Chip
-                    {...getTagProps({ index })}
-                    key={option.id}
-                    label={option.full_name}
-                  />
+                  <Chip {...getTagProps({ index })} key={option.id} label={option.full_name} />
                 ))
               }
               renderInput={(params) => (
@@ -986,9 +938,7 @@ const navigate = useNavigate();
                   {...params}
                   label="Athletes to evaluate"
                   placeholder={
-                    selectedTeamId
-                      ? "All team athletes selected by default"
-                      : "Select athletes"
+                    selectedTeamId ? 'All team athletes selected by default' : 'Select athletes'
                   }
                 />
               )}
@@ -997,14 +947,13 @@ const navigate = useNavigate();
           </Stack>
 
           <Typography variant="body2" sx={{ mt: 1 }} color="text.secondary">
-            Edit the evaluation matrix. Rows are categories, columns are athletes.
-            If a score is less than 3, you&apos;ll see the key subskills for that
-            category.
+            Edit the evaluation matrix. Rows are categories, columns are athletes. If a score is
+            less than 3, you&apos;ll see the key subskills for that category.
           </Typography>
         </Paper>
 
         {/* Save button */}
-        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
           <Button
             variant="contained"
             color="primary"
@@ -1016,23 +965,23 @@ const navigate = useNavigate();
               activeCategories.length === 0
             }
           >
-            {saving ? "Saving" : "Update evaluation"}
+            {saving ? 'Saving' : 'Update evaluation'}
           </Button>
-           <Button
-              variant="contained"
-              color="success"
-              onClick={handleSubmitEvaluation}
-              disabled={
-                submitting ||
-                saving ||
-                !id ||
-                !selectedScorecardId ||
-                selectedAthletes.length === 0 ||
-                activeCategories.length === 0
-              }
-            >
-              {submitting ? "Submitting" : "Submit evaluation"}
-            </Button>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={handleSubmitEvaluation}
+            disabled={
+              submitting ||
+              saving ||
+              !id ||
+              !selectedScorecardId ||
+              selectedAthletes.length === 0 ||
+              activeCategories.length === 0
+            }
+          >
+            {submitting ? 'Submitting' : 'Submit evaluation'}
+          </Button>
         </Box>
 
         {/* Step 3: Mobile view OR Matrix Category ├ù Athletes */}
@@ -1052,13 +1001,13 @@ const navigate = useNavigate();
               <Stack
                 direction="row"
                 spacing={2}
-                sx={{ alignItems: "stretch", overflowX: "auto", pb: 1 }}
+                sx={{ alignItems: 'stretch', overflowX: 'auto', pb: 1 }}
               >
                 <Box sx={{ minWidth: 180, flexShrink: 0 }}>
                   <Typography variant="subtitle2" gutterBottom>
                     Athletes
                   </Typography>
-                  <Paper variant="outlined" sx={{ maxHeight: 440, overflow: "auto" }}>
+                  <Paper variant="outlined" sx={{ maxHeight: 440, overflow: 'auto' }}>
                     <List dense disablePadding>
                       {selectedAthletes.map((athlete) => (
                         <ListItemButton
@@ -1075,12 +1024,12 @@ const navigate = useNavigate();
 
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   {currentCategory ? (
-                    <Stack spacing={2} sx={{ height: "100%" }}>
+                    <Stack spacing={2} sx={{ height: '100%' }}>
                       <Box>
                         <Typography
                           variant="overline"
                           color="text.secondary"
-                          sx={{ display: "block" }}
+                          sx={{ display: 'block' }}
                         >
                           Category {activeCategoryIndex + 1} of {activeCategories.length}
                         </Typography>
@@ -1098,7 +1047,7 @@ const navigate = useNavigate();
                         <Typography
                           variant="caption"
                           color="text.secondary"
-                          sx={{ display: "block", mb: 0.5 }}
+                          sx={{ display: 'block', mb: 0.5 }}
                         >
                           Category rating (baseline)
                         </Typography>
@@ -1107,7 +1056,7 @@ const navigate = useNavigate();
                           color="text.primary"
                           sx={{ mb: 1, fontWeight: 600 }}
                         >
-                          {activeAthlete?.full_name ?? "None"}
+                          {activeAthlete?.full_name ?? 'None'}
                         </Typography>
 
                         <ToggleButtonGroup
@@ -1131,7 +1080,7 @@ const navigate = useNavigate();
                             <ToggleButton
                               key={val}
                               value={val}
-                              sx={{ borderRadius: "50%", width: 36, height: 36, m: 0.5 }}
+                              sx={{ borderRadius: '50%', width: 36, height: 36, m: 0.5 }}
                             >
                               {val}
                             </ToggleButton>
@@ -1144,8 +1093,7 @@ const navigate = useNavigate();
                         variant="outlined"
                         onClick={() => {
                           if (!currentCategory) return;
-                          const nextExpanded =
-                            !expandedSubskillsByCategory[currentCategory.id];
+                          const nextExpanded = !expandedSubskillsByCategory[currentCategory.id];
                           setExpandedSubskillsByCategory((prev) => ({
                             ...prev,
                             [currentCategory.id]: nextExpanded,
@@ -1155,7 +1103,7 @@ const navigate = useNavigate();
                         endIcon={mobileExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                         disabled={!currentCategory}
                       >
-                        {mobileExpanded ? "Hide subskills" : "Show subskills"}
+                        {mobileExpanded ? 'Hide subskills' : 'Show subskills'}
                       </Button>
 
                       <Collapse in={mobileExpanded} timeout="auto" unmountOnExit>
@@ -1175,9 +1123,7 @@ const navigate = useNavigate();
                               .map((skill) => {
                                 const overridesForAthlete =
                                   (activeAthleteId &&
-                                    subskillEvaluations[activeAthleteId]?.[
-                                      currentCategory.id
-                                    ]) ??
+                                    subskillEvaluations[activeAthleteId]?.[currentCategory.id]) ??
                                   {};
 
                                 const baseline =
@@ -1193,7 +1139,10 @@ const navigate = useNavigate();
                                   baseline ??
                                   null;
 
-                                const ratingScale = getRatingScale(skill.rating_min, skill.rating_max);
+                                const ratingScale = getRatingScale(
+                                  skill.rating_min,
+                                  skill.rating_max,
+                                );
 
                                 return (
                                   <Paper key={subskillId} variant="outlined" sx={{ p: 1.5 }}>
@@ -1204,7 +1153,7 @@ const navigate = useNavigate();
                                       <Typography
                                         variant="caption"
                                         color="text.secondary"
-                                        sx={{ display: "block", mb: 0.5 }}
+                                        sx={{ display: 'block', mb: 0.5 }}
                                       >
                                         {skill.description}
                                       </Typography>
@@ -1231,7 +1180,7 @@ const navigate = useNavigate();
                                           key={val}
                                           value={val}
                                           sx={{
-                                            borderRadius: "50%",
+                                            borderRadius: '50%',
                                             width: 36,
                                             height: 36,
                                             m: 0.5,
@@ -1250,19 +1199,17 @@ const navigate = useNavigate();
 
                       <Box
                         sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
+                          display: 'flex',
+                          justifyContent: 'space-between',
                           gap: 1,
-                          mt: "auto",
+                          mt: 'auto',
                         }}
                       >
                         <Button
                           variant="outlined"
                           startIcon={<ChevronLeftIcon />}
                           disabled={!hasPreviousCategory}
-                          onClick={() =>
-                            setActiveCategoryIndex((prev) => Math.max(prev - 1, 0))
-                          }
+                          onClick={() => setActiveCategoryIndex((prev) => Math.max(prev - 1, 0))}
                         >
                           Previous
                         </Button>
@@ -1293,7 +1240,7 @@ const navigate = useNavigate();
                               activeCategories.length === 0
                             }
                           >
-                            {saving ? "Saving..." : "Update"}
+                            {saving ? 'Saving...' : 'Update'}
                           </Button>
                         )}
                       </Box>
@@ -1342,17 +1289,16 @@ const navigate = useNavigate();
             ) : (
               <Box
                 sx={{
-                  height: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  textAlign: "center",
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  textAlign: 'center',
                   px: 2,
                 }}
               >
                 <Typography variant="body1" color="text.secondary">
-                  Select a scorecard and at least one athlete to render the
-                  evaluation matrix.
+                  Select a scorecard and at least one athlete to render the evaluation matrix.
                 </Typography>
               </Box>
             )}
@@ -1396,13 +1342,13 @@ const navigate = useNavigate();
         open={toastOpen}
         autoHideDuration={3500}
         onClose={() => setToastOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert
           onClose={() => setToastOpen(false)}
           severity={toastSeverity}
           variant="filled"
-          sx={{ width: "100%" }}
+          sx={{ width: '100%' }}
         >
           {toastMessage}
         </Alert>

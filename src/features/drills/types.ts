@@ -21,9 +21,4 @@ export type DrillCard = {
   thumbnail_url?: string | null;
 };
 
-export type DrillFilterField =
-  | "segmentId"
-  | "minAge"
-  | "maxAge"
-  | "minPlayers"
-  | "maxPlayers";
+export type DrillFilterField = 'segmentId' | 'minAge' | 'maxAge' | 'minPlayers' | 'maxPlayers';

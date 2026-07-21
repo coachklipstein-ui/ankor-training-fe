@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Box,
   Button,
@@ -13,23 +13,23 @@ import {
   Stack,
   TextField,
   Typography,
-} from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import SearchIcon from "@mui/icons-material/Search";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../app/providers/AuthProvider";
+} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import SearchIcon from '@mui/icons-material/Search';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
 import {
   deleteScorecardTemplate,
   listScorecardTemplatesPage,
   type ScorecardTemplateRow,
-} from "../services/scorecardService";
-import { SPORT_LOOKUP } from "../../teams/constants";
+} from '../services/scorecardService';
+import { SPORT_LOOKUP } from '../../teams/constants';
 
 const PAGE_SIZE = 10;
 
 const formatDateTime = (value?: string | null) => {
-  if (!value) return "";
+  if (!value) return '';
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return value;
   return d.toLocaleString();
@@ -38,17 +38,17 @@ const formatDateTime = (value?: string | null) => {
 const statusChip = (isActive: boolean) => (
   <Chip
     size="small"
-    label={isActive ? "Active" : "Inactive"}
-    color={isActive ? "success" : "default"}
-    variant={isActive ? "filled" : "outlined"}
+    label={isActive ? 'Active' : 'Inactive'}
+    color={isActive ? 'success' : 'default'}
+    variant={isActive ? 'filled' : 'outlined'}
   />
 );
 
 export default function ScorecardListPage() {
   const navigate = useNavigate();
   const { orgId, loading: authLoading } = useAuth();
-  const [searchText, setSearchText] = React.useState("");
-  const [searchQuery, setSearchQuery] = React.useState("");
+  const [searchText, setSearchText] = React.useState('');
+  const [searchQuery, setSearchQuery] = React.useState('');
   const [page, setPage] = React.useState(1);
   const [rows, setRows] = React.useState<ScorecardTemplateRow[]>([]);
   const [totalCount, setTotalCount] = React.useState<number | null>(null);
@@ -71,11 +71,11 @@ export default function ScorecardListPage() {
     if (authLoading) return;
     let active = true;
 
-    const resolvedOrgId = orgId?.trim() || "";
+    const resolvedOrgId = orgId?.trim() || '';
     if (!resolvedOrgId) {
       setRows([]);
       setTotalCount(0);
-      setLoadError("Missing org_id for this account.");
+      setLoadError('Missing org_id for this account.');
       return () => {
         active = false;
       };
@@ -93,13 +93,13 @@ export default function ScorecardListPage() {
       .then(({ items, count }) => {
         if (!active) return;
         setRows(items ?? []);
-        setTotalCount(typeof count === "number" ? count : items.length);
+        setTotalCount(typeof count === 'number' ? count : items.length);
       })
       .catch((err: any) => {
         if (!active) return;
         setRows([]);
         setTotalCount(0);
-        setLoadError(err?.message || "Failed to load scorecard templates.");
+        setLoadError(err?.message || 'Failed to load scorecard templates.');
       })
       .finally(() => {
         if (active) setIsLoading(false);
@@ -110,7 +110,7 @@ export default function ScorecardListPage() {
     };
   }, [authLoading, orgId, page, searchQuery]);
 
-  const total = typeof totalCount === "number" ? totalCount : rows.length;
+  const total = typeof totalCount === 'number' ? totalCount : rows.length;
   const totalPages = total > 0 ? Math.ceil(total / PAGE_SIZE) : 0;
 
   React.useEffect(() => {
@@ -122,24 +122,27 @@ export default function ScorecardListPage() {
   const rangeStart = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
   const rangeEnd = total === 0 ? 0 : Math.min(page * PAGE_SIZE, total);
 
-  const headerLabel = isLoading && rows.length === 0
-    ? "Loading scorecards..."
-    : total > 0
-      ? `${total} template${total === 1 ? "" : "s"}`
-      : "No scorecard templates";
+  const headerLabel =
+    isLoading && rows.length === 0
+      ? 'Loading scorecards...'
+      : total > 0
+        ? `${total} template${total === 1 ? '' : 's'}`
+        : 'No scorecard templates';
 
   const emptyMessage = searchText.trim()
     ? `No scorecards match "${searchText.trim()}".`
-    : "No scorecard templates found.";
+    : 'No scorecard templates found.';
 
   const handleDelete = async (template: ScorecardTemplateRow) => {
-    const resolvedOrgId = orgId?.trim() || "";
+    const resolvedOrgId = orgId?.trim() || '';
     if (!resolvedOrgId) {
-      setLoadError("Missing org_id for this account.");
+      setLoadError('Missing org_id for this account.');
       return;
     }
 
-    const confirmed = window.confirm(`Delete scorecard template "${template.name || template.id}"?`);
+    const confirmed = window.confirm(
+      `Delete scorecard template "${template.name || template.id}"?`,
+    );
     if (!confirmed) return;
 
     setDeletingId(template.id);
@@ -148,10 +151,10 @@ export default function ScorecardListPage() {
       await deleteScorecardTemplate(template.id, { orgId: resolvedOrgId });
       setRows((current) => current.filter((item) => item.id !== template.id));
       setTotalCount((current) =>
-        typeof current === "number" ? Math.max(0, current - 1) : current,
+        typeof current === 'number' ? Math.max(0, current - 1) : current,
       );
     } catch (err: any) {
-      setLoadError(err?.message || "Failed to delete scorecard template.");
+      setLoadError(err?.message || 'Failed to delete scorecard template.');
     } finally {
       setDeletingId(null);
     }
@@ -159,10 +162,10 @@ export default function ScorecardListPage() {
 
   return (
     <Box sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
-      <Stack spacing={2} sx={{ maxWidth: 1100, mx: "auto" }}>
+      <Stack spacing={2} sx={{ maxWidth: 1100, mx: 'auto' }}>
         <Stack
-          direction={{ xs: "column", sm: "row" }}
-          alignItems={{ xs: "flex-start", sm: "center" }}
+          direction={{ xs: 'column', sm: 'row' }}
+          alignItems={{ xs: 'flex-start', sm: 'center' }}
           justifyContent="space-between"
           spacing={1.5}
         >
@@ -177,7 +180,7 @@ export default function ScorecardListPage() {
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() => navigate("/scorecards/new")}
+            onClick={() => navigate('/scorecards/new')}
           >
             New template
           </Button>
@@ -199,7 +202,7 @@ export default function ScorecardListPage() {
           sx={{ maxWidth: 520 }}
         />
 
-        <Paper variant="outlined" sx={{ overflow: "hidden" }}>
+        <Paper variant="outlined" sx={{ overflow: 'hidden' }}>
           {isLoading && rows.length === 0 ? (
             <Box sx={{ p: 2 }}>
               <Typography variant="body2" color="text.secondary">
@@ -228,10 +231,10 @@ export default function ScorecardListPage() {
                     ? `Updated ${updated}`
                     : created
                       ? `Created ${created}`
-                      : "";
+                      : '';
                 const sportLabel = row.sport_id
-                  ? SPORT_LOOKUP[row.sport_id] ?? "Unknown sport"
-                  : "";
+                  ? (SPORT_LOOKUP[row.sport_id] ?? 'Unknown sport')
+                  : '';
 
                 return (
                   <React.Fragment key={row.id}>
@@ -260,11 +263,11 @@ export default function ScorecardListPage() {
                           </Stack>
 
                           <Typography variant="body2" color="text.secondary">
-                            {row.description?.trim() || "No description."}
+                            {row.description?.trim() || 'No description.'}
                           </Typography>
 
                           {sportLabel && (
-                            <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
+                            <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
                               <Chip size="small" label={sportLabel} variant="outlined" />
                             </Stack>
                           )}
@@ -279,7 +282,7 @@ export default function ScorecardListPage() {
                             <Typography
                               variant="caption"
                               color="text.secondary"
-                              sx={{ fontFamily: "monospace", wordBreak: "break-all" }}
+                              sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}
                             >
                               Created by {row.created_by}
                             </Typography>
@@ -287,9 +290,9 @@ export default function ScorecardListPage() {
                         </Stack>
 
                         <Stack
-                          direction={{ xs: "column", sm: "row" }}
+                          direction={{ xs: 'column', sm: 'row' }}
                           spacing={1}
-                          sx={{ alignSelf: "center", ml: 2 }}
+                          sx={{ alignSelf: 'center', ml: 2 }}
                         >
                           <Button
                             size="small"
@@ -335,8 +338,8 @@ export default function ScorecardListPage() {
 
         {totalPages > 1 && (
           <Stack
-            direction={{ xs: "column", sm: "row" }}
-            alignItems={{ xs: "flex-start", sm: "center" }}
+            direction={{ xs: 'column', sm: 'row' }}
+            alignItems={{ xs: 'flex-start', sm: 'center' }}
             justifyContent="space-between"
             spacing={1}
           >

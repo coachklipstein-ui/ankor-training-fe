@@ -1,9 +1,9 @@
-import type { DrillTag } from "../services/drillsService"
+import type { DrillTag } from '../services/drillsService';
 
 export type SegmentOption = {
-  id: string
-  label: string
-}
+  id: string;
+  label: string;
+};
 
 export function toSegmentOptions(
   segments: Array<{ id: string; name: string | null }>,
@@ -11,9 +11,9 @@ export function toSegmentOptions(
   return segments
     .map((segment) => ({
       id: segment.id,
-      label: segment.name?.trim() || "Unnamed Segment",
+      label: segment.name?.trim() || 'Unnamed Segment',
     }))
-    .sort((a, b) => a.label.localeCompare(b.label))
+    .sort((a, b) => a.label.localeCompare(b.label));
 }
 
 export function normalizeTagOptions(tags: DrillTag[]): DrillTag[] {
@@ -21,10 +21,7 @@ export function normalizeTagOptions(tags: DrillTag[]): DrillTag[] {
     new Map(
       tags
         .filter((tag) => tag.id && tag.name)
-        .map((tag) => [
-          tag.id,
-          { id: tag.id.trim(), name: tag.name.trim() || tag.id.trim() },
-        ]),
+        .map((tag) => [tag.id, { id: tag.id.trim(), name: tag.name.trim() || tag.id.trim() }]),
     ).values(),
-  ).sort((a, b) => a.name.localeCompare(b.name))
+  ).sort((a, b) => a.name.localeCompare(b.name));
 }

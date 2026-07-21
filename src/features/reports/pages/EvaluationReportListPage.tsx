@@ -1,52 +1,52 @@
-import * as React from 'react'
-import { Box, Button, Chip, Paper, Stack, Typography } from '@mui/material'
-import { useNavigate } from 'react-router-dom'
-import { formatEvaluationReportDate } from '../utils/formatEvaluationReportDate'
+import * as React from 'react';
+import { Box, Button, Chip, Paper, Stack, Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { formatEvaluationReportDate } from '../utils/formatEvaluationReportDate';
 import {
   listLatestEvaluations,
   type LatestEvaluationRow,
-} from '../../evaluations/api/evaluationsApi'
-import { useAuth } from '../../../app/providers/AuthProvider'
+} from '../../evaluations/api/evaluationsApi';
+import { useAuth } from '../../../app/providers/AuthProvider';
 
 type EvaluationReportSummary = {
-  id: string
-  evaluationId: string
-  athleteId: string
-  athleteName: string
-  evaluatorName: string
-  scorecardTemplate: string
-  evaluatedAt: string
-}
+  id: string;
+  evaluationId: string;
+  athleteId: string;
+  athleteName: string;
+  evaluatorName: string;
+  scorecardTemplate: string;
+  evaluatedAt: string;
+};
 
 export default function EvaluationReportListPage() {
-  const navigate = useNavigate()
-  const { orgId, athleteId, user, profile, loading: authLoading } = useAuth()
-  const [rows, setRows] = React.useState<LatestEvaluationRow[]>([])
-  const [loading, setLoading] = React.useState(false)
-  const [error, setError] = React.useState<string | null>(null)
-  const role = (profile?.role ?? '').trim().toLowerCase()
-  const isParent = role.includes('parent')
-  const userId = profile?.id ?? user?.id ?? null
+  const navigate = useNavigate();
+  const { orgId, athleteId, user, profile, loading: authLoading } = useAuth();
+  const [rows, setRows] = React.useState<LatestEvaluationRow[]>([]);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const role = (profile?.role ?? '').trim().toLowerCase();
+  const isParent = role.includes('parent');
+  const userId = profile?.id ?? user?.id ?? null;
 
   const loadReports = React.useCallback(async () => {
     if (!orgId) {
-      setRows([])
-      setError('Missing org_id for this account.')
-      setLoading(false)
-      return
+      setRows([]);
+      setError('Missing org_id for this account.');
+      setLoading(false);
+      return;
     }
 
-    const requiredId = isParent ? userId : athleteId
+    const requiredId = isParent ? userId : athleteId;
     if (!requiredId) {
-      setRows([])
-      setError(`Missing ${isParent ? 'user' : 'athlete'} id for this account.`)
-      setLoading(false)
-      return
+      setRows([]);
+      setError(`Missing ${isParent ? 'user' : 'athlete'} id for this account.`);
+      setLoading(false);
+      return;
     }
 
     try {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
       const { rows: data } = await listLatestEvaluations(
         isParent
           ? {
@@ -61,21 +61,21 @@ export default function EvaluationReportListPage() {
               limit: 10,
               offset: 0,
             },
-      )
-      setRows(data ?? [])
+      );
+      setRows(data ?? []);
     } catch (err) {
-      console.error('Failed to load evaluation reports', err)
-      setRows([])
-      setError('Failed to load evaluation reports')
+      console.error('Failed to load evaluation reports', err);
+      setRows([]);
+      setError('Failed to load evaluation reports');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [athleteId, isParent, orgId, userId])
+  }, [athleteId, isParent, orgId, userId]);
 
   React.useEffect(() => {
-    if (authLoading) return
-    void loadReports()
-  }, [authLoading, loadReports])
+    if (authLoading) return;
+    void loadReports();
+  }, [authLoading, loadReports]);
 
   const reports = React.useMemo<EvaluationReportSummary[]>(
     () =>
@@ -89,19 +89,19 @@ export default function EvaluationReportListPage() {
         evaluatedAt: row.date,
       })),
     [rows],
-  )
+  );
 
-  const isLoading = loading || authLoading
+  const isLoading = loading || authLoading;
   const handleViewReport = (report: EvaluationReportSummary) => {
     if (isParent && report.athleteId) {
-      const params = new URLSearchParams()
-      params.set('athleteId', report.athleteId)
-      const query = params.toString()
-      navigate(`/reports/evaluation-reports/${report.id}${query ? `?${query}` : ''}`)
-      return
+      const params = new URLSearchParams();
+      params.set('athleteId', report.athleteId);
+      const query = params.toString();
+      navigate(`/reports/evaluation-reports/${report.id}${query ? `?${query}` : ''}`);
+      return;
     }
-    navigate(`/reports/evaluation-reports/${report.id}`)
-  }
+    navigate(`/reports/evaluation-reports/${report.id}`);
+  };
 
   return (
     <Box sx={{ p: { xs: 2, md: 3 } }}>
@@ -194,5 +194,5 @@ export default function EvaluationReportListPage() {
         </Stack>
       </Stack>
     </Box>
-  )
+  );
 }

@@ -1,42 +1,39 @@
-const env = import.meta.env as Record<string, string | undefined>
+const env = import.meta.env as Record<string, string | undefined>;
 
 function trimTrailingSlashes(value: string) {
-  return value.replace(/\/+$/, '')
+  return value.replace(/\/+$/, '');
 }
 
 export function getVoiceAgentBaseUrl() {
-  const value =
-    env.ANKOR_VOICE_AGENT_URL?.trim() ||
-    env.VITE_ANKOR_VOICE_AGENT_URL?.trim() ||
-    ''
+  const value = env.ANKOR_VOICE_AGENT_URL?.trim() || env.VITE_ANKOR_VOICE_AGENT_URL?.trim() || '';
 
-  return value ? trimTrailingSlashes(value) : null
+  return value ? trimTrailingSlashes(value) : null;
 }
 
 export function getVoiceAgentWebSocketUrl() {
-  const baseUrl = getVoiceAgentBaseUrl()
-  if (!baseUrl) return null
+  const baseUrl = getVoiceAgentBaseUrl();
+  if (!baseUrl) return null;
 
   try {
-    const url = new URL(baseUrl)
+    const url = new URL(baseUrl);
 
     if (url.protocol === 'https:') {
-      url.protocol = 'wss:'
+      url.protocol = 'wss:';
     } else if (url.protocol === 'http:') {
-      url.protocol = 'ws:'
+      url.protocol = 'ws:';
     } else if (url.protocol !== 'wss:' && url.protocol !== 'ws:') {
-      return null
+      return null;
     }
 
-    const normalizedPath = trimTrailingSlashes(url.pathname)
+    const normalizedPath = trimTrailingSlashes(url.pathname);
     url.pathname = normalizedPath.endsWith('/ws/voice')
       ? normalizedPath
-      : `${normalizedPath}/ws/voice`
-    url.search = ''
-    url.hash = ''
+      : `${normalizedPath}/ws/voice`;
+    url.search = '';
+    url.hash = '';
 
-    return url.toString()
+    return url.toString();
   } catch {
-    return null
+    return null;
   }
 }

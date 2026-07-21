@@ -1,115 +1,130 @@
 // src/routes/AppRoutes.tsx
-import { lazy, Suspense } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
-import NewPlanPage from '../../features/practice-plans/pages/NewPlanPage'
-import { useAuth } from '../providers/AuthProvider'
-import { isAdminRole } from '../../shared/auth/roles'
-
+import { lazy, Suspense } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import NewPlanPage from '../../features/practice-plans/pages/NewPlanPage';
+import { useAuth } from '../providers/AuthProvider';
+import { isAdminRole } from '../../shared/auth/roles';
 
 // Centralize paths here (kept local to this file)
 export const PATHS = {
   signIn: '/sign-in',
   signUp: '/sign-up',
   orgSignUp: '/org-signup',
-} as const
+} as const;
 
 function RequireAuth({ children }: { children: JSX.Element }) {
-  const { loading, isAuthenticated } = useAuth()
-  if (loading) return null
-  return isAuthenticated ? children : <Navigate to={PATHS.signIn} replace />
+  const { loading, isAuthenticated } = useAuth();
+  if (loading) return null;
+  return isAuthenticated ? children : <Navigate to={PATHS.signIn} replace />;
 }
 
 function RequireAdmin({
   children,
   fallbackPath = '/',
 }: {
-  children: JSX.Element
-  fallbackPath?: string
+  children: JSX.Element;
+  fallbackPath?: string;
 }) {
-  const { loading, profile } = useAuth()
-  if (loading) return null
-  return isAdminRole(profile?.role) ? (
-    children
-  ) : (
-    <Navigate to={fallbackPath} replace />
-  )
+  const { loading, profile } = useAuth();
+  if (loading) return null;
+  return isAdminRole(profile?.role) ? children : <Navigate to={fallbackPath} replace />;
 }
 
 // Lazy-loaded pages
-const Login = lazy(() => import('../../features/auth/pages/Login'))
-const SignUp = lazy(() => import('../../features/auth/pages/SignUp'))
-const OrgSignUp = lazy(() => import('../../features/auth/pages/OrgSignUp'))
-const ResetPasswordPage = lazy(() => import('../../features/auth/pages/ResetPasswordPage'))
+const Login = lazy(() => import('../../features/auth/pages/Login'));
+const SignUp = lazy(() => import('../../features/auth/pages/SignUp'));
+const OrgSignUp = lazy(() => import('../../features/auth/pages/OrgSignUp'));
+const ResetPasswordPage = lazy(() => import('../../features/auth/pages/ResetPasswordPage'));
 
 // App shell + feature pages
-const HomeLayout = lazy(() => import('../../features/home/pages/HomePage'))
-const HomeDashboardPage = lazy(
-  () => import('../../features/home/pages/HomeDashboardPage'),
-)
-const CoachHomePage = lazy(
-  () => import('../../features/home/pages/CoachHomePage'),
-)
-const OrganizationProfilePage = lazy(() => import('../../features/settings/pages/OrganizationProfile'))
-const ViewOrganizationPage = lazy(() => import('../../features/settings/pages/ViewOrganizationPage'))
-const EditOrgPage = lazy(() => import('../../features/settings/pages/EditOrgPage'))
-const ManageUsersPage = lazy(() => import('../../features/settings/pages/ManageUsersPage'))
-const EditUserPage = lazy(() => import('../../features/settings/pages/EditUserPage'))
-const SkillListPage = lazy(() => import('../../features/skills/pages/SkillListPage'))
-const NewSkillPage = lazy(() => import('../../features/skills/pages/NewSkillPage'))
-const SkillDetailViewPage = lazy(() => import('../../features/skills/pages/SkillDetailViewPage'))
-const SkillEditPage = lazy(() => import('../../features/skills/pages/SkillEditPage'))
-const ScorecardListPage = lazy(() => import('../../features/scorecards/pages/ScorecardListPage'))
-const NewScorecardPage = lazy(() => import('../../features/scorecards/pages/NewScorecardPage'))
-const EditScorecardPage = lazy(() => import('../../features/scorecards/pages/EditScorecardPage'))
-const AthletesListPage = lazy(() => import('../../features/athletes/pages/AthletesListPage')) // ⬅️ added
-const NewAthletePage = lazy(() => import('../../features/athletes/pages/NewAthletePage'))
-const AthleteDetailPage = lazy(() => import('../../features/athletes/pages/AthleteDetailPage'))
-const EditAthletePage = lazy(() => import('../../features/athletes/pages/EditAthletePage'))
-const CoachListPage = lazy(() => import('../../features/coaches/pages/CoachListPage'))
-const NewCoachPage = lazy(() => import('../../features/coaches/pages/NewCoachPage'))
-const EditCoachPage = lazy(() => import('../../features/coaches/pages/EditCoachPage'))
-const ParentListPage = lazy(() => import('../../features/parents/pages/ParentListPage'))
-const NewParentPage = lazy(() => import('../../features/parents/pages/NewParentPage'))
-const ParentViewPage = lazy(() => import('../../features/parents/pages/ParentViewPage'))
-const EditParentPage = lazy(() => import('../../features/parents/pages/EditParentPage'))
-const AthleteDetail = lazy(() => import('../../features/admin/pages/AdminAthleteDetail'))
-const AdminCoachDetail = lazy(() => import('../../features/admin/pages/AdminCoachDetail'))
-const TeamsPage = lazy(() => import('../../features/teams/pages/TeamsPage'))
-const NewTeamPage = lazy(() => import('../../features/teams/pages/NewTeamPage'))
-const TeamDetailPage = lazy(() => import('../../features/teams/pages/TeamDetailPage'))
-const EditTeamPage = lazy(() => import('../../features/teams/pages/EditTeamPage'))
-const DrillsPage = lazy(() => import('../../features/drills/pages/DrillsPage'))  
-const ViewDrillPage = lazy(() => import('../../features/drills/pages/ViewDrillPage'))
-const NewDrillPage = lazy(() => import('../../features/drills/pages/NewDrillPage'))
-const EditDrillPage = lazy(() => import('../../features/drills/pages/EditDrillPage'))
-const EvaluationsListPage = lazy(() => import('../../features/evaluations/pages/EvaluationsListPage'))
-const ViewEvaluationPage = lazy(() => import('../../features/evaluations/pages/ViewEvaluationPage'))
-const EditEvaluationPage = lazy(() => import('../../features/evaluations/pages/EditEvaluationPage'))
-const EvaluationReportListPage = lazy(() => import('../../features/reports/pages/EvaluationReportListPage'))
-const CoachEvaluationReportListPage = lazy(() => import('../../features/reports/pages/CoachEvaluationReportListPage'))
-const EvaluationReportDetailPage = lazy(() => import('../../features/reports/pages/EvaluationReportDetailPage'))
-const NewEvaluationDetailPage = lazy(() => import('../../features/evaluations/pages/NewEvaluationDetailPage'))
-const PracticePlansListPage = lazy(() => import('../../features/practice-plans/pages/PracticePlansListPage'))
-const NewPracticePlanPage = lazy(() => import('../../features/practice-plans/pages/NewPlanPage'))
-const ViewPracticePlanPage = lazy(() => import('../../features/practice-plans/pages/ViewPracticePlanPage'))
-const EditPracticePlansPage = lazy(() => import('../../features/practice-plans/pages/EditPracticePlansPage'))
-const JoinCodesListPage = lazy(() => import('../../features/join-codes/pages/JoinCodesListPage'))
-const NewJoinCodePage = lazy(() => import('../../features/join-codes/pages/NewJoinCodePage'))
+const HomeLayout = lazy(() => import('../../features/home/pages/HomePage'));
+const HomeDashboardPage = lazy(() => import('../../features/home/pages/HomeDashboardPage'));
+const CoachHomePage = lazy(() => import('../../features/home/pages/CoachHomePage'));
+const OrganizationProfilePage = lazy(
+  () => import('../../features/settings/pages/OrganizationProfile'),
+);
+const ViewOrganizationPage = lazy(
+  () => import('../../features/settings/pages/ViewOrganizationPage'),
+);
+const EditOrgPage = lazy(() => import('../../features/settings/pages/EditOrgPage'));
+const ManageUsersPage = lazy(() => import('../../features/settings/pages/ManageUsersPage'));
+const EditUserPage = lazy(() => import('../../features/settings/pages/EditUserPage'));
+const SkillListPage = lazy(() => import('../../features/skills/pages/SkillListPage'));
+const NewSkillPage = lazy(() => import('../../features/skills/pages/NewSkillPage'));
+const SkillDetailViewPage = lazy(() => import('../../features/skills/pages/SkillDetailViewPage'));
+const SkillEditPage = lazy(() => import('../../features/skills/pages/SkillEditPage'));
+const ScorecardListPage = lazy(() => import('../../features/scorecards/pages/ScorecardListPage'));
+const NewScorecardPage = lazy(() => import('../../features/scorecards/pages/NewScorecardPage'));
+const EditScorecardPage = lazy(() => import('../../features/scorecards/pages/EditScorecardPage'));
+const AthletesListPage = lazy(() => import('../../features/athletes/pages/AthletesListPage')); // ⬅️ added
+const NewAthletePage = lazy(() => import('../../features/athletes/pages/NewAthletePage'));
+const AthleteDetailPage = lazy(() => import('../../features/athletes/pages/AthleteDetailPage'));
+const EditAthletePage = lazy(() => import('../../features/athletes/pages/EditAthletePage'));
+const CoachListPage = lazy(() => import('../../features/coaches/pages/CoachListPage'));
+const NewCoachPage = lazy(() => import('../../features/coaches/pages/NewCoachPage'));
+const EditCoachPage = lazy(() => import('../../features/coaches/pages/EditCoachPage'));
+const ParentListPage = lazy(() => import('../../features/parents/pages/ParentListPage'));
+const NewParentPage = lazy(() => import('../../features/parents/pages/NewParentPage'));
+const ParentViewPage = lazy(() => import('../../features/parents/pages/ParentViewPage'));
+const EditParentPage = lazy(() => import('../../features/parents/pages/EditParentPage'));
+const AthleteDetail = lazy(() => import('../../features/admin/pages/AdminAthleteDetail'));
+const AdminCoachDetail = lazy(() => import('../../features/admin/pages/AdminCoachDetail'));
+const TeamsPage = lazy(() => import('../../features/teams/pages/TeamsPage'));
+const NewTeamPage = lazy(() => import('../../features/teams/pages/NewTeamPage'));
+const TeamDetailPage = lazy(() => import('../../features/teams/pages/TeamDetailPage'));
+const EditTeamPage = lazy(() => import('../../features/teams/pages/EditTeamPage'));
+const DrillsPage = lazy(() => import('../../features/drills/pages/DrillsPage'));
+const ViewDrillPage = lazy(() => import('../../features/drills/pages/ViewDrillPage'));
+const NewDrillPage = lazy(() => import('../../features/drills/pages/NewDrillPage'));
+const EditDrillPage = lazy(() => import('../../features/drills/pages/EditDrillPage'));
+const EvaluationsListPage = lazy(
+  () => import('../../features/evaluations/pages/EvaluationsListPage'),
+);
+const ViewEvaluationPage = lazy(
+  () => import('../../features/evaluations/pages/ViewEvaluationPage'),
+);
+const EditEvaluationPage = lazy(
+  () => import('../../features/evaluations/pages/EditEvaluationPage'),
+);
+const EvaluationReportListPage = lazy(
+  () => import('../../features/reports/pages/EvaluationReportListPage'),
+);
+const CoachEvaluationReportListPage = lazy(
+  () => import('../../features/reports/pages/CoachEvaluationReportListPage'),
+);
+const EvaluationReportDetailPage = lazy(
+  () => import('../../features/reports/pages/EvaluationReportDetailPage'),
+);
+const NewEvaluationDetailPage = lazy(
+  () => import('../../features/evaluations/pages/NewEvaluationDetailPage'),
+);
+const PracticePlansListPage = lazy(
+  () => import('../../features/practice-plans/pages/PracticePlansListPage'),
+);
+const NewPracticePlanPage = lazy(() => import('../../features/practice-plans/pages/NewPlanPage'));
+const ViewPracticePlanPage = lazy(
+  () => import('../../features/practice-plans/pages/ViewPracticePlanPage'),
+);
+const EditPracticePlansPage = lazy(
+  () => import('../../features/practice-plans/pages/EditPracticePlansPage'),
+);
+const JoinCodesListPage = lazy(() => import('../../features/join-codes/pages/JoinCodesListPage'));
+const NewJoinCodePage = lazy(() => import('../../features/join-codes/pages/NewJoinCodePage'));
 
 export default function AppRoutes() {
   function HomeIndexRoute() {
-    const { loading, profile } = useAuth()
-    if (loading) return null
-    const role = (profile?.role ?? '').toLowerCase()
-    const isAthlete = role.includes('athlete') || role.includes('parent')
-    const isCoach = role.includes('coach')
+    const { loading, profile } = useAuth();
+    if (loading) return null;
+    const role = (profile?.role ?? '').toLowerCase();
+    const isAthlete = role.includes('athlete') || role.includes('parent');
+    const isCoach = role.includes('coach');
     if (isAthlete || !role) {
-      return <HomeDashboardPage />
+      return <HomeDashboardPage />;
     }
     if (isCoach) {
-      return <CoachHomePage />
+      return <CoachHomePage />;
     }
-    return <Navigate to="/evaluations" replace />
+    return <Navigate to="/evaluations" replace />;
   }
 
   return (
@@ -142,8 +157,7 @@ export default function AppRoutes() {
 
           <Route path="admin/athletes/:id" element={<AthleteDetail />} />
           <Route path="admin/coaches/:coachId" element={<AdminCoachDetail />} />
-         <Route path="admin/coaches/:coachId" element={<AdminCoachDetail />} />
-         
+          <Route path="admin/coaches/:coachId" element={<AdminCoachDetail />} />
 
           {/* Skills */}
           <Route path="skills" element={<SkillListPage />} />
@@ -156,7 +170,7 @@ export default function AppRoutes() {
                 <SkillEditPage />
               </RequireAdmin>
             }
-          />         
+          />
           <Route path="scorecards" element={<ScorecardListPage />} />
           <Route
             path="scorecards/new"
@@ -204,13 +218,16 @@ export default function AppRoutes() {
               </RequireAdmin>
             }
           />
-          <Route path="evaluations" element={<EvaluationsListPage />} />      
+          <Route path="evaluations" element={<EvaluationsListPage />} />
           <Route path="evaluations/create" element={<NewEvaluationDetailPage />} />
           <Route path="evaluations/:id" element={<ViewEvaluationPage />} />
           <Route path="evaluations/:id/edit" element={<EditEvaluationPage />} />
           <Route path="reports/evaluation-reports" element={<EvaluationReportListPage />} />
           <Route path="reports/evaluation-reports/:id" element={<EvaluationReportDetailPage />} />
-          <Route path="reports/coach-evaluation-reports" element={<CoachEvaluationReportListPage />} />
+          <Route
+            path="reports/coach-evaluation-reports"
+            element={<CoachEvaluationReportListPage />}
+          />
           <Route path="/practice-plans" element={<PracticePlansListPage />} />
           <Route path="/practice-plans/new" element={<NewPracticePlanPage />} />
           <Route path="/practice-plans/:id" element={<ViewPracticePlanPage />} />
@@ -221,5 +238,5 @@ export default function AppRoutes() {
         <Route path="*" element={<Navigate to={PATHS.signIn} replace />} />
       </Routes>
     </Suspense>
-  )
+  );
 }

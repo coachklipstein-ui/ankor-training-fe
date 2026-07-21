@@ -6,11 +6,11 @@ import {
   IconButton,
   Select,
   MenuItem,
-} from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import ClearIcon from "@mui/icons-material/Clear";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import { FILTER_ALL } from "../../constants";
+} from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import ClearIcon from '@mui/icons-material/Clear';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import { FILTER_ALL } from '../../constants';
 
 type SkillsFiltersProps = {
   query: string;
@@ -30,7 +30,7 @@ export default function SkillsFilters({
   onCategoryChange,
 }: SkillsFiltersProps) {
   return (
-    <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems="center">
+    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems="center">
       <TextField
         size="medium"
         placeholder="Search title, category, description, coaching pointsƒ?İ"
@@ -53,7 +53,7 @@ export default function SkillsFilters({
             </InputAdornment>
           ) : undefined,
         }}
-        sx={{ minWidth: { xs: "100%", sm: 380 } }}
+        sx={{ minWidth: { xs: '100%', sm: 380 } }}
       />
 
       <Stack direction="row" spacing={1} alignItems="center">

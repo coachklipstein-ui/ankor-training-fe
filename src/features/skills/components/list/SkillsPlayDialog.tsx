@@ -6,8 +6,8 @@ import {
   Box,
   Typography,
   CircularProgress,
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 
 type SkillsPlayDialogProps = {
   open: boolean;
@@ -28,12 +28,12 @@ export default function SkillsPlayDialog({
 }: SkillsPlayDialogProps) {
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle sx={{ pr: 6, position: "relative" }}>
-        {skillName ?? "Skill video"}
+      <DialogTitle sx={{ pr: 6, position: 'relative' }}>
+        {skillName ?? 'Skill video'}
         <IconButton
           aria-label="Close"
           onClick={onClose}
-          sx={{ position: "absolute", right: 8, top: 8, color: "text.secondary" }}
+          sx={{ position: 'absolute', right: 8, top: 8, color: 'text.secondary' }}
         >
           <CloseIcon />
         </IconButton>
@@ -43,9 +43,9 @@ export default function SkillsPlayDialog({
           <Box
             sx={{
               minHeight: 320,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
             <CircularProgress />
@@ -65,10 +65,10 @@ export default function SkillsPlayDialog({
             autoPlay
             playsInline
             sx={{
-              width: "100%",
-              maxHeight: "70vh",
-              display: "block",
-              bgcolor: "grey.900",
+              width: '100%',
+              maxHeight: '70vh',
+              display: 'block',
+              bgcolor: 'grey.900',
             }}
           />
         ) : (

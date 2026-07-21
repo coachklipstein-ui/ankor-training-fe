@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Alert,
   Box,
@@ -19,11 +19,11 @@ import {
   Stack,
   TextField,
   Typography,
-} from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
+} from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
 
-import { invitePlanUsers } from "../services/practicePlanService";
-import { listUsers, type UserListItem, userLabel } from "../../settings/services/usersService";
+import { invitePlanUsers } from '../services/practicePlanService';
+import { listUsers, type UserListItem, userLabel } from '../../settings/services/usersService';
 
 export type InviteUsersDialogProps = {
   open: boolean;
@@ -40,9 +40,9 @@ export default function InviteUsersDialog({
   planId,
   orgId,
   addedBy,
-  title = "Invite users",
+  title = 'Invite users',
 }: InviteUsersDialogProps) {
-  const [inviteSearch, setInviteSearch] = React.useState("");
+  const [inviteSearch, setInviteSearch] = React.useState('');
   const [inviteUsers, setInviteUsers] = React.useState<UserListItem[]>([]);
   const [inviteLoading, setInviteLoading] = React.useState(false);
   const [inviteLoadError, setInviteLoadError] = React.useState<string | null>(null);
@@ -51,15 +51,15 @@ export default function InviteUsersDialog({
   const [inviteResult, setInviteResult] = React.useState<string | null>(null);
   const [inviteSelectedIds, setInviteSelectedIds] = React.useState<string[]>([]);
   const [toastOpen, setToastOpen] = React.useState(false);
-  const [toastMessage, setToastMessage] = React.useState("");
+  const [toastMessage, setToastMessage] = React.useState('');
 
-  const resolvedOrgId = (orgId ?? "").trim();
-  const resolvedPlanId = (planId ?? "").trim();
-  const resolvedAddedBy = (addedBy ?? "").trim();
+  const resolvedOrgId = (orgId ?? '').trim();
+  const resolvedPlanId = (planId ?? '').trim();
+  const resolvedAddedBy = (addedBy ?? '').trim();
 
   React.useEffect(() => {
     if (!open) return;
-    setInviteSearch("");
+    setInviteSearch('');
     setInviteSelectedIds([]);
     setInviteLoadError(null);
     setInviteSendError(null);
@@ -69,7 +69,7 @@ export default function InviteUsersDialog({
   React.useEffect(() => {
     if (!open) return;
     if (!resolvedOrgId) {
-      setInviteLoadError("Missing org_id.");
+      setInviteLoadError('Missing org_id.');
       setInviteUsers([]);
       return;
     }
@@ -86,7 +86,7 @@ export default function InviteUsersDialog({
       .catch((err: any) => {
         if (!active) return;
         setInviteUsers([]);
-        setInviteLoadError(err?.message || "Failed to load users.");
+        setInviteLoadError(err?.message || 'Failed to load users.');
       })
       .finally(() => {
         if (active) setInviteLoading(false);
@@ -105,22 +105,19 @@ export default function InviteUsersDialog({
       const fields = [
         userLabel(u),
         u.user_id,
-        u.role ?? "",
-        u.phone ?? "",
-        String(u.graduation_year ?? ""),
+        u.role ?? '',
+        u.phone ?? '',
+        String(u.graduation_year ?? ''),
       ].map((value) => value.toLowerCase());
       return fields.some((value) => value.includes(q));
     });
   }, [inviteUsers, inviteSearch]);
 
-  const inviteSelectedSet = React.useMemo(
-    () => new Set(inviteSelectedIds),
-    [inviteSelectedIds]
-  );
+  const inviteSelectedSet = React.useMemo(() => new Set(inviteSelectedIds), [inviteSelectedIds]);
 
   function toggleInviteSelection(userId: string) {
     setInviteSelectedIds((prev) =>
-      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId],
     );
   }
 
@@ -140,15 +137,15 @@ export default function InviteUsersDialog({
 
   async function handleSendInvites() {
     if (!resolvedPlanId) {
-      setInviteSendError("Missing plan id.");
+      setInviteSendError('Missing plan id.');
       return;
     }
     if (!resolvedOrgId) {
-      setInviteSendError("Missing org_id.");
+      setInviteSendError('Missing org_id.');
       return;
     }
     if (inviteSelectedIds.length === 0) {
-      setInviteSendError("Select at least one user to invite.");
+      setInviteSendError('Select at least one user to invite.');
       return;
     }
 
@@ -164,17 +161,17 @@ export default function InviteUsersDialog({
 
       const invitedCount = result.invited_user_ids.length;
       const skippedCount = result.skipped_user_ids.length;
-      const message = `Invited ${invitedCount} user${invitedCount === 1 ? "" : "s"}${
-        skippedCount > 0 ? `. Skipped ${skippedCount}.` : "."
+      const message = `Invited ${invitedCount} user${invitedCount === 1 ? '' : 's'}${
+        skippedCount > 0 ? `. Skipped ${skippedCount}.` : '.'
       }`;
 
       setInviteResult(message);
       setInviteSelectedIds([]);
-      setToastMessage("Invites have been sent successfully.");
+      setToastMessage('Invites have been sent successfully.');
       setToastOpen(true);
       onClose();
     } catch (err: any) {
-      setInviteSendError(err?.message || "Failed to send invites.");
+      setInviteSendError(err?.message || 'Failed to send invites.');
     } finally {
       setInviteSaving(false);
     }
@@ -186,123 +183,123 @@ export default function InviteUsersDialog({
         <DialogTitle>{title}</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={1.25} sx={{ mt: 0.5 }}>
-          <TextField
-            fullWidth
-            size="small"
-            value={inviteSearch}
-            onChange={(e) => setInviteSearch(e.target.value)}
-            placeholder="Search users"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon fontSize="small" />
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
-              {inviteLoading
-                ? "Loading users..."
-                : `${filteredInviteUsers.length} user${filteredInviteUsers.length === 1 ? "" : "s"}`}
-            </Typography>
-            <Button
+            <TextField
+              fullWidth
               size="small"
-              onClick={selectAllInviteUsers}
-              disabled={inviteLoading || filteredInviteUsers.length === 0}
-            >
-              Select all
-            </Button>
-            <Button
-              size="small"
-              onClick={clearInviteSelection}
-              disabled={inviteSelectedIds.length === 0}
-            >
-              Clear
-            </Button>
-          </Stack>
+              value={inviteSearch}
+              onChange={(e) => setInviteSearch(e.target.value)}
+              placeholder="Search users"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+            />
 
-          <Paper variant="outlined" sx={{ overflow: "hidden" }}>
-            {inviteLoading ? (
-              <Box sx={{ p: 2 }}>
-                <Typography variant="body2" color="text.secondary">
-                  Loading users...
-                </Typography>
-              </Box>
-            ) : inviteLoadError ? (
-              <Box sx={{ p: 2 }}>
-                <Typography variant="body2" color="error">
-                  {inviteLoadError}
-                </Typography>
-              </Box>
-            ) : filteredInviteUsers.length === 0 ? (
-              <Box sx={{ p: 2 }}>
-                <Typography variant="body2" color="text.secondary">
-                  No users found.
-                </Typography>
-              </Box>
-            ) : (
-              <List disablePadding>
-                {filteredInviteUsers.map((user, idx) => {
-                  const primary = userLabel(user);
-                  const metaParts = [
-                    user.role ? user.role.replace(/^./, (c) => c.toUpperCase()) : "",
-                    user.phone ?? "",
-                    user.graduation_year ? `Class of ${user.graduation_year}` : "",
-                  ].filter(Boolean);
-                  const meta = metaParts.join(" | ");
-                  const checked = inviteSelectedSet.has(user.user_id);
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
+                {inviteLoading
+                  ? 'Loading users...'
+                  : `${filteredInviteUsers.length} user${filteredInviteUsers.length === 1 ? '' : 's'}`}
+              </Typography>
+              <Button
+                size="small"
+                onClick={selectAllInviteUsers}
+                disabled={inviteLoading || filteredInviteUsers.length === 0}
+              >
+                Select all
+              </Button>
+              <Button
+                size="small"
+                onClick={clearInviteSelection}
+                disabled={inviteSelectedIds.length === 0}
+              >
+                Clear
+              </Button>
+            </Stack>
 
-                  return (
-                    <React.Fragment key={user.user_id}>
-                      <ListItemButton
-                        onClick={() => toggleInviteSelection(user.user_id)}
-                        sx={{ py: 1.1 }}
-                      >
-                        <ListItemIcon sx={{ minWidth: 40 }}>
-                          <Checkbox edge="start" checked={checked} tabIndex={-1} disableRipple />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={<Typography fontWeight={800}>{primary}</Typography>}
-                          secondary={
-                            <Stack spacing={0.25} sx={{ mt: 0.25 }}>
-                              <Typography variant="caption" color="text.secondary">
-                                {meta || "No details"}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {user.user_id}
-                              </Typography>
-                            </Stack>
-                          }
-                          secondaryTypographyProps={{ component: "div" }}
-                        />
-                      </ListItemButton>
-                      {idx !== filteredInviteUsers.length - 1 && <Divider />}
-                    </React.Fragment>
-                  );
-                })}
-              </List>
-            )}
-          </Paper>
+            <Paper variant="outlined" sx={{ overflow: 'hidden' }}>
+              {inviteLoading ? (
+                <Box sx={{ p: 2 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Loading users...
+                  </Typography>
+                </Box>
+              ) : inviteLoadError ? (
+                <Box sx={{ p: 2 }}>
+                  <Typography variant="body2" color="error">
+                    {inviteLoadError}
+                  </Typography>
+                </Box>
+              ) : filteredInviteUsers.length === 0 ? (
+                <Box sx={{ p: 2 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    No users found.
+                  </Typography>
+                </Box>
+              ) : (
+                <List disablePadding>
+                  {filteredInviteUsers.map((user, idx) => {
+                    const primary = userLabel(user);
+                    const metaParts = [
+                      user.role ? user.role.replace(/^./, (c) => c.toUpperCase()) : '',
+                      user.phone ?? '',
+                      user.graduation_year ? `Class of ${user.graduation_year}` : '',
+                    ].filter(Boolean);
+                    const meta = metaParts.join(' | ');
+                    const checked = inviteSelectedSet.has(user.user_id);
 
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
-              Selected: {inviteSelectedIds.length}
-            </Typography>
-            {inviteResult && (
-              <Typography variant="caption" sx={{ color: "success.main" }}>
-                {inviteResult}
+                    return (
+                      <React.Fragment key={user.user_id}>
+                        <ListItemButton
+                          onClick={() => toggleInviteSelection(user.user_id)}
+                          sx={{ py: 1.1 }}
+                        >
+                          <ListItemIcon sx={{ minWidth: 40 }}>
+                            <Checkbox edge="start" checked={checked} tabIndex={-1} disableRipple />
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={<Typography fontWeight={800}>{primary}</Typography>}
+                            secondary={
+                              <Stack spacing={0.25} sx={{ mt: 0.25 }}>
+                                <Typography variant="caption" color="text.secondary">
+                                  {meta || 'No details'}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  {user.user_id}
+                                </Typography>
+                              </Stack>
+                            }
+                            secondaryTypographyProps={{ component: 'div' }}
+                          />
+                        </ListItemButton>
+                        {idx !== filteredInviteUsers.length - 1 && <Divider />}
+                      </React.Fragment>
+                    );
+                  })}
+                </List>
+              )}
+            </Paper>
+
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
+                Selected: {inviteSelectedIds.length}
+              </Typography>
+              {inviteResult && (
+                <Typography variant="caption" sx={{ color: 'success.main' }}>
+                  {inviteResult}
+                </Typography>
+              )}
+            </Stack>
+
+            {inviteSendError && (
+              <Typography variant="caption" color="error">
+                {inviteSendError}
               </Typography>
             )}
           </Stack>
-
-          {inviteSendError && (
-            <Typography variant="caption" color="error">
-              {inviteSendError}
-            </Typography>
-          )}
-        </Stack>
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose}>Cancel</Button>
@@ -311,7 +308,7 @@ export default function InviteUsersDialog({
             variant="contained"
             disabled={inviteSaving || inviteSelectedIds.length === 0}
           >
-            {inviteSaving ? "Sending..." : "Send invites"}
+            {inviteSaving ? 'Sending...' : 'Send invites'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -320,15 +317,15 @@ export default function InviteUsersDialog({
         open={toastOpen}
         autoHideDuration={3000}
         onClose={() => setToastOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert
           onClose={() => setToastOpen(false)}
           severity="success"
           variant="filled"
-          sx={{ width: "100%" }}
+          sx={{ width: '100%' }}
         >
-          {toastMessage || "Invites have been sent successfully."}
+          {toastMessage || 'Invites have been sent successfully.'}
         </Alert>
       </Snackbar>
     </>

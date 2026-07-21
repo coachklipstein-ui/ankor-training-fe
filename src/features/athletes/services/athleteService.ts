@@ -1,7 +1,7 @@
 // src/services/athleteService.ts
 // Fetch wrapper for /functions/v1/api/athletes/* endpoints.
 
-import { apiFetch } from "../../../shared/api/apiClient";
+import { apiFetch } from '../../../shared/api/apiClient';
 
 export type AthleteTeam = {
   id: string;
@@ -37,8 +37,7 @@ export type AthletesListResponse =
   | { ok: false; error: string };
 
 export type AthleteDetailResponse =
-  | { ok: true; athlete?: AthleteListItem; data?: AthleteListItem }
-  | { ok: false; error: string };
+  { ok: true; athlete?: AthleteListItem; data?: AthleteListItem } | { ok: false; error: string };
 
 export type CreateAthleteInput = {
   org_id: string;
@@ -62,8 +61,7 @@ export type CreateAthleteInput = {
 };
 
 export type CreateAthleteResponse =
-  | { ok: true; athlete?: AthleteListItem; data?: AthleteListItem }
-  | { ok: false; error: string };
+  { ok: true; athlete?: AthleteListItem; data?: AthleteListItem } | { ok: false; error: string };
 
 export type UpdateAthleteInput = {
   email?: string | null;
@@ -86,12 +84,10 @@ export type UpdateAthleteInput = {
 };
 
 export type UpdateAthleteResponse =
-  | { ok: true; athlete?: AthleteListItem; data?: AthleteListItem }
-  | { ok: false; error: string };
+  { ok: true; athlete?: AthleteListItem; data?: AthleteListItem } | { ok: false; error: string };
 
 export type DeleteAthleteResponse =
-  | { ok: true; data?: unknown; athlete?: AthleteListItem }
-  | { ok: false; error: string };
+  { ok: true; data?: unknown; athlete?: AthleteListItem } | { ok: false; error: string };
 
 export type ListAthletesParams = {
   orgId: string;
@@ -103,31 +99,30 @@ export type ListAthletesParams = {
 };
 
 const DEFAULT_BASE_URL =
-  ((typeof import.meta !== "undefined" &&
+  ((typeof import.meta !== 'undefined' &&
     (import.meta as any).env &&
-    (import.meta as any).env.VITE_BACKEND_URL) as string) ||
-  "http://localhost:8000";
+    (import.meta as any).env.VITE_BACKEND_URL) as string) || 'http://localhost:8000';
 
 function buildListQuery(params: ListAthletesParams) {
   const u = new URLSearchParams();
-  u.set("org_id", params.orgId);
-  if (params.name?.trim()) u.set("name", params.name.trim());
-  if (params.email?.trim()) u.set("email", params.email.trim());
-  if (params.teamId?.trim()) u.set("team_id", params.teamId.trim());
-  if (Number.isFinite(params.limit)) u.set("limit", String(params.limit));
-  if (Number.isFinite(params.offset)) u.set("offset", String(params.offset));
+  u.set('org_id', params.orgId);
+  if (params.name?.trim()) u.set('name', params.name.trim());
+  if (params.email?.trim()) u.set('email', params.email.trim());
+  if (params.teamId?.trim()) u.set('team_id', params.teamId.trim());
+  if (Number.isFinite(params.limit)) u.set('limit', String(params.limit));
+  if (Number.isFinite(params.offset)) u.set('offset', String(params.offset));
   return u.toString();
 }
 
 function normalizeGraduationYear(raw: unknown): number | null {
-  if (raw === null || raw === undefined || raw === "") return null;
-  const n = typeof raw === "number" ? raw : Number(raw);
+  if (raw === null || raw === undefined || raw === '') return null;
+  const n = typeof raw === 'number' ? raw : Number(raw);
   return Number.isFinite(n) ? n : null;
 }
 
 function normalizeAge(raw: unknown): number | null {
-  if (raw === null || raw === undefined || raw === "") return null;
-  const n = typeof raw === "number" ? raw : Number(raw);
+  if (raw === null || raw === undefined || raw === '') return null;
+  const n = typeof raw === 'number' ? raw : Number(raw);
   return Number.isFinite(n) ? n : null;
 }
 
@@ -135,15 +130,15 @@ function normalizeTeams(raw: any): AthleteTeam[] {
   if (!Array.isArray(raw)) return [];
   return raw
     .map((team) => ({
-      id: typeof team?.id === "string" ? team.id : "",
-      name: typeof team?.name === "string" ? team.name : "",
+      id: typeof team?.id === 'string' ? team.id : '',
+      name: typeof team?.name === 'string' ? team.name : '',
     }))
     .filter((team) => team.id || team.name);
 }
 
 function normalizeAthlete(raw: any): AthleteListItem {
   const normalizeOptionalString = (value: unknown) => {
-    if (typeof value !== "string") return null;
+    if (typeof value !== 'string') return null;
     const trimmed = value.trim();
     return trimmed ? trimmed : null;
   };
@@ -156,21 +151,15 @@ function normalizeAthlete(raw: any): AthleteListItem {
   };
 
   const firstName =
-    typeof raw?.first_name === "string" && raw.first_name.trim()
-      ? raw.first_name.trim()
-      : null;
+    typeof raw?.first_name === 'string' && raw.first_name.trim() ? raw.first_name.trim() : null;
   const lastName =
-    typeof raw?.last_name === "string" && raw.last_name.trim()
-      ? raw.last_name.trim()
-      : null;
+    typeof raw?.last_name === 'string' && raw.last_name.trim() ? raw.last_name.trim() : null;
 
   let fullName =
-    typeof raw?.full_name === "string" && raw.full_name.trim()
-      ? raw.full_name.trim()
-      : null;
+    typeof raw?.full_name === 'string' && raw.full_name.trim() ? raw.full_name.trim() : null;
 
   if (!fullName) {
-    const combined = [firstName, lastName].filter(Boolean).join(" ").trim();
+    const combined = [firstName, lastName].filter(Boolean).join(' ').trim();
     fullName = combined ? combined : null;
   }
 
@@ -180,8 +169,7 @@ function normalizeAthlete(raw: any): AthleteListItem {
     normalizeOptionalString(parent?.full_name) ??
     normalizeOptionalString(parent?.name);
   const parentEmail =
-    normalizeOptionalString(raw?.parent_email) ??
-    normalizeOptionalString(parent?.email);
+    normalizeOptionalString(raw?.parent_email) ?? normalizeOptionalString(parent?.email);
   const parentMobilePhone =
     normalizeOptionalString(raw?.parent_mobile_phone) ??
     normalizeOptionalString(parent?.phone_number) ??
@@ -189,8 +177,7 @@ function normalizeAthlete(raw: any): AthleteListItem {
     normalizeOptionalString(parent?.mobile_phone) ??
     normalizeOptionalString(parent?.cell_number);
   const relationship =
-    normalizeOptionalString(raw?.relationship) ??
-    normalizeOptionalString(parent?.relationship);
+    normalizeOptionalString(raw?.relationship) ?? normalizeOptionalString(parent?.relationship);
   const positionId =
     normalizeOptionalString(raw?.position_id) ??
     normalizeOptionalString(raw?.primary_position_id) ??
@@ -205,31 +192,27 @@ function normalizeAthlete(raw: any): AthleteListItem {
     normalizeOptionalStringArray(raw?.primary_positions);
 
   return {
-    id: typeof raw?.id === "string" ? raw.id : "",
-    org_id: typeof raw?.org_id === "string" ? raw.org_id : null,
+    id: typeof raw?.id === 'string' ? raw.id : '',
+    org_id: typeof raw?.org_id === 'string' ? raw.org_id : null,
     user_id:
-      typeof raw?.user_id === "string"
+      typeof raw?.user_id === 'string'
         ? raw.user_id
-        : typeof raw?.userId === "string"
+        : typeof raw?.userId === 'string'
           ? raw.userId
           : null,
     first_name: firstName,
     last_name: lastName,
     full_name: fullName,
-    email: typeof raw?.email === "string" ? raw.email.trim() : null,
-    phone: typeof raw?.phone === "string" ? raw.phone.trim() : null,
-    cell_number:
-      typeof raw?.cell_number === "string" ? raw.cell_number.trim() : null,
+    email: typeof raw?.email === 'string' ? raw.email.trim() : null,
+    phone: typeof raw?.phone === 'string' ? raw.phone.trim() : null,
+    cell_number: typeof raw?.cell_number === 'string' ? raw.cell_number.trim() : null,
     parent_email: parentEmail,
     parent_full_name: parentFullName,
     parent_mobile_phone: parentMobilePhone,
     relationship,
-    gender: typeof raw?.gender === "string" ? raw.gender.trim() : null,
+    gender: typeof raw?.gender === 'string' ? raw.gender.trim() : null,
     age: normalizeAge(raw?.age),
-    username:
-      typeof raw?.username === "string" && raw.username.trim()
-        ? raw.username.trim()
-        : null,
+    username: typeof raw?.username === 'string' && raw.username.trim() ? raw.username.trim() : null,
     graduation_year: normalizeGraduationYear(raw?.graduation_year),
     position_id: positionId,
     position: positionName,
@@ -239,12 +222,12 @@ function normalizeAthlete(raw: any): AthleteListItem {
 }
 
 export function athleteLabel(
-  athlete: Pick<AthleteListItem, "full_name" | "first_name" | "last_name">,
+  athlete: Pick<AthleteListItem, 'full_name' | 'first_name' | 'last_name'>,
 ) {
   return (
     athlete.full_name ||
-    [athlete.first_name, athlete.last_name].filter(Boolean).join(" ") ||
-    "Unnamed athlete"
+    [athlete.first_name, athlete.last_name].filter(Boolean).join(' ') ||
+    'Unnamed athlete'
   );
 }
 
@@ -256,35 +239,33 @@ export async function listAthletes(
   baseUrl = DEFAULT_BASE_URL,
 ): Promise<{ items: AthleteListItem[]; count?: number }> {
   if (!params.orgId?.trim()) {
-    throw new Error("orgId is required.");
+    throw new Error('orgId is required.');
   }
 
   const qs = buildListQuery(params);
   const url = `${baseUrl}/functions/v1/api/athletes/list?${qs}`;
 
   const res = await apiFetch(url, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
     orgId: params.orgId ?? null,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | AthletesListResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as AthletesListResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if (!data?.ok) {
-    throw new Error((data as any)?.error || "Failed to load athletes.");
+    throw new Error((data as any)?.error || 'Failed to load athletes.');
   }
 
   const rawItems = (data.items ?? (data as any).data ?? []) as unknown[];
   const items = rawItems.map((item) => normalizeAthlete(item)).filter((a) => a.id);
   const countRaw = (data as any)?.count;
   const count =
-    typeof countRaw === "number"
+    typeof countRaw === 'number'
       ? countRaw
       : Number.isFinite(Number(countRaw))
         ? Number(countRaw)
@@ -294,23 +275,23 @@ export async function listAthletes(
 }
 
 function normalizeCreatePayload(input: CreateAthleteInput) {
-  if (!input.org_id?.trim()) throw new Error("org_id is required.");
-  if (!input.email?.trim()) throw new Error("email is required.");
-  if (!input.password?.trim()) throw new Error("password is required.");
-  if (!input.first_name?.trim()) throw new Error("first_name is required.");
-  if (!input.last_name?.trim()) throw new Error("last_name is required.");
-  if (!input.username?.trim()) throw new Error("username is required.");
+  if (!input.org_id?.trim()) throw new Error('org_id is required.');
+  if (!input.email?.trim()) throw new Error('email is required.');
+  if (!input.password?.trim()) throw new Error('password is required.');
+  if (!input.first_name?.trim()) throw new Error('first_name is required.');
+  if (!input.last_name?.trim()) throw new Error('last_name is required.');
+  if (!input.username?.trim()) throw new Error('username is required.');
 
   const graduationYear = normalizeGraduationYear(input.graduation_year);
   const age = normalizeAge(input.age);
   const teamId = input.team_id?.trim() || null;
   const positionId = input.position_id?.trim() || null;
   const gender = input.gender?.trim() || null;
-  const fullNameInput = input.full_name?.trim() || "";
+  const fullNameInput = input.full_name?.trim() || '';
   const derivedFullName = [input.first_name, input.last_name]
     .map((value) => value?.trim())
     .filter(Boolean)
-    .join(" ");
+    .join(' ');
   const fullName = fullNameInput || derivedFullName || null;
 
   const normalizeOptionalString = (value: unknown) => {
@@ -384,19 +365,19 @@ function normalizeUpdatePayload(input: UpdateAthleteInput) {
     return trimmed ? trimmed : null;
   };
 
-  const email = normalizeRequiredString(input.email, "email");
+  const email = normalizeRequiredString(input.email, 'email');
   if (email !== undefined) payload.email = email;
 
-  const firstName = normalizeRequiredString(input.first_name, "first_name");
+  const firstName = normalizeRequiredString(input.first_name, 'first_name');
   if (firstName !== undefined) payload.first_name = firstName;
 
-  const lastName = normalizeRequiredString(input.last_name, "last_name");
+  const lastName = normalizeRequiredString(input.last_name, 'last_name');
   if (lastName !== undefined) payload.last_name = lastName;
 
   const fullName = normalizeOptionalString(input.full_name);
   if (fullName !== undefined) payload.full_name = fullName;
 
-  const username = normalizeRequiredString(input.username, "username");
+  const username = normalizeRequiredString(input.username, 'username');
   if (username !== undefined) payload.username = username;
 
   const password = normalizeOptionalString(input.password);
@@ -454,27 +435,25 @@ export async function createAthlete(
   const url = `${baseUrl}/functions/v1/api/athletes`;
 
   const res = await apiFetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
     orgId: payload.org_id ?? null,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | CreateAthleteResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as CreateAthleteResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if (!data?.ok) {
-    throw new Error((data as any)?.error || "Failed to create athlete.");
+    throw new Error((data as any)?.error || 'Failed to create athlete.');
   }
 
   const raw = (data as any)?.athlete ?? (data as any)?.data ?? data;
-  if (!raw || typeof raw !== "object") {
-    throw new Error("Invalid response from athlete create endpoint.");
+  if (!raw || typeof raw !== 'object') {
+    throw new Error('Invalid response from athlete create endpoint.');
   }
 
   return normalizeAthlete(raw);
@@ -488,33 +467,31 @@ export async function getAthleteById(
   options: { orgId?: string | null; baseUrl?: string } = {},
 ): Promise<AthleteListItem> {
   if (!athleteId?.trim()) {
-    throw new Error("athleteId is required.");
+    throw new Error('athleteId is required.');
   }
 
   const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
   const url = `${baseUrl}/functions/v1/api/athletes/${athleteId}`;
 
   const res = await apiFetch(url, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
     orgId,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | AthleteDetailResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as AthleteDetailResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if ((data as any)?.ok === false) {
-    throw new Error((data as any)?.error || "Failed to load athlete.");
+    throw new Error((data as any)?.error || 'Failed to load athlete.');
   }
 
   const raw = (data as any)?.athlete ?? (data as any)?.data ?? data;
-  if (!raw || typeof raw !== "object") {
-    throw new Error("Invalid response from athlete detail endpoint.");
+  if (!raw || typeof raw !== 'object') {
+    throw new Error('Invalid response from athlete detail endpoint.');
   }
 
   return normalizeAthlete(raw);
@@ -529,7 +506,7 @@ export async function updateAthlete(
   options: { orgId?: string | null; baseUrl?: string } = {},
 ): Promise<AthleteListItem> {
   if (!athleteId?.trim()) {
-    throw new Error("athleteId is required.");
+    throw new Error('athleteId is required.');
   }
 
   const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
@@ -537,27 +514,25 @@ export async function updateAthlete(
   const url = `${baseUrl}/functions/v1/api/athletes/${athleteId}`;
 
   const res = await apiFetch(url, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
     orgId,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | UpdateAthleteResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as UpdateAthleteResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if ((data as any)?.ok === false) {
-    throw new Error((data as any)?.error || "Failed to update athlete.");
+    throw new Error((data as any)?.error || 'Failed to update athlete.');
   }
 
   const raw = (data as any)?.athlete ?? (data as any)?.data ?? data;
-  if (!raw || typeof raw !== "object") {
-    throw new Error("Invalid response from athlete update endpoint.");
+  if (!raw || typeof raw !== 'object') {
+    throw new Error('Invalid response from athlete update endpoint.');
   }
 
   return normalizeAthlete(raw);
@@ -571,10 +546,10 @@ export async function deleteAthlete(
   options: { orgId: string; baseUrl?: string },
 ): Promise<void> {
   if (!athleteId?.trim()) {
-    throw new Error("athleteId is required.");
+    throw new Error('athleteId is required.');
   }
   if (!options.orgId?.trim()) {
-    throw new Error("orgId is required.");
+    throw new Error('orgId is required.');
   }
 
   const baseUrl = options.baseUrl || DEFAULT_BASE_URL;
@@ -582,20 +557,18 @@ export async function deleteAthlete(
   const url = `${baseUrl}/functions/v1/api/athletes/${encodeURIComponent(athleteId.trim())}?${qs.toString()}`;
 
   const res = await apiFetch(url, {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json" },
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
     orgId: options.orgId,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | DeleteAthleteResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as DeleteAthleteResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if ((data as any)?.ok === false) {
-    throw new Error((data as any)?.error || "Failed to delete athlete.");
+    throw new Error((data as any)?.error || 'Failed to delete athlete.');
   }
 }

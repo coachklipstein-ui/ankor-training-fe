@@ -1,12 +1,12 @@
-import * as React from "react";
-import { Box, Button, Stack, Typography } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../app/providers/AuthProvider";
-import { SPORT_OPTIONS } from "../constants";
-import { createTeam } from "../services/teamsService";
-import TeamFormFields from "../components/TeamFormFields";
-import { createInitialTeamForm, type TeamFormState } from "../utils/teamForm";
-import { validateTeamForm } from "../utils/validation";
+import * as React from 'react';
+import { Box, Button, Stack, Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
+import { SPORT_OPTIONS } from '../constants';
+import { createTeam } from '../services/teamsService';
+import TeamFormFields from '../components/TeamFormFields';
+import { createInitialTeamForm, type TeamFormState } from '../utils/teamForm';
+import { validateTeamForm } from '../utils/validation';
 
 export default function NewTeamPage() {
   const navigate = useNavigate();
@@ -16,11 +16,10 @@ export default function NewTeamPage() {
   const [saving, setSaving] = React.useState(false);
   const [submitError, setSubmitError] = React.useState<string | null>(null);
 
-  const handleChange = (field: keyof TeamFormState) => (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    setForm((prev) => ({ ...prev, [field]: event.target.value }));
-  };
+  const handleChange =
+    (field: keyof TeamFormState) => (event: React.ChangeEvent<HTMLInputElement>) => {
+      setForm((prev) => ({ ...prev, [field]: event.target.value }));
+    };
 
   const handleActiveChange = (value: boolean) => {
     setForm((prev) => ({ ...prev, isActive: value }));
@@ -34,7 +33,7 @@ export default function NewTeamPage() {
     if (Object.keys(nextErrors).length > 0) return;
 
     if (!orgId) {
-      setSubmitError("Missing org_id. Please sign in again.");
+      setSubmitError('Missing org_id. Please sign in again.');
       return;
     }
 
@@ -50,11 +49,10 @@ export default function NewTeamPage() {
       if (created?.id) {
         navigate(`/teams/${created.id}`);
       } else {
-        navigate("/teams");
+        navigate('/teams');
       }
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to create team.";
+      const message = err instanceof Error ? err.message : 'Failed to create team.';
       setSubmitError(message);
     } finally {
       setSaving(false);
@@ -67,12 +65,12 @@ export default function NewTeamPage() {
         spacing={3}
         component="form"
         onSubmit={handleSubmit}
-        sx={{ maxWidth: 1100, width: "100%", mx: "auto" }}
+        sx={{ maxWidth: 1100, width: '100%', mx: 'auto' }}
       >
         <Stack
-          direction={{ xs: "column", sm: "row" }}
+          direction={{ xs: 'column', sm: 'row' }}
           spacing={2}
-          alignItems={{ sm: "center" }}
+          alignItems={{ sm: 'center' }}
           justifyContent="space-between"
         >
           <Box>
@@ -83,12 +81,12 @@ export default function NewTeamPage() {
               Create a new team for your organization.
             </Typography>
           </Box>
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-            <Button variant="outlined" onClick={() => navigate("/teams")}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+            <Button variant="outlined" onClick={() => navigate('/teams')}>
               Cancel
             </Button>
             <Button type="submit" variant="contained" disabled={saving}>
-              {saving ? "Saving..." : "Save"}
+              {saving ? 'Saving...' : 'Save'}
             </Button>
           </Stack>
         </Stack>

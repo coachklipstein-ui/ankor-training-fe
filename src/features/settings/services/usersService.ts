@@ -1,16 +1,10 @@
 // src/services/usersService.ts
 // Pure fetch wrapper to call your Deno edge functions under /functions/v1/api/users/*
 
-import { apiFetch } from '../../../shared/api/apiClient'
-export type UserRole = "coach" | "athlete" | string;
+import { apiFetch } from '../../../shared/api/apiClient';
+export type UserRole = 'coach' | 'athlete' | string;
 export type ManagedOrgRole =
-  | "owner"
-  | "admin"
-  | "coach"
-  | "athlete"
-  | "parent"
-  | "staff"
-  | "viewer";
+  'owner' | 'admin' | 'coach' | 'athlete' | 'parent' | 'staff' | 'viewer';
 
 export type UserListItem = {
   user_id: string;
@@ -51,13 +45,9 @@ export type UsersListResponse =
   | { ok: true; count?: number; items?: UserListItem[]; data?: UserListItem[] }
   | { ok: false; error: string };
 
-export type ManagedUserResponse =
-  | { ok: true; data: ManagedUser }
-  | { ok: false; error: string };
+export type ManagedUserResponse = { ok: true; data: ManagedUser } | { ok: false; error: string };
 
-export type DeleteManagedUserResponse =
-  | { ok: true; data?: unknown }
-  | { ok: false; error: string };
+export type DeleteManagedUserResponse = { ok: true; data?: unknown } | { ok: false; error: string };
 
 export type AuthLoginUser = {
   id: string;
@@ -69,9 +59,7 @@ export type AuthLoginUser = {
   athlete_id: string | null;
 };
 
-export type AuthLoginResponse =
-  | { ok: true; user: AuthLoginUser }
-  | { ok: false; error: string };
+export type AuthLoginResponse = { ok: true; user: AuthLoginUser } | { ok: false; error: string };
 
 export type ListUsersParams = {
   orgId: string;
@@ -81,34 +69,33 @@ export type ListUsersParams = {
 };
 
 const DEFAULT_BASE_URL =
-  ((typeof import.meta !== "undefined" &&
+  ((typeof import.meta !== 'undefined' &&
     (import.meta as any).env &&
-    (import.meta as any).env.VITE_BACKEND_URL) as string) ||
-  "http://localhost:8000";
+    (import.meta as any).env.VITE_BACKEND_URL) as string) || 'http://localhost:8000';
 
 function buildListQuery(params: ListUsersParams) {
   const u = new URLSearchParams();
-  u.set("org_id", params.orgId);
-  if (params.q?.trim()) u.set("q", params.q.trim());
-  if (Number.isFinite(params.limit)) u.set("limit", String(params.limit));
-  if (Number.isFinite(params.offset)) u.set("offset", String(params.offset));
+  u.set('org_id', params.orgId);
+  if (params.q?.trim()) u.set('q', params.q.trim());
+  if (Number.isFinite(params.limit)) u.set('limit', String(params.limit));
+  if (Number.isFinite(params.offset)) u.set('offset', String(params.offset));
   return u.toString();
 }
 
 function normalizeGraduationYear(raw: unknown): number | null {
-  if (raw === null || raw === undefined || raw === "") return null;
-  const n = typeof raw === "number" ? raw : Number(raw);
+  if (raw === null || raw === undefined || raw === '') return null;
+  const n = typeof raw === 'number' ? raw : Number(raw);
   return Number.isFinite(n) ? n : null;
 }
 
 function normalizeFullName(raw: any): string | null {
-  if (typeof raw?.full_name === "string" && raw.full_name.trim()) {
+  if (typeof raw?.full_name === 'string' && raw.full_name.trim()) {
     return raw.full_name.trim();
   }
 
   const fromParts = [raw?.first_name, raw?.last_name]
-    .filter((value) => typeof value === "string" && value.trim())
-    .join(" ")
+    .filter((value) => typeof value === 'string' && value.trim())
+    .join(' ')
     .trim();
 
   return fromParts ? fromParts : null;
@@ -116,22 +103,18 @@ function normalizeFullName(raw: any): string | null {
 
 function normalizeUser(raw: any): UserListItem {
   const id =
-    typeof raw?.user_id === "string"
-      ? raw.user_id
-      : typeof raw?.id === "string"
-        ? raw.id
-        : "";
+    typeof raw?.user_id === 'string' ? raw.user_id : typeof raw?.id === 'string' ? raw.id : '';
 
   const phone =
-    typeof raw?.phone === "string"
+    typeof raw?.phone === 'string'
       ? raw.phone
-      : typeof raw?.cell_number === "string"
+      : typeof raw?.cell_number === 'string'
         ? raw.cell_number
         : null;
 
   return {
     user_id: id,
-    role: typeof raw?.role === "string" ? raw.role : "",
+    role: typeof raw?.role === 'string' ? raw.role : '',
     full_name: normalizeFullName(raw),
     phone,
     graduation_year: normalizeGraduationYear(
@@ -142,39 +125,34 @@ function normalizeUser(raw: any): UserListItem {
 
 function normalizeAuthLoginUser(raw: any): AuthLoginUser {
   return {
-    id: typeof raw?.id === "string" ? raw.id : "",
-    email: typeof raw?.email === "string" ? raw.email : "",
+    id: typeof raw?.id === 'string' ? raw.id : '',
+    email: typeof raw?.email === 'string' ? raw.email : '',
     full_name: normalizeFullName(raw),
-    role: typeof raw?.role === "string" ? raw.role : "",
+    role: typeof raw?.role === 'string' ? raw.role : '',
     default_org_id:
-      typeof raw?.default_org_id === "string" && raw.default_org_id.trim()
+      typeof raw?.default_org_id === 'string' && raw.default_org_id.trim()
         ? raw.default_org_id.trim()
         : null,
-    coach_id:
-      typeof raw?.coach_id === "string" && raw.coach_id.trim()
-        ? raw.coach_id.trim()
-        : null,
+    coach_id: typeof raw?.coach_id === 'string' && raw.coach_id.trim() ? raw.coach_id.trim() : null,
     athlete_id:
-      typeof raw?.athlete_id === "string" && raw.athlete_id.trim()
-        ? raw.athlete_id.trim()
-        : null,
+      typeof raw?.athlete_id === 'string' && raw.athlete_id.trim() ? raw.athlete_id.trim() : null,
   };
 }
 
 function normalizeManagedUser(raw: any): ManagedUser {
   return {
-    user_id: typeof raw?.user_id === "string" ? raw.user_id : "",
-    email: typeof raw?.email === "string" ? raw.email : null,
-    first_name: typeof raw?.first_name === "string" ? raw.first_name : null,
-    last_name: typeof raw?.last_name === "string" ? raw.last_name : null,
+    user_id: typeof raw?.user_id === 'string' ? raw.user_id : '',
+    email: typeof raw?.email === 'string' ? raw.email : null,
+    first_name: typeof raw?.first_name === 'string' ? raw.first_name : null,
+    last_name: typeof raw?.last_name === 'string' ? raw.last_name : null,
     full_name: normalizeFullName(raw),
-    phone: typeof raw?.phone === "string" ? raw.phone : null,
-    profile_role: typeof raw?.profile_role === "string" ? raw.profile_role : null,
-    org_id: typeof raw?.org_id === "string" ? raw.org_id : null,
-    org_role: typeof raw?.org_role === "string" ? raw.org_role as ManagedOrgRole : null,
-    is_active: typeof raw?.is_active === "boolean" ? raw.is_active : null,
-    created_at: typeof raw?.created_at === "string" ? raw.created_at : null,
-    updated_at: typeof raw?.updated_at === "string" ? raw.updated_at : null,
+    phone: typeof raw?.phone === 'string' ? raw.phone : null,
+    profile_role: typeof raw?.profile_role === 'string' ? raw.profile_role : null,
+    org_id: typeof raw?.org_id === 'string' ? raw.org_id : null,
+    org_role: typeof raw?.org_role === 'string' ? (raw.org_role as ManagedOrgRole) : null,
+    is_active: typeof raw?.is_active === 'boolean' ? raw.is_active : null,
+    created_at: typeof raw?.created_at === 'string' ? raw.created_at : null,
+    updated_at: typeof raw?.updated_at === 'string' ? raw.updated_at : null,
   };
 }
 
@@ -186,35 +164,33 @@ export async function listUsers(
   baseUrl = DEFAULT_BASE_URL,
 ): Promise<{ items: UserListItem[]; count?: number }> {
   if (!params.orgId?.trim()) {
-    throw new Error("orgId is required.");
+    throw new Error('orgId is required.');
   }
 
   const qs = buildListQuery(params);
   const url = `${baseUrl}/functions/v1/api/users/list?${qs}`;
 
   const res = await apiFetch(url, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
     orgId: params.orgId ?? null,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | UsersListResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as UsersListResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if (!data?.ok) {
-    throw new Error((data as any)?.error || "Failed to load users.");
+    throw new Error((data as any)?.error || 'Failed to load users.');
   }
 
   const rawItems = (data.items ?? (data as any).data ?? []) as unknown[];
   const items = rawItems.map((item) => normalizeUser(item)).filter((u) => u.user_id);
   const countRaw = (data as any)?.count;
   const count =
-    typeof countRaw === "number"
+    typeof countRaw === 'number'
       ? countRaw
       : Number.isFinite(Number(countRaw))
         ? Number(countRaw)
@@ -231,31 +207,29 @@ export async function getManagedUser(
   baseUrl = DEFAULT_BASE_URL,
 ): Promise<ManagedUser> {
   if (!params.userId?.trim()) {
-    throw new Error("userId is required.");
+    throw new Error('userId is required.');
   }
   if (!params.orgId?.trim()) {
-    throw new Error("orgId is required.");
+    throw new Error('orgId is required.');
   }
 
   const qs = new URLSearchParams({ org_id: params.orgId.trim() });
   const url = `${baseUrl}/functions/v1/api/users/${encodeURIComponent(params.userId.trim())}?${qs.toString()}`;
 
   const res = await apiFetch(url, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
     orgId: params.orgId,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | ManagedUserResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as ManagedUserResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if (!data?.ok) {
-    throw new Error((data as any)?.error || "Failed to load user.");
+    throw new Error((data as any)?.error || 'Failed to load user.');
   }
 
   return normalizeManagedUser(data.data);
@@ -270,30 +244,28 @@ export async function updateManagedUser(
   baseUrl = DEFAULT_BASE_URL,
 ): Promise<ManagedUser> {
   if (!userId?.trim()) {
-    throw new Error("userId is required.");
+    throw new Error('userId is required.');
   }
   if (!input.org_id?.trim()) {
-    throw new Error("org_id is required.");
+    throw new Error('org_id is required.');
   }
 
   const url = `${baseUrl}/functions/v1/api/users/${encodeURIComponent(userId.trim())}`;
   const res = await apiFetch(url, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
     orgId: input.org_id,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | ManagedUserResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as ManagedUserResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if (!data?.ok) {
-    throw new Error((data as any)?.error || "Failed to update user.");
+    throw new Error((data as any)?.error || 'Failed to update user.');
   }
 
   return normalizeManagedUser(data.data);
@@ -307,34 +279,32 @@ export async function deleteManagedUser(
   baseUrl = DEFAULT_BASE_URL,
 ): Promise<void> {
   if (!params.userId?.trim()) {
-    throw new Error("userId is required.");
+    throw new Error('userId is required.');
   }
   if (!params.orgId?.trim()) {
-    throw new Error("orgId is required.");
+    throw new Error('orgId is required.');
   }
 
   const qs = new URLSearchParams({ org_id: params.orgId.trim() });
   if (params.hardDelete) {
-    qs.set("hard_delete", "true");
+    qs.set('hard_delete', 'true');
   }
 
   const url = `${baseUrl}/functions/v1/api/users/${encodeURIComponent(params.userId.trim())}?${qs.toString()}`;
   const res = await apiFetch(url, {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json" },
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
     orgId: params.orgId,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | DeleteManagedUserResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as DeleteManagedUserResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if ((data as any)?.ok === false) {
-    throw new Error((data as any)?.error || "Failed to delete user.");
+    throw new Error((data as any)?.error || 'Failed to delete user.');
   }
 }
 
@@ -346,33 +316,31 @@ export async function loginUser(
   baseUrl = DEFAULT_BASE_URL,
 ): Promise<AuthLoginUser> {
   if (!params.userId?.trim()) {
-    throw new Error("userId is required.");
+    throw new Error('userId is required.');
   }
 
   const url = `${baseUrl}/functions/v1/api/auth/login`;
 
   const res = await apiFetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ user_id: params.userId.trim() }),
     includeOrgId: false,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | AuthLoginResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as AuthLoginResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if (!data?.ok) {
-    throw new Error((data as any)?.error || "Login failed.");
+    throw new Error((data as any)?.error || 'Login failed.');
   }
 
   return normalizeAuthLoginUser(data.user);
 }
 
 export function userLabel(user: UserListItem | null | undefined) {
-  return user?.full_name || "Unnamed user";
+  return user?.full_name || 'Unnamed user';
 }

@@ -32,9 +32,7 @@ export default function OrganizationForm() {
 
       {/* Logo file uploader */}
       <FormGrid size={{ xs: 12 }}>
-        <FormLabel htmlFor="org-logo">
-          Logo
-        </FormLabel>
+        <FormLabel htmlFor="org-logo">Logo</FormLabel>
         <OutlinedInput
           id="org-logo"
           name="logo"
@@ -135,7 +133,7 @@ export default function OrganizationForm() {
           required
           size="small"
         />
-      </FormGrid>     
+      </FormGrid>
     </Grid>
   );
 }

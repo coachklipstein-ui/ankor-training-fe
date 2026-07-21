@@ -6,13 +6,12 @@
 // Types
 // ---------------------------------------------------------------------
 
-import { apiFetch } from '../../../shared/api/apiClient'
+import { apiFetch } from '../../../shared/api/apiClient';
 
 const DEFAULT_BASE_URL =
-  ((typeof import.meta !== "undefined" &&
+  ((typeof import.meta !== 'undefined' &&
     (import.meta as any).env &&
-    (import.meta as any).env.VITE_BACKEND_URL) as string) ||
-  "http://localhost:8000";
+    (import.meta as any).env.VITE_BACKEND_URL) as string) || 'http://localhost:8000';
 
 export type Team = {
   id: string;
@@ -25,12 +24,10 @@ export type Team = {
 };
 
 export type TeamsListResponse =
-  | { ok: true; count?: number; items?: Team[]; data?: Team[] }
-  | { ok: false; error: string };
+  { ok: true; count?: number; items?: Team[]; data?: Team[] } | { ok: false; error: string };
 
 export type TeamDetailResponse =
-  | { ok: true; team?: Team; data?: Team }
-  | { ok: false; error: string };
+  { ok: true; team?: Team; data?: Team } | { ok: false; error: string };
 
 export type CreateTeamInput = {
   org_id: string;
@@ -40,8 +37,7 @@ export type CreateTeamInput = {
 };
 
 export type CreateTeamResponse =
-  | { ok: true; team?: Team; data?: Team }
-  | { ok: false; error: string };
+  { ok: true; team?: Team; data?: Team } | { ok: false; error: string };
 
 export type UpdateTeamInput = {
   name?: string;
@@ -50,18 +46,16 @@ export type UpdateTeamInput = {
 };
 
 export type UpdateTeamResponse =
-  | { ok: true; team?: Team; data?: Team }
-  | { ok: false; error: string };
+  { ok: true; team?: Team; data?: Team } | { ok: false; error: string };
 
 export type DeleteTeamResponse =
-  | { ok: true; data?: unknown; team?: Team }
-  | { ok: false; error: string };
+  { ok: true; data?: unknown; team?: Team } | { ok: false; error: string };
 
 export type ListTeamsParams = {
-  orgId?: string;   // often derived from auth; optional if backend uses RLS
-  q?: string;       // optional search (if supported)
-  limit?: number;   // optional, let backend default if omitted
-  offset?: number;  // optional, let backend default if omitted
+  orgId?: string; // often derived from auth; optional if backend uses RLS
+  q?: string; // optional search (if supported)
+  limit?: number; // optional, let backend default if omitted
+  offset?: number; // optional, let backend default if omitted
 };
 
 export type TeamAthlete = {
@@ -75,7 +69,7 @@ export type TeamAthlete = {
   phone: string | null;
   graduation_year: number | null;
   cell_number: string | null;
-  position : string
+  position: string;
 };
 
 export type AthletesByTeamResponse =
@@ -89,10 +83,10 @@ export type AthletesByTeamResponse =
 function buildTeamsQuery(params: ListTeamsParams = {}) {
   const u = new URLSearchParams();
 
-  if (params.orgId?.trim()) u.set("org_id", params.orgId.trim());
-  if (params.q?.trim()) u.set("q", params.q.trim());
-  if (Number.isFinite(params.limit)) u.set("limit", String(params.limit));
-  if (Number.isFinite(params.offset)) u.set("offset", String(params.offset));
+  if (params.orgId?.trim()) u.set('org_id', params.orgId.trim());
+  if (params.q?.trim()) u.set('q', params.q.trim());
+  if (Number.isFinite(params.limit)) u.set('limit', String(params.limit));
+  if (Number.isFinite(params.offset)) u.set('offset', String(params.offset));
 
   return u.toString();
 }
@@ -100,43 +94,43 @@ function buildTeamsQuery(params: ListTeamsParams = {}) {
 function normalizeTeam(raw: any): Team {
   const isActiveRaw = raw?.is_active ?? raw?.isActive;
   const is_active =
-    typeof isActiveRaw === "boolean"
+    typeof isActiveRaw === 'boolean'
       ? isActiveRaw
       : isActiveRaw == null
         ? true
         : Boolean(isActiveRaw);
 
   return {
-    id: typeof raw?.id === "string" ? raw.id : "",
-    org_id: typeof raw?.org_id === "string" ? raw.org_id : null,
-    sport_id: typeof raw?.sport_id === "string" ? raw.sport_id : null,
-    name: typeof raw?.name === "string" ? raw.name : "",
+    id: typeof raw?.id === 'string' ? raw.id : '',
+    org_id: typeof raw?.org_id === 'string' ? raw.org_id : null,
+    sport_id: typeof raw?.sport_id === 'string' ? raw.sport_id : null,
+    name: typeof raw?.name === 'string' ? raw.name : '',
     is_active,
     created_at:
-      typeof raw?.created_at === "string"
+      typeof raw?.created_at === 'string'
         ? raw.created_at
-        : typeof raw?.createdAt === "string"
+        : typeof raw?.createdAt === 'string'
           ? raw.createdAt
           : null,
     updated_at:
-      typeof raw?.updated_at === "string"
+      typeof raw?.updated_at === 'string'
         ? raw.updated_at
-        : typeof raw?.updatedAt === "string"
+        : typeof raw?.updatedAt === 'string'
           ? raw.updatedAt
           : null,
   };
 }
 
 function normalizeCreatePayload(input: CreateTeamInput) {
-  if (!input.org_id?.trim()) throw new Error("org_id is required.");
-  if (!input.name?.trim()) throw new Error("name is required.");
+  if (!input.org_id?.trim()) throw new Error('org_id is required.');
+  if (!input.name?.trim()) throw new Error('name is required.');
 
   const sportId = input.sport_id?.trim();
   return {
     org_id: input.org_id.trim(),
     name: input.name.trim(),
     sport_id: sportId ? sportId : null,
-    is_active: typeof input.is_active === "boolean" ? input.is_active : true,
+    is_active: typeof input.is_active === 'boolean' ? input.is_active : true,
   };
 }
 
@@ -144,19 +138,19 @@ function normalizeUpdatePayload(input: UpdateTeamInput) {
   const payload: Record<string, unknown> = {};
 
   if (input.name !== undefined) {
-    const trimmed = String(input.name ?? "").trim();
-    if (!trimmed) throw new Error("name is required.");
+    const trimmed = String(input.name ?? '').trim();
+    if (!trimmed) throw new Error('name is required.');
     payload.name = trimmed;
   }
 
   if (input.sport_id !== undefined) {
-    const trimmed = String(input.sport_id ?? "").trim();
+    const trimmed = String(input.sport_id ?? '').trim();
     payload.sport_id = trimmed ? trimmed : null;
   }
 
   if (input.is_active !== undefined) {
-    if (typeof input.is_active !== "boolean") {
-      throw new Error("is_active must be a boolean.");
+    if (typeof input.is_active !== 'boolean') {
+      throw new Error('is_active must be a boolean.');
     }
     payload.is_active = input.is_active;
   }
@@ -170,11 +164,7 @@ export function teamLabel(t: Team) {
 }
 
 export function athleteLabel(a: TeamAthlete) {
-  return (
-    a.full_name ||
-    [a.first_name, a.last_name].filter(Boolean).join(" ") ||
-    "Unnamed athlete"
-  );
+  return a.full_name || [a.first_name, a.last_name].filter(Boolean).join(' ') || 'Unnamed athlete';
 }
 
 // ---------------------------------------------------------------------
@@ -191,7 +181,7 @@ export function athleteLabel(a: TeamAthlete) {
  */
 export async function getAllTeams(
   params: ListTeamsParams = {},
-  baseUrl = DEFAULT_BASE_URL
+  baseUrl = DEFAULT_BASE_URL,
 ): Promise<Team[]> {
   const qs = buildTeamsQuery(params);
   const url =
@@ -200,21 +190,19 @@ export async function getAllTeams(
       : `${baseUrl}/functions/v1/api/teams/list`;
 
   const res = await apiFetch(url, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
     orgId: params.orgId ?? null,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | TeamsListResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as TeamsListResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if (!data?.ok) {
-    throw new Error(data?.error || "Failed to load teams.");
+    throw new Error(data?.error || 'Failed to load teams.');
   }
 
   // Support both { items: [...] } and { data: [...] } payloads
@@ -233,32 +221,30 @@ export async function createTeam(
   const url = `${baseUrl}/functions/v1/api/teams`;
 
   const res = await apiFetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
     orgId: payload.org_id ?? null,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | CreateTeamResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as CreateTeamResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if ((data as any)?.ok === false) {
-    throw new Error((data as any)?.error || "Failed to create team.");
+    throw new Error((data as any)?.error || 'Failed to create team.');
   }
 
   const raw = (data as any)?.team ?? (data as any)?.data ?? data;
-  if (!raw || typeof raw !== "object") {
-    throw new Error("Invalid response from team create endpoint.");
+  if (!raw || typeof raw !== 'object') {
+    throw new Error('Invalid response from team create endpoint.');
   }
 
   const team = normalizeTeam(raw);
   if (!team.id) {
-    throw new Error("Team create response missing id.");
+    throw new Error('Team create response missing id.');
   }
 
   return team;
@@ -272,38 +258,36 @@ export async function getTeamById(
   options: { orgId?: string | null; baseUrl?: string } = {},
 ): Promise<Team> {
   if (!teamId?.trim()) {
-    throw new Error("teamId is required.");
+    throw new Error('teamId is required.');
   }
 
   const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
   const url = `${baseUrl}/functions/v1/api/teams/${teamId}`;
 
   const res = await apiFetch(url, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
     orgId,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | TeamDetailResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as TeamDetailResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if ((data as any)?.ok === false) {
-    throw new Error((data as any)?.error || "Failed to load team.");
+    throw new Error((data as any)?.error || 'Failed to load team.');
   }
 
   const raw = (data as any)?.team ?? (data as any)?.data ?? data;
-  if (!raw || typeof raw !== "object") {
-    throw new Error("Invalid response from team detail endpoint.");
+  if (!raw || typeof raw !== 'object') {
+    throw new Error('Invalid response from team detail endpoint.');
   }
 
   const team = normalizeTeam(raw);
   if (!team.id) {
-    throw new Error("Team detail response missing id.");
+    throw new Error('Team detail response missing id.');
   }
 
   return team;
@@ -318,7 +302,7 @@ export async function updateTeam(
   options: { orgId?: string | null; baseUrl?: string } = {},
 ): Promise<Team> {
   if (!teamId?.trim()) {
-    throw new Error("teamId is required.");
+    throw new Error('teamId is required.');
   }
 
   const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
@@ -326,32 +310,30 @@ export async function updateTeam(
   const url = `${baseUrl}/functions/v1/api/teams/${teamId}`;
 
   const res = await apiFetch(url, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
     orgId,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | UpdateTeamResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as UpdateTeamResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if ((data as any)?.ok === false) {
-    throw new Error((data as any)?.error || "Failed to update team.");
+    throw new Error((data as any)?.error || 'Failed to update team.');
   }
 
   const raw = (data as any)?.team ?? (data as any)?.data ?? data;
-  if (!raw || typeof raw !== "object") {
-    throw new Error("Invalid response from team update endpoint.");
+  if (!raw || typeof raw !== 'object') {
+    throw new Error('Invalid response from team update endpoint.');
   }
 
   const team = normalizeTeam(raw);
   if (!team.id) {
-    throw new Error("Team update response missing id.");
+    throw new Error('Team update response missing id.');
   }
 
   return team;
@@ -365,10 +347,10 @@ export async function deleteTeam(
   options: { orgId: string; baseUrl?: string },
 ): Promise<void> {
   if (!teamId?.trim()) {
-    throw new Error("teamId is required.");
+    throw new Error('teamId is required.');
   }
   if (!options.orgId?.trim()) {
-    throw new Error("orgId is required.");
+    throw new Error('orgId is required.');
   }
 
   const baseUrl = options.baseUrl || DEFAULT_BASE_URL;
@@ -376,21 +358,19 @@ export async function deleteTeam(
   const url = `${baseUrl}/functions/v1/api/teams/${encodeURIComponent(teamId.trim())}?${qs.toString()}`;
 
   const res = await apiFetch(url, {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json" },
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
     orgId: options.orgId,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | DeleteTeamResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as DeleteTeamResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if ((data as any)?.ok === false) {
-    throw new Error((data as any)?.error || "Failed to delete team.");
+    throw new Error((data as any)?.error || 'Failed to delete team.');
   }
 }
 
@@ -409,32 +389,30 @@ export async function getAthletesByTeam(
   params: { orgId?: string | null; baseUrl?: string } = {},
 ): Promise<TeamAthlete[]> {
   if (!teamId?.trim()) {
-    throw new Error("teamId is required.");
+    throw new Error('teamId is required.');
   }
 
   const baseUrl = params.baseUrl || DEFAULT_BASE_URL;
 
   const sp = new URLSearchParams();
-  sp.set("team_id", teamId.trim());
+  sp.set('team_id', teamId.trim());
 
   const url = `${baseUrl}/functions/v1/api/teams/athletes-by-team?${sp.toString()}`;
 
   const res = await apiFetch(url, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
     orgId: params.orgId ?? null,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | AthletesByTeamResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as AthletesByTeamResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if (!data?.ok) {
-    throw new Error(data?.error || "Failed to load team athletes.");
+    throw new Error(data?.error || 'Failed to load team athletes.');
   }
 
   // Support both { items: [...] } and { data: [...] } payloads

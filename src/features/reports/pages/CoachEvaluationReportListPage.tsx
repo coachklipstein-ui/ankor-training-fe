@@ -1,4 +1,4 @@
-import * as React from 'react'
+import * as React from 'react';
 import {
   Box,
   Button,
@@ -8,66 +8,66 @@ import {
   Stack,
   TextField,
   Typography,
-} from '@mui/material'
-import SearchIcon from '@mui/icons-material/Search'
-import { useNavigate } from 'react-router-dom'
-import { formatEvaluationReportDate } from '../utils/formatEvaluationReportDate'
+} from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import { useNavigate } from 'react-router-dom';
+import { formatEvaluationReportDate } from '../utils/formatEvaluationReportDate';
 import {
   listLatestEvaluations,
   type LatestEvaluationRow,
-} from '../../evaluations/api/evaluationsApi'
-import { useAuth } from '../../../app/providers/AuthProvider'
+} from '../../evaluations/api/evaluationsApi';
+import { useAuth } from '../../../app/providers/AuthProvider';
 
 type EvaluationReportSummary = {
-  id: string
-  evaluationId: string
-  athleteId: string
-  athleteName: string
-  evaluatorName: string
-  scorecardTemplate: string
-  evaluatedAt: string
-}
+  id: string;
+  evaluationId: string;
+  athleteId: string;
+  athleteName: string;
+  evaluatorName: string;
+  scorecardTemplate: string;
+  evaluatedAt: string;
+};
 
 export default function CoachEvaluationReportListPage() {
-  const navigate = useNavigate()
-  const { orgId, loading: authLoading } = useAuth()
-  const [rows, setRows] = React.useState<LatestEvaluationRow[]>([])
-  const [loading, setLoading] = React.useState(false)
-  const [error, setError] = React.useState<string | null>(null)
-  const [athleteQuery, setAthleteQuery] = React.useState('')
-  const [dateQuery, setDateQuery] = React.useState('')
+  const navigate = useNavigate();
+  const { orgId, loading: authLoading } = useAuth();
+  const [rows, setRows] = React.useState<LatestEvaluationRow[]>([]);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [athleteQuery, setAthleteQuery] = React.useState('');
+  const [dateQuery, setDateQuery] = React.useState('');
 
   const loadReports = React.useCallback(async () => {
     if (!orgId) {
-      setRows([])
-      setError('Missing org_id for this account.')
-      setLoading(false)
-      return
+      setRows([]);
+      setError('Missing org_id for this account.');
+      setLoading(false);
+      return;
     }
 
     try {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
       const { rows: data } = await listLatestEvaluations({
         orgId,
         limit: 50,
         offset: 0,
         date: dateQuery || undefined,
-      })
-      setRows(data ?? [])
+      });
+      setRows(data ?? []);
     } catch (err) {
-      console.error('Failed to load evaluation reports', err)
-      setRows([])
-      setError('Failed to load evaluation reports')
+      console.error('Failed to load evaluation reports', err);
+      setRows([]);
+      setError('Failed to load evaluation reports');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [dateQuery, orgId])
+  }, [dateQuery, orgId]);
 
   React.useEffect(() => {
-    if (authLoading) return
-    void loadReports()
-  }, [authLoading, loadReports])
+    if (authLoading) return;
+    void loadReports();
+  }, [authLoading, loadReports]);
 
   const reports = React.useMemo<EvaluationReportSummary[]>(
     () =>
@@ -81,39 +81,39 @@ export default function CoachEvaluationReportListPage() {
         evaluatedAt: row.date,
       })),
     [rows],
-  )
+  );
 
   const filteredReports = React.useMemo(() => {
-    const nameFilter = athleteQuery.trim().toLowerCase()
-    const dateFilter = dateQuery.trim()
+    const nameFilter = athleteQuery.trim().toLowerCase();
+    const dateFilter = dateQuery.trim();
 
     return reports.filter((report) => {
       if (nameFilter && !report.athleteName.toLowerCase().includes(nameFilter)) {
-        return false
+        return false;
       }
 
       if (dateFilter && !report.evaluatedAt.startsWith(dateFilter)) {
-        return false
+        return false;
       }
 
-      return true
-    })
-  }, [athleteQuery, dateQuery, reports])
+      return true;
+    });
+  }, [athleteQuery, dateQuery, reports]);
 
-  const isLoading = loading || authLoading
+  const isLoading = loading || authLoading;
 
   const handleClearFilters = () => {
-    setAthleteQuery('')
-    setDateQuery('')
-  }
+    setAthleteQuery('');
+    setDateQuery('');
+  };
 
   const handleViewReport = (report: EvaluationReportSummary) => {
-    const params = new URLSearchParams()
-    if (report.athleteId) params.set('athleteId', report.athleteId)
-    params.set('returnTo', 'coach')
-    const query = params.toString()
-    navigate(`/reports/evaluation-reports/${report.id}${query ? `?${query}` : ''}`)
-  }
+    const params = new URLSearchParams();
+    if (report.athleteId) params.set('athleteId', report.athleteId);
+    params.set('returnTo', 'coach');
+    const query = params.toString();
+    navigate(`/reports/evaluation-reports/${report.id}${query ? `?${query}` : ''}`);
+  };
 
   return (
     <Box sx={{ p: { xs: 2, md: 3 } }}>
@@ -247,5 +247,5 @@ export default function CoachEvaluationReportListPage() {
         </Stack>
       </Stack>
     </Box>
-  )
+  );
 }

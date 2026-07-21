@@ -1,17 +1,17 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   listDrills,
   listDrillSegments,
   listDrillTags,
   getDrillMediaPlay,
   type DrillTag,
-} from "../services/drillsService";
-import type { DrillCard, DrillFilterField } from "../types";
-import type { SegmentOption } from "../utils/options";
-import { normalizeTagOptions, toSegmentOptions } from "../utils/options";
-import { createEmptyFilters, toOptionalNumber, toDrillCard } from "../utils/drillsList";
-import { PAGE_SIZE } from "../constants";
-import { useAuth } from "../../../app/providers/AuthProvider";
+} from '../services/drillsService';
+import type { DrillCard, DrillFilterField } from '../types';
+import type { SegmentOption } from '../utils/options';
+import { normalizeTagOptions, toSegmentOptions } from '../utils/options';
+import { createEmptyFilters, toOptionalNumber, toDrillCard } from '../utils/drillsList';
+import { PAGE_SIZE } from '../constants';
+import { useAuth } from '../../../app/providers/AuthProvider';
 
 type PlayState = {
   open: boolean;
@@ -23,7 +23,7 @@ type PlayState = {
 
 export default function useDrillsList() {
   const { profile, loading: authLoading } = useAuth();
-  const [query, setQuery] = React.useState("");
+  const [query, setQuery] = React.useState('');
   const [filters, setFilters] = React.useState(createEmptyFilters());
   const [drills, setDrills] = React.useState<DrillCard[]>([]);
   const [loading, setLoading] = React.useState(false);
@@ -45,10 +45,7 @@ export default function useDrillsList() {
   });
   const playRequestIdRef = React.useRef(0);
 
-  const selectedTagIds = React.useMemo(
-    () => Array.from(filters.tags),
-    [filters.tags],
-  );
+  const selectedTagIds = React.useMemo(() => Array.from(filters.tags), [filters.tags]);
   const tagLabelById = React.useMemo(() => {
     const map = new Map<string, string>();
     tagOptions.forEach((tag) => map.set(tag.id, tag.name));
@@ -64,7 +61,7 @@ export default function useDrillsList() {
       }
       const resolvedOrgId = profile?.default_org_id?.trim();
       if (!resolvedOrgId) {
-        setLoadError("Missing org_id for this account.");
+        setLoadError('Missing org_id for this account.');
         return;
       }
 
@@ -88,7 +85,7 @@ export default function useDrillsList() {
         setTotalCount(result.count ?? result.items.length);
       } catch (err) {
         if (!active) return;
-        setLoadError(err instanceof Error ? err.message : "Failed to load drills.");
+        setLoadError(err instanceof Error ? err.message : 'Failed to load drills.');
         setDrills([]);
         setTotalCount(0);
       } finally {
@@ -123,7 +120,7 @@ export default function useDrillsList() {
       }
       const resolvedOrgId = profile?.default_org_id?.trim();
       if (!resolvedOrgId) {
-        setSegmentsError("Missing org_id for this account.");
+        setSegmentsError('Missing org_id for this account.');
         return;
       }
 
@@ -135,9 +132,7 @@ export default function useDrillsList() {
         setSegmentOptions(toSegmentOptions(segments));
       } catch (err) {
         if (!active) return;
-        setSegmentsError(
-          err instanceof Error ? err.message : "Failed to load segments.",
-        );
+        setSegmentsError(err instanceof Error ? err.message : 'Failed to load segments.');
         setSegmentOptions([]);
       } finally {
         if (active) setSegmentsLoading(false);
@@ -150,7 +145,7 @@ export default function useDrillsList() {
       }
       const resolvedOrgId = profile?.default_org_id?.trim();
       if (!resolvedOrgId) {
-        setTagsError("Missing org_id for this account.");
+        setTagsError('Missing org_id for this account.');
         return;
       }
 
@@ -162,7 +157,7 @@ export default function useDrillsList() {
         setTagOptions(normalizeTagOptions(tags));
       } catch (err) {
         if (!active) return;
-        setTagsError(err instanceof Error ? err.message : "Failed to load tags.");
+        setTagsError(err instanceof Error ? err.message : 'Failed to load tags.');
         setTagOptions([]);
       } finally {
         if (active) setTagsLoading(false);
@@ -177,37 +172,40 @@ export default function useDrillsList() {
     };
   }, [profile, authLoading]);
 
-  const openPlay = React.useCallback((drill: DrillCard) => {
-    setPlayState({
-      open: true,
-      drill,
-      url: null,
-      loading: true,
-      error: null,
-    });
+  const openPlay = React.useCallback(
+    (drill: DrillCard) => {
+      setPlayState({
+        open: true,
+        drill,
+        url: null,
+        loading: true,
+        error: null,
+      });
 
-    const requestId = ++playRequestIdRef.current;
-    const resolvedOrgId = profile?.default_org_id?.trim();
+      const requestId = ++playRequestIdRef.current;
+      const resolvedOrgId = profile?.default_org_id?.trim();
 
-    void (async () => {
-      try {
-        const response = await getDrillMediaPlay(drill.id, { orgId: resolvedOrgId });
-        if (playRequestIdRef.current !== requestId) return;
-        setPlayState((prev) => ({
-          ...prev,
-          url: response.play_url,
-          loading: false,
-        }));
-      } catch (err) {
-        if (playRequestIdRef.current !== requestId) return;
-        setPlayState((prev) => ({
-          ...prev,
-          error: err instanceof Error ? err.message : "Failed to load drill video.",
-          loading: false,
-        }));
-      }
-    })();
-  }, [profile]);
+      void (async () => {
+        try {
+          const response = await getDrillMediaPlay(drill.id, { orgId: resolvedOrgId });
+          if (playRequestIdRef.current !== requestId) return;
+          setPlayState((prev) => ({
+            ...prev,
+            url: response.play_url,
+            loading: false,
+          }));
+        } catch (err) {
+          if (playRequestIdRef.current !== requestId) return;
+          setPlayState((prev) => ({
+            ...prev,
+            error: err instanceof Error ? err.message : 'Failed to load drill video.',
+            loading: false,
+          }));
+        }
+      })();
+    },
+    [profile],
+  );
 
   const closePlay = React.useCallback(() => {
     playRequestIdRef.current += 1;
@@ -225,13 +223,10 @@ export default function useDrillsList() {
     setPage(1);
   }, []);
 
-  const updateFilterField = React.useCallback(
-    (field: DrillFilterField, value: string) => {
-      setFilters((prev) => ({ ...prev, [field]: value }));
-      setPage(1);
-    },
-    [],
-  );
+  const updateFilterField = React.useCallback((field: DrillFilterField, value: string) => {
+    setFilters((prev) => ({ ...prev, [field]: value }));
+    setPage(1);
+  }, []);
 
   const toggleTag = React.useCallback((tagId: string) => {
     setFilters((prev) => {
@@ -244,7 +239,7 @@ export default function useDrillsList() {
   }, []);
 
   const clearAll = React.useCallback(() => {
-    setQuery("");
+    setQuery('');
     setFilters(createEmptyFilters());
     setPage(1);
   }, []);

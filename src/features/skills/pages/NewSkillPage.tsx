@@ -1,17 +1,17 @@
-import * as React from "react";
-import { Box, Stack, Typography, Button } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../app/providers/AuthProvider";
-import { createSkill } from "../services/skillsService";
-import SkillFormFields from "../components/SkillFormFields";
+import * as React from 'react';
+import { Box, Stack, Typography, Button } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
+import { createSkill } from '../services/skillsService';
+import SkillFormFields from '../components/SkillFormFields';
 import {
   DEBUG_SPORT_ID,
   SKILL_LEVEL_OPTIONS,
   SKILL_STATUS_OPTIONS,
   SKILL_VISIBILITY_OPTIONS,
-} from "../constants";
-import { createInitialSkillForm, type SkillFormState } from "../utils/skillForm";
-import { validateSkillForm } from "../utils/validation";
+} from '../constants';
+import { createInitialSkillForm, type SkillFormState } from '../utils/skillForm';
+import { validateSkillForm } from '../utils/validation';
 
 export default function NewSkillPage() {
   const navigate = useNavigate();
@@ -24,11 +24,10 @@ export default function NewSkillPage() {
   const [saving, setSaving] = React.useState(false);
   const [submitError, setSubmitError] = React.useState<string | null>(null);
 
-  const handleChange = (field: keyof SkillFormState) => (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    setForm((prev) => ({ ...prev, [field]: event.target.value }));
-  };
+  const handleChange =
+    (field: keyof SkillFormState) => (event: React.ChangeEvent<HTMLInputElement>) => {
+      setForm((prev) => ({ ...prev, [field]: event.target.value }));
+    };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -38,7 +37,7 @@ export default function NewSkillPage() {
     if (Object.keys(nextErrors).length > 0) return;
 
     if (!orgId) {
-      setSubmitError("Missing org_id. Please sign in again.");
+      setSubmitError('Missing org_id. Please sign in again.');
       return;
     }
 
@@ -55,13 +54,11 @@ export default function NewSkillPage() {
         status: form.status.trim(),
       };
       const result = await createSkill(payload);
-      const newId =
-        (result as any)?.skill?.id ?? (result as any)?.data?.id ?? null;
+      const newId = (result as any)?.skill?.id ?? (result as any)?.data?.id ?? null;
       if (newId) navigate(`/skills/${newId}`);
-      else navigate("/skills");
+      else navigate('/skills');
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to save skill.";
+      const message = err instanceof Error ? err.message : 'Failed to save skill.';
       setSubmitError(message);
     } finally {
       setSaving(false);
@@ -74,12 +71,12 @@ export default function NewSkillPage() {
         spacing={3}
         component="form"
         onSubmit={handleSubmit}
-        sx={{ maxWidth: 1400, width: "100%", mx: "auto" }}
+        sx={{ maxWidth: 1400, width: '100%', mx: 'auto' }}
       >
         <Stack
-          direction={{ xs: "column", sm: "row" }}
+          direction={{ xs: 'column', sm: 'row' }}
           spacing={2}
-          alignItems={{ sm: "center" }}
+          alignItems={{ sm: 'center' }}
           justifyContent="space-between"
         >
           <Box>
@@ -90,12 +87,12 @@ export default function NewSkillPage() {
               Add a skill to your library.
             </Typography>
           </Box>
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-            <Button variant="outlined" onClick={() => navigate("/skills")}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+            <Button variant="outlined" onClick={() => navigate('/skills')}>
               Cancel
             </Button>
             <Button type="submit" variant="contained" disabled={saving}>
-              {saving ? "Saving..." : "Save"}
+              {saving ? 'Saving...' : 'Save'}
             </Button>
           </Stack>
         </Stack>

@@ -1,4 +1,4 @@
-import * as React from 'react'
+import * as React from 'react';
 import {
   Box,
   Stack,
@@ -11,50 +11,50 @@ import {
   FormControlLabel,
   Switch,
   IconButton,
-} from '@mui/material'
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
-import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined'
-import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+} from '@mui/material';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
+import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 /** Keep in sync with your AdminPanel types */
 type UserRow = {
-  id: string
-  first_name: string
-  last_name: string
-  email: string
-  phone: string | null
-  org_id: string | null
-}
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string | null;
+  org_id: string | null;
+};
 
 type Coach = {
-  id: string
-  org_id: string
-  user_id: string
-  full_name: string | null
-  email: string | null
-  phone: string | null
-  title: string | null
-  created_at: string
-  updated_at: string
-  cell_number: string | null
-}
+  id: string;
+  org_id: string;
+  user_id: string;
+  full_name: string | null;
+  email: string | null;
+  phone: string | null;
+  title: string | null;
+  created_at: string;
+  updated_at: string;
+  cell_number: string | null;
+};
 
 type LocationState = {
-  coach?: Coach
-  user?: UserRow
-}
+  coach?: Coach;
+  user?: UserRow;
+};
 
 export default function AdminCoachDetail() {
-  const { coachId } = useParams<{ coachId: string }>()
-  const { state } = useLocation() as { state?: LocationState }
-  const navigate = useNavigate()
+  const { coachId } = useParams<{ coachId: string }>();
+  const { state } = useLocation() as { state?: LocationState };
+  const navigate = useNavigate();
 
-  const coach = state?.coach
-  const user = state?.user
+  const coach = state?.coach;
+  const user = state?.user;
 
   // Fallback-safe fields
-  const userName = [user?.first_name, user?.last_name].filter(Boolean).join(' ')
+  const userName = [user?.first_name, user?.last_name].filter(Boolean).join(' ');
   // Group the nullish coalescing before using || to satisfy Babel/TS
   const name = (coach?.full_name ?? userName) || 'Coach';
 
@@ -62,14 +62,14 @@ export default function AdminCoachDetail() {
   const phone = coach?.cell_number ?? coach?.phone ?? user?.phone ?? '';
 
   // These fields are placeholders to match the UI reference
-  const market = '—' // e.g., "3d Garden State"
-  const team = '—'   // e.g., "2034"
+  const market = '—'; // e.g., "3d Garden State"
+  const team = '—'; // e.g., "2034"
 
-  const [isSubAdmin, setIsSubAdmin] = React.useState(false)
+  const [isSubAdmin, setIsSubAdmin] = React.useState(false);
 
   const handleEmailClick = () => {
-    if (email) window.location.href = `mailto:${email}`
-  }
+    if (email) window.location.href = `mailto:${email}`;
+  };
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -121,11 +121,7 @@ export default function AdminCoachDetail() {
                   '& .MuiFormControlLabel-label': { fontSize: 14, color: 'text.secondary' },
                 }}
                 control={
-                  <Switch
-                    checked={isSubAdmin}
-                    onChange={(_, v) => setIsSubAdmin(v)}
-                    size="small"
-                  />
+                  <Switch checked={isSubAdmin} onChange={(_, v) => setIsSubAdmin(v)} size="small" />
                 }
                 label="Sub Admin"
                 labelPlacement="start"
@@ -158,7 +154,13 @@ export default function AdminCoachDetail() {
             <Stack
               direction={{ xs: 'column', md: 'row' }}
               spacing={3}
-              divider={<Divider flexItem orientation="vertical" sx={{ display: { xs: 'none', md: 'block' } }} />}
+              divider={
+                <Divider
+                  flexItem
+                  orientation="vertical"
+                  sx={{ display: { xs: 'none', md: 'block' } }}
+                />
+              }
             >
               <Box sx={{ minWidth: 220 }}>
                 <Typography variant="caption" color="text.secondary">
@@ -216,5 +218,5 @@ export default function AdminCoachDetail() {
         </Box>
       </Box>
     </Box>
-  )
+  );
 }

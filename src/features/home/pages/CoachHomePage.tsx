@@ -1,24 +1,15 @@
-import * as React from 'react'
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Grid,
-  Paper,
-  Stack,
-  Typography,
-} from '@mui/material'
-import AssignmentIcon from '@mui/icons-material/Assignment'
-import EventNoteIcon from '@mui/icons-material/EventNote'
-import FitnessCenterIcon from '@mui/icons-material/FitnessCenter'
-import GroupsIcon from '@mui/icons-material/Groups'
-import PeopleAltIcon from '@mui/icons-material/PeopleAlt'
-import { Link as RouterLink } from 'react-router-dom'
-import { useAuth } from '../../../app/providers/AuthProvider'
-import { getCoachSummary } from '../../coaches/services/coachService'
+import * as React from 'react';
+import { Box, Button, Card, CardContent, Grid, Paper, Stack, Typography } from '@mui/material';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import EventNoteIcon from '@mui/icons-material/EventNote';
+import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
+import GroupsIcon from '@mui/icons-material/Groups';
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import { Link as RouterLink } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
+import { getCoachSummary } from '../../coaches/services/coachService';
 
-type SnapshotKey = 'teams' | 'athletes' | 'evaluations' | 'plans'
+type SnapshotKey = 'teams' | 'athletes' | 'evaluations' | 'plans';
 
 const QUICK_ACTIONS = [
   {
@@ -41,71 +32,71 @@ const QUICK_ACTIONS = [
     to: '/teams/new',
     icon: <GroupsIcon fontSize="small" />,
   },
-]
+];
 
 export default function CoachHomePage() {
-  const { orgId, coachId, profile, user } = useAuth()
-  const [snapshotLoading, setSnapshotLoading] = React.useState(false)
-  const [snapshotError, setSnapshotError] = React.useState<string | null>(null)
+  const { orgId, coachId, profile, user } = useAuth();
+  const [snapshotLoading, setSnapshotLoading] = React.useState(false);
+  const [snapshotError, setSnapshotError] = React.useState<string | null>(null);
   const [snapshot, setSnapshot] = React.useState({
     teams: 0,
     athletes: 0,
     evaluations: 0,
     plans: 0,
-  })
+  });
 
   React.useEffect(() => {
     if (!orgId || !coachId) {
-      setSnapshotError(null)
-      setSnapshotLoading(false)
-      return
+      setSnapshotError(null);
+      setSnapshotLoading(false);
+      return;
     }
 
-    let active = true
+    let active = true;
 
-    setSnapshotLoading(true)
-    setSnapshotError(null)
+    setSnapshotLoading(true);
+    setSnapshotError(null);
 
     getCoachSummary({ coachId, orgId, limit: 50, offset: 0 })
       .then((data) => {
-        if (!active) return
+        if (!active) return;
         setSnapshot({
           teams: data.total_teams ?? 0,
           athletes: data.total_athletes ?? 0,
           evaluations: data.total_evaluations ?? 0,
           plans: data.total_plans_share ?? 0,
-        })
+        });
       })
       .catch((err: any) => {
-        if (!active) return
-        setSnapshotError(err?.message || 'Failed to load team snapshot.')
+        if (!active) return;
+        setSnapshotError(err?.message || 'Failed to load team snapshot.');
       })
       .finally(() => {
-        if (active) setSnapshotLoading(false)
-      })
+        if (active) setSnapshotLoading(false);
+      });
 
     return () => {
-      active = false
-    }
-  }, [orgId, coachId])
+      active = false;
+    };
+  }, [orgId, coachId]);
 
   const coachName = React.useMemo(() => {
     const metaName =
       typeof user?.user_metadata?.full_name === 'string'
         ? user.user_metadata.full_name
         : typeof user?.user_metadata?.name === 'string'
-        ? user.user_metadata.name
-        : ''
-    const rawName = profile?.full_name?.trim() || metaName.trim()
-    return rawName || 'Coach'
-  }, [profile?.full_name, user?.user_metadata])
+          ? user.user_metadata.name
+          : '';
+    const rawName = profile?.full_name?.trim() || metaName.trim();
+    return rawName || 'Coach';
+  }, [profile?.full_name, user?.user_metadata]);
 
   const formatSnapshotValue = (key: SnapshotKey) => {
-    if (!orgId || !coachId) return '-'
-    if (snapshotLoading) return '...'
-    if (snapshotError) return '-'
-    return String(snapshot[key])
-  }
+    if (!orgId || !coachId) return '-';
+    if (snapshotLoading) return '...';
+    if (snapshotError) return '-';
+    return String(snapshot[key]);
+  };
 
   const snapshotStats = [
     {
@@ -132,7 +123,7 @@ export default function CoachHomePage() {
       value: formatSnapshotValue('plans'),
       icon: <EventNoteIcon fontSize="small" />,
     },
-  ]
+  ];
 
   return (
     <Box
@@ -157,8 +148,7 @@ export default function CoachHomePage() {
                   Welcome back, {coachName}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Manage evaluations, build practice plans, and keep your teams
-                  moving forward.
+                  Manage evaluations, build practice plans, and keep your teams moving forward.
                 </Typography>
               </Stack>
             </CardContent>
@@ -221,11 +211,7 @@ export default function CoachHomePage() {
                       borderColor: 'grey.200',
                     }}
                   >
-                    <Stack
-                      direction="row"
-                      justifyContent="space-between"
-                      alignItems="center"
-                    >
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
                       <Typography variant="caption" color="text.secondary">
                         {stat.label}
                       </Typography>
@@ -242,5 +228,5 @@ export default function CoachHomePage() {
         </CardContent>
       </Card>
     </Box>
-  )
+  );
 }

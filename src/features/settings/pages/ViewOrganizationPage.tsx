@@ -1,4 +1,4 @@
-import * as React from 'react'
+import * as React from 'react';
 import {
   Alert,
   Box,
@@ -9,69 +9,61 @@ import {
   Stack,
   TextField,
   Typography,
-} from '@mui/material'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import EditIcon from '@mui/icons-material/Edit'
-import { useNavigate, useParams } from 'react-router-dom'
-import {
-  getOrganizationById,
-  type OrganizationListItem,
-} from '../services/organizationsService'
+} from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import EditIcon from '@mui/icons-material/Edit';
+import { useNavigate, useParams } from 'react-router-dom';
+import { getOrganizationById, type OrganizationListItem } from '../services/organizationsService';
 
 function formatDateTime(value: string | null | undefined) {
-  if (!value) return 'Not set'
-  const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleString()
+  if (!value) return 'Not set';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
 }
 
 function formatValue(value: string | number | null | undefined) {
-  return value === null || value === undefined || value === ''
-    ? 'Not set'
-    : String(value)
+  return value === null || value === undefined || value === '' ? 'Not set' : String(value);
 }
 
 export default function ViewOrganizationPage() {
-  const { id = '' } = useParams<{ id: string }>()
-  const navigate = useNavigate()
-  const [organization, setOrganization] =
-    React.useState<OrganizationListItem | null>(null)
-  const [loading, setLoading] = React.useState(true)
-  const [error, setError] = React.useState<string | null>(null)
+  const { id = '' } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [organization, setOrganization] = React.useState<OrganizationListItem | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    let active = true
+    let active = true;
 
     const loadOrganization = async () => {
       if (!id) {
-        setError('Missing organization id in route.')
-        setLoading(false)
-        return
+        setError('Missing organization id in route.');
+        setLoading(false);
+        return;
       }
 
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
 
       try {
-        const result = await getOrganizationById(id)
-        if (active) setOrganization(result)
+        const result = await getOrganizationById(id);
+        if (active) setOrganization(result);
       } catch (err) {
         if (active) {
-          setOrganization(null)
-          setError(
-            err instanceof Error ? err.message : 'Failed to load organization.',
-          )
+          setOrganization(null);
+          setError(err instanceof Error ? err.message : 'Failed to load organization.');
         }
       } finally {
-        if (active) setLoading(false)
+        if (active) setLoading(false);
       }
-    }
+    };
 
-    void loadOrganization()
+    void loadOrganization();
 
     return () => {
-      active = false
-    }
-  }, [id])
+      active = false;
+    };
+  }, [id]);
 
   return (
     <Box sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
@@ -112,9 +104,7 @@ export default function ViewOrganizationPage() {
         {loading && (
           <Stack direction="row" spacing={1.5} alignItems="center">
             <CircularProgress size={22} />
-            <Typography color="text.secondary">
-              Loading organization details...
-            </Typography>
+            <Typography color="text.secondary">Loading organization details...</Typography>
           </Stack>
         )}
 
@@ -173,9 +163,7 @@ export default function ViewOrganizationPage() {
                 />
                 <TextField
                   label="Maximum Below-Threshold Ratings"
-                  value={formatValue(
-                    organization.maxBelowThresholdRatingsAllowed,
-                  )}
+                  value={formatValue(organization.maxBelowThresholdRatingsAllowed)}
                   fullWidth
                   slotProps={{ input: { readOnly: true } }}
                 />
@@ -203,5 +191,5 @@ export default function ViewOrganizationPage() {
         )}
       </Stack>
     </Box>
-  )
+  );
 }

@@ -1,12 +1,12 @@
-import { Box, Stack, Paper, Typography, Pagination } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../app/providers/AuthProvider";
-import { isAdminRole } from "../../../shared/auth/roles";
-import DrillsCardGrid from "../components/list/DrillsCardGrid";
-import DrillsFiltersPanel from "../components/list/DrillsFiltersPanel";
-import DrillsListHeader from "../components/list/DrillsListHeader";
-import DrillsPlayDialog from "../components/list/DrillsPlayDialog";
-import useDrillsList from "../hooks/useDrillsList";
+import { Box, Stack, Paper, Typography, Pagination } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
+import { isAdminRole } from '../../../shared/auth/roles';
+import DrillsCardGrid from '../components/list/DrillsCardGrid';
+import DrillsFiltersPanel from '../components/list/DrillsFiltersPanel';
+import DrillsListHeader from '../components/list/DrillsListHeader';
+import DrillsPlayDialog from '../components/list/DrillsPlayDialog';
+import useDrillsList from '../hooks/useDrillsList';
 
 export default function DrillsPage() {
   const navigate = useNavigate();
@@ -40,10 +40,10 @@ export default function DrillsPage() {
 
   return (
     <Box sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
-      <Stack spacing={2.5} sx={{ maxWidth: 1200, mx: "auto" }}>
+      <Stack spacing={2.5} sx={{ maxWidth: 1200, mx: 'auto' }}>
         <DrillsListHeader
           totalCount={totalCount}
-          onCreate={() => navigate("/drills/new")}
+          onCreate={() => navigate('/drills/new')}
           onClear={clearAll}
         />
 
@@ -78,7 +78,7 @@ export default function DrillsPage() {
         />
 
         {!loading && drills.length === 0 ? (
-          <Paper variant="outlined" sx={{ p: 4, textAlign: "center" }}>
+          <Paper variant="outlined" sx={{ p: 4, textAlign: 'center' }}>
             <Typography variant="h6">No drills match your filters.</Typography>
             <Typography variant="body2" color="text.secondary">
               Try clearing filters or searching a different term.

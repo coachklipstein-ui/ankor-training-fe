@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Box,
   Button,
@@ -9,11 +9,11 @@ import {
   Switch,
   TextField,
   Typography,
-} from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../app/providers/AuthProvider";
-import { getAllTeams, type Team } from "../../teams/services/teamsService";
-import { createJoinCode } from "../services/joinCodeService";
+} from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
+import { getAllTeams, type Team } from '../../teams/services/teamsService';
+import { createJoinCode } from '../services/joinCodeService';
 
 type FormErrors = {
   team_id?: string;
@@ -21,7 +21,7 @@ type FormErrors = {
   expires_at?: string;
 };
 
-const pad2 = (value: number) => String(value).padStart(2, "0");
+const pad2 = (value: number) => String(value).padStart(2, '0');
 
 const toDateTimeLocalValue = (value: Date) => {
   return `${value.getFullYear()}-${pad2(value.getMonth() + 1)}-${pad2(
@@ -43,8 +43,8 @@ export default function NewJoinCodePage() {
   const [teams, setTeams] = React.useState<Team[]>([]);
   const [teamsLoading, setTeamsLoading] = React.useState(false);
   const [teamsError, setTeamsError] = React.useState<string | null>(null);
-  const [teamId, setTeamId] = React.useState("");
-  const [maxUses, setMaxUses] = React.useState("30");
+  const [teamId, setTeamId] = React.useState('');
+  const [maxUses, setMaxUses] = React.useState('30');
   const [expiresAt, setExpiresAt] = React.useState(() => {
     const next = new Date();
     next.setDate(next.getDate() + 7);
@@ -58,17 +58,17 @@ export default function NewJoinCodePage() {
   const [submitError, setSubmitError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    setTeamId("");
+    setTeamId('');
   }, [orgId]);
 
   React.useEffect(() => {
     if (authLoading) return;
     let active = true;
 
-    const resolvedOrgId = orgId?.trim() || "";
+    const resolvedOrgId = orgId?.trim() || '';
     if (!resolvedOrgId) {
       setTeams([]);
-      setTeamsError("Missing org_id. Please sign in again.");
+      setTeamsError('Missing org_id. Please sign in again.');
       setTeamsLoading(false);
       return () => {
         active = false;
@@ -86,7 +86,7 @@ export default function NewJoinCodePage() {
       .catch((err: any) => {
         if (!active) return;
         setTeams([]);
-        setTeamsError(err?.message || "Failed to load teams.");
+        setTeamsError(err?.message || 'Failed to load teams.');
       })
       .finally(() => {
         if (active) setTeamsLoading(false);
@@ -104,33 +104,33 @@ export default function NewJoinCodePage() {
   const teamHelperText = teamsError
     ? teamsError
     : teamsLoading
-      ? "Loading teams..."
+      ? 'Loading teams...'
       : teamOptions.length === 0
-        ? "No teams available."
-        : "Required";
+        ? 'No teams available.'
+        : 'Required';
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSubmitError(null);
 
     const nextErrors: FormErrors = {};
-    if (!teamId.trim()) nextErrors.team_id = "Team is required.";
+    if (!teamId.trim()) nextErrors.team_id = 'Team is required.';
 
     const maxUsesValue = Number(maxUses);
     if (!Number.isFinite(maxUsesValue) || maxUsesValue <= 0) {
-      nextErrors.max_uses = "Max uses must be a positive number.";
+      nextErrors.max_uses = 'Max uses must be a positive number.';
     }
 
     const expiresIso = toIsoString(expiresAt);
     if (!expiresIso) {
-      nextErrors.expires_at = "Expiration date is required.";
+      nextErrors.expires_at = 'Expiration date is required.';
     }
 
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
     if (!orgId) {
-      setSubmitError("Missing org_id. Please sign in again.");
+      setSubmitError('Missing org_id. Please sign in again.');
       return;
     }
 
@@ -144,10 +144,9 @@ export default function NewJoinCodePage() {
         is_active: isActive,
         disabled,
       });
-      navigate("/easy-join-codes");
+      navigate('/easy-join-codes');
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to create join code.";
+      const message = err instanceof Error ? err.message : 'Failed to create join code.';
       setSubmitError(message);
     } finally {
       setSaving(false);
@@ -160,12 +159,12 @@ export default function NewJoinCodePage() {
         spacing={3}
         component="form"
         onSubmit={handleSubmit}
-        sx={{ maxWidth: 900, width: "100%", mx: "auto" }}
+        sx={{ maxWidth: 900, width: '100%', mx: 'auto' }}
       >
         <Stack
-          direction={{ xs: "column", sm: "row" }}
+          direction={{ xs: 'column', sm: 'row' }}
           spacing={2}
-          alignItems={{ sm: "center" }}
+          alignItems={{ sm: 'center' }}
           justifyContent="space-between"
         >
           <Box>
@@ -176,12 +175,12 @@ export default function NewJoinCodePage() {
               Create a new join code for a team.
             </Typography>
           </Box>
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-            <Button variant="outlined" onClick={() => navigate("/easy-join-codes")}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+            <Button variant="outlined" onClick={() => navigate('/easy-join-codes')}>
               Cancel
             </Button>
             <Button type="submit" variant="contained" disabled={saving}>
-              {saving ? "Saving..." : "Create"}
+              {saving ? 'Saving...' : 'Create'}
             </Button>
           </Stack>
         </Stack>
@@ -218,7 +217,7 @@ export default function NewJoinCodePage() {
               value={maxUses}
               onChange={(event) => setMaxUses(event.target.value)}
               error={Boolean(errors.max_uses)}
-              helperText={errors.max_uses || "Required"}
+              helperText={errors.max_uses || 'Required'}
               fullWidth
               inputProps={{ min: 1 }}
               required
@@ -230,13 +229,13 @@ export default function NewJoinCodePage() {
               value={expiresAt}
               onChange={(event) => setExpiresAt(event.target.value)}
               error={Boolean(errors.expires_at)}
-              helperText={errors.expires_at || "Required"}
+              helperText={errors.expires_at || 'Required'}
               fullWidth
               InputLabelProps={{ shrink: true }}
               required
             />
 
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
               <FormControlLabel
                 control={
                   <Switch

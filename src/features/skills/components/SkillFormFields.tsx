@@ -1,13 +1,6 @@
-import * as React from "react";
-import {
-  Paper,
-  Stack,
-  Typography,
-  TextField,
-  Grid,
-  MenuItem,
-} from "@mui/material";
-import type { SkillFormState } from "../utils/skillForm";
+import * as React from 'react';
+import { Paper, Stack, Typography, TextField, Grid, MenuItem } from '@mui/material';
+import type { SkillFormState } from '../utils/skillForm';
 
 type SelectOption = { id: string; label: string };
 
@@ -43,7 +36,7 @@ export default function SkillFormFields({
             <TextField
               label="Skill title"
               value={form.title}
-              onChange={onFieldChange("title")}
+              onChange={onFieldChange('title')}
               required
               fullWidth
               error={Boolean(errors.title)}
@@ -52,7 +45,7 @@ export default function SkillFormFields({
             <TextField
               label="Category"
               value={form.category}
-              onChange={onFieldChange("category")}
+              onChange={onFieldChange('category')}
               required
               fullWidth
               error={Boolean(errors.category)}
@@ -61,7 +54,7 @@ export default function SkillFormFields({
             <TextField
               label="Description"
               value={form.description}
-              onChange={onFieldChange("description")}
+              onChange={onFieldChange('description')}
               multiline
               minRows={4}
               fullWidth
@@ -81,7 +74,7 @@ export default function SkillFormFields({
                 select
                 label="Level"
                 value={form.level}
-                onChange={onFieldChange("level")}
+                onChange={onFieldChange('level')}
                 required
                 fullWidth
                 error={Boolean(errors.level)}
@@ -102,7 +95,7 @@ export default function SkillFormFields({
                 select
                 label="Visibility"
                 value={form.visibility}
-                onChange={onFieldChange("visibility")}
+                onChange={onFieldChange('visibility')}
                 required
                 fullWidth
                 error={Boolean(errors.visibility)}
@@ -123,7 +116,7 @@ export default function SkillFormFields({
                 select
                 label="Status"
                 value={form.status}
-                onChange={onFieldChange("status")}
+                onChange={onFieldChange('status')}
                 required
                 fullWidth
                 error={Boolean(errors.status)}
@@ -143,10 +136,10 @@ export default function SkillFormFields({
               <TextField
                 label="Sport id"
                 value={form.sportId}
-                onChange={onFieldChange("sportId")}
+                onChange={onFieldChange('sportId')}
                 fullWidth
                 error={Boolean(errors.sportId)}
-                helperText={errors.sportId || "Optional UUID to scope the skill."}
+                helperText={errors.sportId || 'Optional UUID to scope the skill.'}
               />
             </Grid>
           </Grid>

@@ -1,4 +1,4 @@
-import { Box, Stack, Typography, Button } from "@mui/material";
+import { Box, Stack, Typography, Button } from '@mui/material';
 
 type DrillsListHeaderProps = {
   totalCount: number;
@@ -6,16 +6,12 @@ type DrillsListHeaderProps = {
   onClear: () => void;
 };
 
-export default function DrillsListHeader({
-  totalCount,
-  onCreate,
-  onClear,
-}: DrillsListHeaderProps) {
+export default function DrillsListHeader({ totalCount, onCreate, onClear }: DrillsListHeaderProps) {
   return (
     <Stack
-      direction={{ xs: "column", sm: "row" }}
+      direction={{ xs: 'column', sm: 'row' }}
       spacing={2}
-      alignItems={{ sm: "center" }}
+      alignItems={{ sm: 'center' }}
       justifyContent="space-between"
     >
       <Box>
@@ -26,7 +22,7 @@ export default function DrillsListHeader({
           {totalCount} drills
         </Typography>
       </Box>
-      <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
         <Button variant="contained" onClick={onCreate}>
           Create drill
         </Button>

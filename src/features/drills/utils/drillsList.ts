@@ -1,15 +1,15 @@
-import type { DrillItem } from "../services/drillsService";
-import type { DrillCard, DrillFilters } from "../types";
-import { pickPrimaryMedia } from "./media";
-import { toYouTubeThumbnail } from "./youtube";
+import type { DrillItem } from '../services/drillsService';
+import type { DrillCard, DrillFilters } from '../types';
+import { pickPrimaryMedia } from './media';
+import { toYouTubeThumbnail } from './youtube';
 
 export const createEmptyFilters = (): DrillFilters => ({
   tags: new Set(),
-  segmentId: "",
-  minAge: "",
-  maxAge: "",
-  minPlayers: "",
-  maxPlayers: "",
+  segmentId: '',
+  minAge: '',
+  maxAge: '',
+  minPlayers: '',
+  maxPlayers: '',
 });
 
 export const toOptionalNumber = (value: string) => {
@@ -20,7 +20,7 @@ export const toOptionalNumber = (value: string) => {
 };
 
 const toNullableNumber = (value: unknown) => {
-  if (value === null || value === undefined || value === "") return null;
+  if (value === null || value === undefined || value === '') return null;
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
 };
@@ -32,20 +32,17 @@ const normalizeSkillTags = (raw: unknown): string[] => {
   const normalized: string[] = [];
 
   for (const tag of raw) {
-    let label = "";
+    let label = '';
 
-    if (typeof tag === "string") {
+    if (typeof tag === 'string') {
       label = tag.trim();
-    } else if (tag && typeof tag === "object") {
+    } else if (tag && typeof tag === 'object') {
       const rawLabel =
-        (tag as any).name ??
-        (tag as any).label ??
-        (tag as any).tag ??
-        (tag as any).title;
+        (tag as any).name ?? (tag as any).label ?? (tag as any).tag ?? (tag as any).title;
       const rawId = (tag as any).id ?? (tag as any).skill_id ?? (tag as any).tag_id;
 
-      if (typeof rawLabel === "string") label = rawLabel.trim();
-      else if (typeof rawId === "string") label = rawId.trim();
+      if (typeof rawLabel === 'string') label = rawLabel.trim();
+      else if (typeof rawId === 'string') label = rawId.trim();
     }
 
     if (!label || seen.has(label)) continue;
@@ -57,7 +54,7 @@ const normalizeSkillTags = (raw: unknown): string[] => {
 };
 
 const normalizeLevel = (raw: unknown): string | null => {
-  if (typeof raw !== "string") return null;
+  if (typeof raw !== 'string') return null;
   const trimmed = raw.trim();
   return trimmed ? trimmed : null;
 };
@@ -69,16 +66,15 @@ const pickDrillName = (item: DrillItem): string => {
     (item as any).drill_name ??
     (item as any).drill?.name;
 
-  if (typeof rawName === "string" && rawName.trim()) return rawName.trim();
-  return "Untitled drill";
+  if (typeof rawName === 'string' && rawName.trim()) return rawName.trim();
+  return 'Untitled drill';
 };
 
 export function toDrillCard(item: DrillItem): DrillCard {
   const primaryMedia = pickPrimaryMedia(item.media ?? []);
-  const videoUrl = primaryMedia?.url ?? "";
+  const videoUrl = primaryMedia?.url ?? '';
   const thumbnailUrl =
-    primaryMedia?.thumbnail_url ??
-    (videoUrl ? toYouTubeThumbnail(videoUrl) : null);
+    primaryMedia?.thumbnail_url ?? (videoUrl ? toYouTubeThumbnail(videoUrl) : null);
   const rawTags =
     (item as any).skill_tags ??
     (item as any).tags ??
@@ -106,5 +102,5 @@ export function playerLabel(drill: DrillCard) {
   if (hasMin && hasMax) return `${drill.min_players}-${drill.max_players} players`;
   if (hasMin) return `Min ${drill.min_players} players`;
   if (hasMax) return `Max ${drill.max_players} players`;
-  return "Any size";
+  return 'Any size';
 }

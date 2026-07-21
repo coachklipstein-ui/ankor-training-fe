@@ -2,9 +2,9 @@
 // Pure fetch wrapper to call your Deno edge function: /functions/v1/skills-list
 // Mirrors the style of signupService.ts (typed, no Supabase client here).
 
-import { apiFetch } from '../../../shared/api/apiClient'
+import { apiFetch } from '../../../shared/api/apiClient';
 
-export type SkillMediaType = "image" | "video" | "document" | "link" | string;
+export type SkillMediaType = 'image' | 'video' | 'document' | 'link' | string;
 
 export type SkillMedia = {
   id: string;
@@ -36,8 +36,7 @@ export type Skill = {
 };
 
 export type SkillsListResponse =
-  | { ok: true; count?: number; items?: Skill[]; data?: Skill[] }
-  | { ok: false; error: string };
+  { ok: true; count?: number; items?: Skill[]; data?: Skill[] } | { ok: false; error: string };
 
 export type CreateSkillInput = {
   org_id: string;
@@ -51,12 +50,10 @@ export type CreateSkillInput = {
 };
 
 export type CreateSkillResponse =
-  | { ok: true; skill?: Skill; data?: Skill }
-  | { ok: false; error: string };
+  { ok: true; skill?: Skill; data?: Skill } | { ok: false; error: string };
 
 export type SkillDetailResponse =
-  | { ok: true; skill?: Skill; data?: Skill }
-  | { ok: false; error: string };
+  { ok: true; skill?: Skill; data?: Skill } | { ok: false; error: string };
 
 export type UpdateSkillInput = {
   title?: string;
@@ -69,8 +66,7 @@ export type UpdateSkillInput = {
 };
 
 export type UpdateSkillResponse =
-  | { ok: true; skill?: Skill; data?: Skill }
-  | { ok: false; error: string };
+  { ok: true; skill?: Skill; data?: Skill } | { ok: false; error: string };
 
 export type SkillMediaUploadUrlInput = {
   org_id?: string;
@@ -111,8 +107,7 @@ export type CreateSkillMediaInput = {
 } & Record<string, unknown>;
 
 export type CreateSkillMediaResponse =
-  | { ok: true; media?: SkillMedia; data?: SkillMedia }
-  | { ok: false; error: string };
+  { ok: true; media?: SkillMedia; data?: SkillMedia } | { ok: false; error: string };
 
 export type SkillMediaPlayResponse =
   | {
@@ -127,7 +122,7 @@ export type SkillMediaBatchUploadItem = {
   file_field: string;
   file_name: string;
   skill_id: string;
-  status: "uploaded" | "skipped" | "failed" | string;
+  status: 'uploaded' | 'skipped' | 'failed' | string;
   reason: string | null;
   upload?: {
     bucket: string;
@@ -173,8 +168,7 @@ export type SkillDrillMapItem = {
 };
 
 export type SkillDrillMapListResponse =
-  | { ok: true; count?: number; items?: SkillDrillMapItem[] }
-  | { ok: false; error: string };
+  { ok: true; count?: number; items?: SkillDrillMapItem[] } | { ok: false; error: string };
 
 export type BulkUpdateSkillDrillMapInput = {
   org_id: string;
@@ -189,65 +183,59 @@ export type BulkUpdateSkillDrillMapResponse =
       ok: true;
       added_count?: number;
       removed_count?: number;
-      added?: Array<Omit<SkillDrillMapItem, "skill" | "drill">>;
-      removed?: Array<Omit<SkillDrillMapItem, "skill" | "drill">>;
+      added?: Array<Omit<SkillDrillMapItem, 'skill' | 'drill'>>;
+      removed?: Array<Omit<SkillDrillMapItem, 'skill' | 'drill'>>;
     }
   | { ok: false; error: string };
 
 export type ListSkillsParams = {
-  orgId: string;               // required
-  sportId?: string | null;     // optional
-  q?: string;                  // optional search
+  orgId: string; // required
+  sportId?: string | null; // optional
+  q?: string; // optional search
   category?: string;
   level?: string;
   visibility?: string;
   status?: string;
-  limit?: number;              // default 50 (handled server-side unless provided)
-  offset?: number;             // default 0 (handled server-side unless provided)
+  limit?: number; // default 50 (handled server-side unless provided)
+  offset?: number; // default 0 (handled server-side unless provided)
 };
 
 function buildQuery(params: ListSkillsParams) {
   const u = new URLSearchParams();
-  u.set("org_id", params.orgId);
-  if (params.sportId) u.set("sport_id", params.sportId);
-  if (params.q?.trim()) u.set("q", params.q.trim());
-  if (params.category?.trim()) u.set("category", params.category.trim());
-  if (params.level?.trim()) u.set("level", params.level.trim());
-  if (params.visibility?.trim()) u.set("visibility", params.visibility.trim());
-  if (params.status?.trim()) u.set("status", params.status.trim());
-  if (Number.isFinite(params.limit)) u.set("limit", String(params.limit));
-  if (Number.isFinite(params.offset)) u.set("offset", String(params.offset));
+  u.set('org_id', params.orgId);
+  if (params.sportId) u.set('sport_id', params.sportId);
+  if (params.q?.trim()) u.set('q', params.q.trim());
+  if (params.category?.trim()) u.set('category', params.category.trim());
+  if (params.level?.trim()) u.set('level', params.level.trim());
+  if (params.visibility?.trim()) u.set('visibility', params.visibility.trim());
+  if (params.status?.trim()) u.set('status', params.status.trim());
+  if (Number.isFinite(params.limit)) u.set('limit', String(params.limit));
+  if (Number.isFinite(params.offset)) u.set('offset', String(params.offset));
   return u.toString();
 }
 
 const DEFAULT_BASE_URL =
-  ((typeof import.meta !== "undefined" &&
+  ((typeof import.meta !== 'undefined' &&
     (import.meta as any).env &&
-    (import.meta as any).env.VITE_BACKEND_URL) as string) ||
-  "http://localhost:8000";
+    (import.meta as any).env.VITE_BACKEND_URL) as string) || 'http://localhost:8000';
 
 function normalizeSkillMedia(raw: unknown): SkillMedia[] {
   if (!Array.isArray(raw)) return [];
   return raw
     .map((item: any) => {
       const rawType = item?.type ?? item?.media_type ?? item?.mediaType;
-      const type =
-        typeof rawType === "string" ? rawType.toLowerCase() : "video";
+      const type = typeof rawType === 'string' ? rawType.toLowerCase() : 'video';
 
       return {
-        id: typeof item?.id === "string" ? item.id : "",
-        skill_id: typeof item?.skill_id === "string" ? item.skill_id : "",
+        id: typeof item?.id === 'string' ? item.id : '',
+        skill_id: typeof item?.skill_id === 'string' ? item.skill_id : '',
         type,
-        url: typeof item?.url === "string" ? item.url : "",
-      storage_path:
-        typeof item?.storage_path === "string" ? item.storage_path : null,
-      title: typeof item?.title === "string" ? item.title : null,
-      description: typeof item?.description === "string" ? item.description : null,
-      thumbnail_url:
-        typeof item?.thumbnail_url === "string" ? item.thumbnail_url : null,
-      position: Number.isFinite(Number(item?.position))
-        ? Number(item.position)
-        : null,
+        url: typeof item?.url === 'string' ? item.url : '',
+        storage_path: typeof item?.storage_path === 'string' ? item.storage_path : null,
+        title: typeof item?.title === 'string' ? item.title : null,
+        description: typeof item?.description === 'string' ? item.description : null,
+        thumbnail_url: typeof item?.thumbnail_url === 'string' ? item.thumbnail_url : null,
+        position: Number.isFinite(Number(item?.position)) ? Number(item.position) : null,
       };
     })
     .filter((item) => item.url);
@@ -255,48 +243,44 @@ function normalizeSkillMedia(raw: unknown): SkillMedia[] {
 
 function normalizeSkill(raw: any): Skill {
   const coachingPoints = Array.isArray(raw?.coaching_points)
-    ? raw.coaching_points.filter((point: unknown) => typeof point === "string")
+    ? raw.coaching_points.filter((point: unknown) => typeof point === 'string')
     : Array.isArray(raw?.coachingPoints)
-      ? raw.coachingPoints.filter((point: unknown) => typeof point === "string")
+      ? raw.coachingPoints.filter((point: unknown) => typeof point === 'string')
       : null;
 
   return {
-    id: typeof raw?.id === "string" ? raw.id : "",
-    org_id: typeof raw?.org_id === "string" ? raw.org_id : "",
-    sport_id: typeof raw?.sport_id === "string" ? raw.sport_id : null,
-    category: typeof raw?.category === "string" ? raw.category : "",
+    id: typeof raw?.id === 'string' ? raw.id : '',
+    org_id: typeof raw?.org_id === 'string' ? raw.org_id : '',
+    sport_id: typeof raw?.sport_id === 'string' ? raw.sport_id : null,
+    category: typeof raw?.category === 'string' ? raw.category : '',
     title:
-      typeof raw?.title === "string"
-        ? raw.title
-        : typeof raw?.name === "string"
-          ? raw.name
-          : "",
-    description: typeof raw?.description === "string" ? raw.description : null,
-    level: typeof raw?.level === "string" ? raw.level : "",
-    visibility: typeof raw?.visibility === "string" ? raw.visibility : "",
-    status: typeof raw?.status === "string" ? raw.status : "",
+      typeof raw?.title === 'string' ? raw.title : typeof raw?.name === 'string' ? raw.name : '',
+    description: typeof raw?.description === 'string' ? raw.description : null,
+    level: typeof raw?.level === 'string' ? raw.level : '',
+    visibility: typeof raw?.visibility === 'string' ? raw.visibility : '',
+    status: typeof raw?.status === 'string' ? raw.status : '',
     created_at:
-      typeof raw?.created_at === "string"
+      typeof raw?.created_at === 'string'
         ? raw.created_at
-        : typeof raw?.createdAt === "string"
+        : typeof raw?.createdAt === 'string'
           ? raw.createdAt
-          : "",
+          : '',
     updated_at:
-      typeof raw?.updated_at === "string"
+      typeof raw?.updated_at === 'string'
         ? raw.updated_at
-        : typeof raw?.updatedAt === "string"
+        : typeof raw?.updatedAt === 'string'
           ? raw.updatedAt
-          : "",
+          : '',
     coaching_points: coachingPoints,
-    created_by: typeof raw?.created_by === "string" ? raw.created_by : null,
+    created_by: typeof raw?.created_by === 'string' ? raw.created_by : null,
     media: normalizeSkillMedia(raw?.media),
   };
 }
 
 function normalizeCreatePayload(input: CreateSkillInput) {
-  if (!input.org_id?.trim()) throw new Error("org_id is required.");
-  if (!input.category?.trim()) throw new Error("category is required.");
-  if (!input.title?.trim()) throw new Error("title is required.");
+  if (!input.org_id?.trim()) throw new Error('org_id is required.');
+  if (!input.category?.trim()) throw new Error('category is required.');
+  if (!input.title?.trim()) throw new Error('title is required.');
 
   const description = input.description?.trim();
   const level = input.level?.trim();
@@ -336,10 +320,10 @@ function normalizeUpdatePayload(input: UpdateSkillInput) {
     return trimmed ? trimmed : null;
   };
 
-  const title = normalizeString(input.title, "title");
+  const title = normalizeString(input.title, 'title');
   if (title !== undefined) payload.title = title;
 
-  const category = normalizeString(input.category, "category");
+  const category = normalizeString(input.category, 'category');
   if (category !== undefined) payload.category = category;
 
   const description = normalizeOptionalString(input.description);
@@ -365,35 +349,33 @@ async function fetchSkills(
   baseUrl = DEFAULT_BASE_URL,
 ): Promise<{ items: Skill[]; count?: number }> {
   if (!params.orgId?.trim()) {
-    throw new Error("orgId is required.");
+    throw new Error('orgId is required.');
   }
 
   const qs = buildQuery(params);
   const url = `${baseUrl}/functions/v1/api/skills/list?${qs}`;
 
   const res = await apiFetch(url, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
     orgId: params.orgId ?? null,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | SkillsListResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as SkillsListResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if (!data?.ok) {
-    throw new Error((data as any)?.error || "Failed to load skills.");
+    throw new Error((data as any)?.error || 'Failed to load skills.');
   }
 
   const rawItems = (data.items ?? (data as any).data ?? []) as unknown[];
   const items = rawItems.map((item) => normalizeSkill(item)).filter((s) => s.id);
   const countRaw = (data as any)?.count;
   const count =
-    typeof countRaw === "number"
+    typeof countRaw === 'number'
       ? countRaw
       : Number.isFinite(Number(countRaw))
         ? Number(countRaw)
@@ -434,22 +416,20 @@ export async function createSkill(
   const url = `${baseUrl}/functions/v1/api/skills`;
 
   const res = await apiFetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
     orgId: payload.org_id ?? null,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | CreateSkillResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as CreateSkillResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if (!data?.ok) {
-    throw new Error((data as any)?.error || "Failed to create skill.");
+    throw new Error((data as any)?.error || 'Failed to create skill.');
   }
 
   return data;
@@ -463,33 +443,31 @@ export async function getSkillById(
   options: { orgId?: string | null; baseUrl?: string } = {},
 ): Promise<Skill> {
   if (!skillId?.trim()) {
-    throw new Error("skillId is required.");
+    throw new Error('skillId is required.');
   }
 
   const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
   const url = `${baseUrl}/functions/v1/api/skills/${skillId}`;
 
   const res = await apiFetch(url, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
     orgId,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | SkillDetailResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as SkillDetailResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if ((data as any)?.ok === false) {
-    throw new Error((data as any)?.error || "Failed to load skill.");
+    throw new Error((data as any)?.error || 'Failed to load skill.');
   }
 
   const raw = (data as any)?.skill ?? (data as any)?.data ?? data;
-  if (!raw || typeof raw !== "object") {
-    throw new Error("Invalid response from skill detail endpoint.");
+  if (!raw || typeof raw !== 'object') {
+    throw new Error('Invalid response from skill detail endpoint.');
   }
 
   return normalizeSkill(raw);
@@ -503,34 +481,32 @@ export async function getSkillDrillMap(
   options: { orgId?: string | null; baseUrl?: string } = {},
 ): Promise<{ items: SkillDrillMapItem[]; count?: number }> {
   if (!skillId?.trim()) {
-    throw new Error("skillId is required.");
+    throw new Error('skillId is required.');
   }
 
   const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
   const url = `${baseUrl}/functions/v1/api/skill-drill-map/${skillId}`;
 
   const res = await apiFetch(url, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
     orgId,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | SkillDrillMapListResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as SkillDrillMapListResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if (!data?.ok) {
-    throw new Error((data as any)?.error || "Failed to load skill drill map.");
+    throw new Error((data as any)?.error || 'Failed to load skill drill map.');
   }
 
   return {
     items: Array.isArray(data.items) ? data.items : [],
     count:
-      typeof data.count === "number"
+      typeof data.count === 'number'
         ? data.count
         : Number.isFinite(Number(data.count))
           ? Number(data.count)
@@ -546,16 +522,14 @@ export async function bulkUpdateSkillDrillMap(
   baseUrl = DEFAULT_BASE_URL,
 ): Promise<BulkUpdateSkillDrillMapResponse> {
   if (!input.org_id?.trim()) {
-    throw new Error("org_id is required.");
+    throw new Error('org_id is required.');
   }
   if (!input.skill_id?.trim()) {
-    throw new Error("skill_id is required.");
+    throw new Error('skill_id is required.');
   }
 
   const normalizeIds = (ids: string[] | undefined) =>
-    Array.from(
-      new Set((ids ?? []).map((id) => id.trim()).filter((id) => id.length > 0)),
-    );
+    Array.from(new Set((ids ?? []).map((id) => id.trim()).filter((id) => id.length > 0)));
 
   const payload = {
     org_id: input.org_id.trim(),
@@ -568,24 +542,21 @@ export async function bulkUpdateSkillDrillMap(
   const url = `${baseUrl}/functions/v1/api/skill-drill-map/bulk`;
 
   const res = await apiFetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
     orgId: payload.org_id,
   });
 
   const data = (await res.json().catch(() => undefined)) as
-    | BulkUpdateSkillDrillMapResponse
-    | undefined;
+    BulkUpdateSkillDrillMapResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if (!data?.ok) {
-    throw new Error(
-      (data as any)?.error || "Failed to update skill drill map.",
-    );
+    throw new Error((data as any)?.error || 'Failed to update skill drill map.');
   }
 
   return data;
@@ -600,7 +571,7 @@ export async function updateSkill(
   options: { orgId?: string | null; baseUrl?: string } = {},
 ): Promise<Skill> {
   if (!skillId?.trim()) {
-    throw new Error("skillId is required.");
+    throw new Error('skillId is required.');
   }
 
   const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
@@ -608,27 +579,25 @@ export async function updateSkill(
   const url = `${baseUrl}/functions/v1/api/skills/${skillId}`;
 
   const res = await apiFetch(url, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
     orgId,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | UpdateSkillResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as UpdateSkillResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if ((data as any)?.ok === false) {
-    throw new Error((data as any)?.error || "Failed to update skill.");
+    throw new Error((data as any)?.error || 'Failed to update skill.');
   }
 
   const raw = (data as any)?.skill ?? (data as any)?.data ?? data;
-  if (!raw || typeof raw !== "object") {
-    throw new Error("Invalid response from skill update endpoint.");
+  if (!raw || typeof raw !== 'object') {
+    throw new Error('Invalid response from skill update endpoint.');
   }
 
   return normalizeSkill(raw);
@@ -644,27 +613,23 @@ export async function createSkillMediaUploadUrl(
   const url = `${baseUrl}/functions/v1/api/skills/media/upload-url`;
 
   const res = await apiFetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload ?? {}),
     orgId: payload?.org_id ?? null,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | SkillMediaUploadUrlResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as SkillMediaUploadUrlResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if ((data as any)?.ok === false) {
-    throw new Error(
-      (data as any)?.error || "Failed to get skill media upload URL.",
-    );
+    throw new Error((data as any)?.error || 'Failed to get skill media upload URL.');
   }
   if (!data) {
-    throw new Error("Invalid response from skill media upload URL endpoint.");
+    throw new Error('Invalid response from skill media upload URL endpoint.');
   }
 
   return data;
@@ -678,31 +643,29 @@ export async function createSkillMedia(
   baseUrl = DEFAULT_BASE_URL,
 ): Promise<CreateSkillMediaResponse> {
   if (!payload?.skill_id?.trim()) {
-    throw new Error("skill_id is required.");
+    throw new Error('skill_id is required.');
   }
 
   const url = `${baseUrl}/functions/v1/api/skills/media`;
 
   const res = await apiFetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
     orgId: payload?.org_id ?? null,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | CreateSkillMediaResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as CreateSkillMediaResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if ((data as any)?.ok === false) {
-    throw new Error((data as any)?.error || "Failed to create skill media.");
+    throw new Error((data as any)?.error || 'Failed to create skill media.');
   }
   if (!data) {
-    throw new Error("Invalid response from skill media endpoint.");
+    throw new Error('Invalid response from skill media endpoint.');
   }
 
   return data;
@@ -721,47 +684,46 @@ export async function uploadSkillMediaBatch(
   baseUrl = DEFAULT_BASE_URL,
 ): Promise<SkillMediaBatchUploadResponse> {
   if (!input.org_id?.trim()) {
-    throw new Error("org_id is required.");
+    throw new Error('org_id is required.');
   }
   if (!input.skill_id?.trim()) {
-    throw new Error("skill_id is required.");
+    throw new Error('skill_id is required.');
   }
   if (!input.file) {
-    throw new Error("video file is required.");
+    throw new Error('video file is required.');
   }
 
   const formData = new FormData();
-  formData.append("org_id", input.org_id.trim());
+  formData.append('org_id', input.org_id.trim());
   formData.append(
-    "items",
+    'items',
     JSON.stringify([
       {
-        file_field: "video",
+        file_field: 'video',
         skill_id: input.skill_id.trim(),
-        title: input.title?.trim() || "Skill video",
+        title: input.title?.trim() || 'Skill video',
       },
     ]),
   );
-  formData.append("video", input.file, input.file.name);
+  formData.append('video', input.file, input.file.name);
 
   const url = `${baseUrl}/functions/v1/api/skills/media/batch-upload`;
 
   const res = await apiFetch(url, {
-    method: "POST",
+    method: 'POST',
     body: formData,
     orgId: input.org_id,
   });
 
   const data = (await res.json().catch(() => undefined)) as
-    | SkillMediaBatchUploadResponse
-    | undefined;
+    SkillMediaBatchUploadResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if (!data?.ok) {
-    throw new Error((data as any)?.error || "Failed to upload skill video.");
+    throw new Error((data as any)?.error || 'Failed to upload skill video.');
   }
 
   return data;
@@ -775,33 +737,29 @@ export async function getSkillMediaPlay(
   options: { orgId?: string | null; baseUrl?: string } = {},
 ): Promise<SkillMediaPlayResponse> {
   if (!skillId?.trim()) {
-    throw new Error("skillId is required.");
+    throw new Error('skillId is required.');
   }
 
   const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
   const url = `${baseUrl}/functions/v1/api/skills/media/${skillId}/play`;
 
   const res = await apiFetch(url, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
     orgId,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | SkillMediaPlayResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as SkillMediaPlayResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if ((data as any)?.ok === false) {
-    throw new Error(
-      (data as any)?.error || "Failed to load skill media play URL.",
-    );
+    throw new Error((data as any)?.error || 'Failed to load skill media play URL.');
   }
   if (!data) {
-    throw new Error("Invalid response from skill media play endpoint.");
+    throw new Error('Invalid response from skill media play endpoint.');
   }
 
   return data;

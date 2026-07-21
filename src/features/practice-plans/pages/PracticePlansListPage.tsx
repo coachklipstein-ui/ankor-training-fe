@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Box,
   Button,
@@ -18,24 +18,24 @@ import {
   TextField,
   Typography,
   useMediaQuery,
-} from "@mui/material";
-import { useTheme } from "@mui/material/styles";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../app/providers/AuthProvider";
+} from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
 
-import AddIcon from "@mui/icons-material/Add";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-import SearchIcon from "@mui/icons-material/Search";
+import AddIcon from '@mui/icons-material/Add';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import SearchIcon from '@mui/icons-material/Search';
 
-import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
-import MailOutlineIcon from "@mui/icons-material/MailOutline";
-import AutoAwesomeMosaicIcon from "@mui/icons-material/AutoAwesomeMosaic";
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
+import AutoAwesomeMosaicIcon from '@mui/icons-material/AutoAwesomeMosaic';
 
-import AnchorIcon from "@mui/icons-material/Anchor";
+import AnchorIcon from '@mui/icons-material/Anchor';
 
-import { listInvited, listPlansByType, type PracticePlan } from "../services/practicePlanService";
+import { listInvited, listPlansByType, type PracticePlan } from '../services/practicePlanService';
 
-type TabKey = "my" | "invited" | "prebuilt";
+type TabKey = 'my' | 'invited' | 'prebuilt';
 
 type PracticePlanRow = {
   id: string;
@@ -50,23 +50,23 @@ const TAB_META: Array<{
   label: string;
   icon: React.ReactElement;
 }> = [
-  { key: "my", label: "My Plans", icon: <LibraryBooksIcon /> },
-  { key: "invited", label: "Invited", icon: <MailOutlineIcon /> },
-  { key: "prebuilt", label: "Prebuilt Plans", icon: <AutoAwesomeMosaicIcon /> },
+  { key: 'my', label: 'My Plans', icon: <LibraryBooksIcon /> },
+  { key: 'invited', label: 'Invited', icon: <MailOutlineIcon /> },
+  { key: 'prebuilt', label: 'Prebuilt Plans', icon: <AutoAwesomeMosaicIcon /> },
 ];
 
 function safeFormatTimestamp(iso: string) {
   try {
     const d = new Date(iso);
     const date = new Intl.DateTimeFormat(undefined, {
-      month: "long",
-      day: "2-digit",
-      year: "numeric",
+      month: 'long',
+      day: '2-digit',
+      year: 'numeric',
     }).format(d);
 
     const time = new Intl.DateTimeFormat(undefined, {
-      hour: "numeric",
-      minute: "2-digit",
+      hour: 'numeric',
+      minute: '2-digit',
     }).format(d);
 
     return `${date} at ${time}`.toUpperCase();
@@ -77,36 +77,36 @@ function safeFormatTimestamp(iso: string) {
 
 function tabTitle(tab: TabKey) {
   switch (tab) {
-    case "my":
-      return "My Plans";
-    case "invited":
-      return "Invited Plans";
-    case "prebuilt":
-      return "Prebuilt Plans";
+    case 'my':
+      return 'My Plans';
+    case 'invited':
+      return 'Invited Plans';
+    case 'prebuilt':
+      return 'Prebuilt Plans';
     default:
-      return "Plans";
+      return 'Plans';
   }
 }
 
 function normalizePlanRows(plans: PracticePlan[]): PracticePlanRow[] {
   return plans.map((plan) => ({
     id: plan.id,
-    name: plan.name?.trim() || "Untitled plan",
-    updated_at: plan.updated_at || plan.created_at || "",
+    name: plan.name?.trim() || 'Untitled plan',
+    updated_at: plan.updated_at || plan.created_at || '',
   }));
 }
 
 export default function PracticePlansListPage() {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
   const { user, profile } = useAuth();
-  const userId = user?.id ?? "";
+  const userId = user?.id ?? '';
   const orgId = profile?.default_org_id?.trim() || null;
-  const isCoach = (profile?.role ?? "").trim().toLowerCase().includes("coach");
+  const isCoach = (profile?.role ?? '').trim().toLowerCase().includes('coach');
 
-  const [tab, setTab] = React.useState<TabKey>("my");
-  const [search, setSearch] = React.useState("");
+  const [tab, setTab] = React.useState<TabKey>('my');
+  const [search, setSearch] = React.useState('');
 
   const [myPlans, setMyPlans] = React.useState<PracticePlanRow[]>([]);
   const [invitedPlans, setInvitedPlans] = React.useState<PracticePlanRow[]>([]);
@@ -134,9 +134,9 @@ export default function PracticePlansListPage() {
   };
 
   const setPlansForTab = (key: TabKey, rows: PracticePlanRow[]) => {
-    if (key === "my") {
+    if (key === 'my') {
       setMyPlans(rows);
-    } else if (key === "invited") {
+    } else if (key === 'invited') {
       setInvitedPlans(rows);
     } else {
       setPrebuiltPlans(rows);
@@ -148,14 +148,14 @@ export default function PracticePlansListPage() {
 
     const fetchTab = async (
       key: TabKey,
-      type: "custom-plans" | "invited-plans" | "prebuild",
+      type: 'custom-plans' | 'invited-plans' | 'prebuild',
       filter: { user_id?: string } = {},
     ) => {
       setTabLoading(key, true);
       setTabError(key, null);
       if (!orgId) {
         setPlansForTab(key, []);
-        setTabError(key, "Missing org_id. Please sign in again.");
+        setTabError(key, 'Missing org_id. Please sign in again.');
         setTabLoading(key, false);
         return;
       }
@@ -167,13 +167,13 @@ export default function PracticePlansListPage() {
       } catch (err: any) {
         if (!active) return;
         setPlansForTab(key, []);
-        setTabError(key, err?.message || "Failed to load plans.");
+        setTabError(key, err?.message || 'Failed to load plans.');
       } finally {
         if (active) setTabLoading(key, false);
       }
     };
 
-    fetchTab("prebuilt", "prebuild");
+    fetchTab('prebuilt', 'prebuild');
 
     return () => {
       active = false;
@@ -181,41 +181,41 @@ export default function PracticePlansListPage() {
   }, [orgId]);
 
   React.useEffect(() => {
-    if (tab !== "my") return;
+    if (tab !== 'my') return;
 
     let active = true;
-    setTabLoading("my", true);
-    setTabError("my", null);
+    setTabLoading('my', true);
+    setTabError('my', null);
 
     if (!userId) {
-      setPlansForTab("my", []);
-      setTabError("my", "Missing user id. Please sign in again.");
-      setTabLoading("my", false);
+      setPlansForTab('my', []);
+      setTabError('my', 'Missing user id. Please sign in again.');
+      setTabLoading('my', false);
       return () => {
         active = false;
       };
     }
     if (!orgId) {
-      setPlansForTab("my", []);
-      setTabError("my", "Missing org_id. Please sign in again.");
-      setTabLoading("my", false);
+      setPlansForTab('my', []);
+      setTabError('my', 'Missing org_id. Please sign in again.');
+      setTabLoading('my', false);
       return () => {
         active = false;
       };
     }
 
-    listPlansByType({ type: "custom", orgId, user_id: userId })
+    listPlansByType({ type: 'custom', orgId, user_id: userId })
       .then(({ items }) => {
         if (!active) return;
-        setPlansForTab("my", normalizePlanRows(items));
+        setPlansForTab('my', normalizePlanRows(items));
       })
       .catch((err: any) => {
         if (!active) return;
-        setPlansForTab("my", []);
-        setTabError("my", err?.message || "Failed to load my plans.");
+        setPlansForTab('my', []);
+        setTabError('my', err?.message || 'Failed to load my plans.');
       })
       .finally(() => {
-        if (active) setTabLoading("my", false);
+        if (active) setTabLoading('my', false);
       });
 
     return () => {
@@ -224,24 +224,24 @@ export default function PracticePlansListPage() {
   }, [tab, userId, orgId]);
 
   React.useEffect(() => {
-    if (tab !== "invited") return;
+    if (tab !== 'invited') return;
 
     let active = true;
-    setTabLoading("invited", true);
-    setTabError("invited", null);
+    setTabLoading('invited', true);
+    setTabError('invited', null);
 
     if (!userId) {
-      setPlansForTab("invited", []);
-      setTabError("invited", "Missing user id. Please sign in again.");
-      setTabLoading("invited", false);
+      setPlansForTab('invited', []);
+      setTabError('invited', 'Missing user id. Please sign in again.');
+      setTabLoading('invited', false);
       return () => {
         active = false;
       };
     }
     if (!orgId) {
-      setPlansForTab("invited", []);
-      setTabError("invited", "Missing org_id. Please sign in again.");
-      setTabLoading("invited", false);
+      setPlansForTab('invited', []);
+      setTabError('invited', 'Missing org_id. Please sign in again.');
+      setTabLoading('invited', false);
       return () => {
         active = false;
       };
@@ -250,15 +250,15 @@ export default function PracticePlansListPage() {
     listInvited({ user_id: userId, orgId })
       .then(({ items }) => {
         if (!active) return;
-        setPlansForTab("invited", normalizePlanRows(items));
+        setPlansForTab('invited', normalizePlanRows(items));
       })
       .catch((err: any) => {
         if (!active) return;
-        setPlansForTab("invited", []);
-        setTabError("invited", err?.message || "Failed to load invited plans.");
+        setPlansForTab('invited', []);
+        setTabError('invited', err?.message || 'Failed to load invited plans.');
       })
       .finally(() => {
-        if (active) setTabLoading("invited", false);
+        if (active) setTabLoading('invited', false);
       });
 
     return () => {
@@ -267,8 +267,7 @@ export default function PracticePlansListPage() {
   }, [tab, userId, orgId]);
 
   const rows = React.useMemo(() => {
-    const source =
-      tab === "my" ? myPlans : tab === "invited" ? invitedPlans : prebuiltPlans;
+    const source = tab === 'my' ? myPlans : tab === 'invited' ? invitedPlans : prebuiltPlans;
     const q = search.trim().toLowerCase();
 
     const searched = !q ? source : source.filter((p) => p.name.toLowerCase().includes(q));
@@ -280,7 +279,7 @@ export default function PracticePlansListPage() {
 
   const activeLoading = loadingByTab[tab];
   const activeError = errorByTab[tab];
-  const canEdit = tab !== "prebuilt" && (tab !== "invited" || isCoach);
+  const canEdit = tab !== 'prebuilt' && (tab !== 'invited' || isCoach);
 
   const openMenu = (evt: React.MouseEvent<HTMLElement>, row: PracticePlanRow) => {
     evt.stopPropagation();
@@ -312,7 +311,7 @@ export default function PracticePlansListPage() {
   };
 
   const onCreate = () => {
-    navigate("/practice-plans/new");
+    navigate('/practice-plans/new');
   };
 
   return (
@@ -323,7 +322,7 @@ export default function PracticePlansListPage() {
           onChange={(_, v: TabKey) => setTab(v)}
           variant="scrollable"
           allowScrollButtonsMobile
-          scrollButtons={isMobile ? "auto" : false}
+          scrollButtons={isMobile ? 'auto' : false}
         >
           {TAB_META.map((t) => (
             <Tab
@@ -332,7 +331,7 @@ export default function PracticePlansListPage() {
               icon={t.icon}
               iconPosition="start"
               label={t.label}
-              sx={{ textTransform: "none", fontWeight: 700 }}
+              sx={{ textTransform: 'none', fontWeight: 700 }}
             />
           ))}
         </Tabs>
@@ -344,13 +343,13 @@ export default function PracticePlansListPage() {
             {tabTitle(tab)}
           </Typography>
 
-          {tab === "my" && (
+          {tab === 'my' && (
             <IconButton
               onClick={onCreate}
               aria-label="create plan"
               sx={{
                 border: `1px solid ${theme.palette.divider}`,
-                borderRadius: "999px",
+                borderRadius: '999px',
               }}
             >
               <AddIcon />
@@ -374,7 +373,7 @@ export default function PracticePlansListPage() {
           sx={{ mb: 1.5 }}
         />
 
-        <Paper variant="outlined" sx={{ overflow: "hidden" }}>
+        <Paper variant="outlined" sx={{ overflow: 'hidden' }}>
           {activeLoading ? (
             <Box sx={{ p: 2 }}>
               <Typography variant="body2" color="text.secondary">
@@ -417,17 +416,20 @@ export default function PracticePlansListPage() {
                         </Typography>
                       }
                       secondary={
-                        <Typography variant="subtitle1" sx={{ fontWeight: 900, color: "text.primary" }}>
+                        <Typography
+                          variant="subtitle1"
+                          sx={{ fontWeight: 900, color: 'text.primary' }}
+                        >
                           {row.name}
                         </Typography>
                       }
-                      secondaryTypographyProps={{ component: "div" }}
+                      secondaryTypographyProps={{ component: 'div' }}
                     />
 
                     <Stack
-                      direction={isMobile ? "column" : "row"}
+                      direction={isMobile ? 'column' : 'row'}
                       spacing={1}
-                      sx={{ alignSelf: "center", mr: 1 }}
+                      sx={{ alignSelf: 'center', mr: 1 }}
                     >
                       <Button
                         size="small"
@@ -457,7 +459,7 @@ export default function PracticePlansListPage() {
                       edge="end"
                       aria-label="more"
                       onClick={(e) => openMenu(e, row)}
-                      sx={{ alignSelf: "center" }}
+                      sx={{ alignSelf: 'center' }}
                     >
                       <MoreHorizIcon />
                     </IconButton>
@@ -474,13 +476,13 @@ export default function PracticePlansListPage() {
           anchorEl={menuAnchorEl}
           open={Boolean(menuAnchorEl)}
           onClose={closeMenu}
-          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-          transformOrigin={{ vertical: "top", horizontal: "right" }}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         >
           <MenuItem onClick={() => menuRow && onOpenPlan(menuRow)}>Open</MenuItem>
           <MenuItem onClick={onDuplicate}>Duplicate</MenuItem>
           <Divider />
-          <MenuItem onClick={onDelete} sx={{ color: "error.main" }}>
+          <MenuItem onClick={onDelete} sx={{ color: 'error.main' }}>
             Delete
           </MenuItem>
         </Menu>
@@ -488,6 +490,3 @@ export default function PracticePlansListPage() {
     </Box>
   );
 }
-
-
-

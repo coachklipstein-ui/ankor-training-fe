@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Box,
   Button,
@@ -22,18 +22,18 @@ import {
   TextField,
   Typography,
   useMediaQuery,
-} from "@mui/material";
-import { useTheme } from "@mui/material/styles";
-import SearchIcon from "@mui/icons-material/Search";
+} from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import SearchIcon from '@mui/icons-material/Search';
 
 import {
   listDrills,
   listDrillSegments,
   type DrillItem,
   type DrillSegment,
-} from "../../drills/services/drillsService";
+} from '../../drills/services/drillsService';
 
-export type Position = "Attack" | "Midfield" | "Defense" | "Goalie" | "FOGO" | "Any";
+export type Position = 'Attack' | 'Midfield' | 'Defense' | 'Goalie' | 'FOGO' | 'Any';
 
 export type DialogDrill = {
   id: string;
@@ -52,19 +52,19 @@ type DrillPickerDialogProps = {
   missingOrgIdMessage?: string;
 };
 
-const POSITION_ORDER: Position[] = ["Attack", "Midfield", "Defense", "Goalie", "FOGO", "Any"];
+const POSITION_ORDER: Position[] = ['Attack', 'Midfield', 'Defense', 'Goalie', 'FOGO', 'Any'];
 
 const POSITION_ALIASES: Record<string, Position> = {
-  attack: "Attack",
-  midfield: "Midfield",
-  defense: "Defense",
-  defence: "Defense",
-  goalie: "Goalie",
-  goalkeeper: "Goalie",
-  fogo: "FOGO",
-  faceoff: "FOGO",
-  "face-off": "FOGO",
-  any: "Any",
+  attack: 'Attack',
+  midfield: 'Midfield',
+  defense: 'Defense',
+  defence: 'Defense',
+  goalie: 'Goalie',
+  goalkeeper: 'Goalie',
+  fogo: 'FOGO',
+  faceoff: 'FOGO',
+  'face-off': 'FOGO',
+  any: 'Any',
 };
 
 const DEFAULT_DURATION_MIN = 10;
@@ -75,28 +75,28 @@ function normalizePosition(raw: string): Position | null {
   return POSITION_ALIASES[trimmed] ?? null;
 }
 
-function extractPositions(tags: DrillItem["skill_tags"]): Position[] {
+function extractPositions(tags: DrillItem['skill_tags']): Position[] {
   const positions = new Set<Position>();
 
   if (Array.isArray(tags)) {
     for (const tag of tags) {
       const label =
-        typeof tag === "string"
+        typeof tag === 'string'
           ? tag
-          : tag && typeof tag === "object"
-            ? String((tag as any).name ?? (tag as any).label ?? (tag as any).title ?? "")
-            : "";
+          : tag && typeof tag === 'object'
+            ? String((tag as any).name ?? (tag as any).label ?? (tag as any).title ?? '')
+            : '';
       const normalized = label ? normalizePosition(label) : null;
       if (normalized) positions.add(normalized);
     }
   }
 
-  if (positions.size === 0) positions.add("Any");
+  if (positions.size === 0) positions.add('Any');
   return Array.from(positions);
 }
 
 function toDialogDrill(item: DrillItem): DialogDrill {
-  const name = item.name?.trim() || "Untitled drill";
+  const name = item.name?.trim() || 'Untitled drill';
   const duration = Number.isFinite(item.duration_min)
     ? Math.max(0, Number(item.duration_min))
     : DEFAULT_DURATION_MIN;
@@ -104,7 +104,7 @@ function toDialogDrill(item: DrillItem): DialogDrill {
   return {
     id: item.id,
     name,
-    category: item.segment?.name?.trim() || "General",
+    category: item.segment?.name?.trim() || 'General',
     defaultDurationMin: duration,
     positions: extractPositions(item.skill_tags),
     item,
@@ -116,16 +116,16 @@ export default function DrillPickerDialog({
   orgId,
   onClose,
   onAddDrill,
-  missingOrgIdMessage = "Missing org_id.",
+  missingOrgIdMessage = 'Missing org_id.',
 }: DrillPickerDialogProps) {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const [drillSearch, setDrillSearch] = React.useState("");
-  const [categoryId, setCategoryId] = React.useState("All");
+  const [drillSearch, setDrillSearch] = React.useState('');
+  const [categoryId, setCategoryId] = React.useState('All');
   const [segments, setSegments] = React.useState<DrillSegment[]>([]);
-  const [position, setPosition] = React.useState<Position | "All">("All");
-  const [maxDuration, setMaxDuration] = React.useState<number | "">("");
+  const [position, setPosition] = React.useState<Position | 'All'>('All');
+  const [maxDuration, setMaxDuration] = React.useState<number | ''>('');
   const [drills, setDrills] = React.useState<DialogDrill[]>([]);
   const [drillsLoading, setDrillsLoading] = React.useState(false);
   const [drillsError, setDrillsError] = React.useState<string | null>(null);
@@ -141,7 +141,7 @@ export default function DrillPickerDialog({
 
   React.useEffect(() => {
     if (!open) return;
-    const resolvedOrgId = orgId?.trim() || "";
+    const resolvedOrgId = orgId?.trim() || '';
     if (!resolvedOrgId) return;
 
     let active = true;
@@ -163,7 +163,7 @@ export default function DrillPickerDialog({
 
   React.useEffect(() => {
     if (!open) return;
-    const resolvedOrgId = orgId?.trim() || "";
+    const resolvedOrgId = orgId?.trim() || '';
     if (!resolvedOrgId) {
       setDrillsError(missingOrgIdMessage);
       setDrillsTotalCount(0);
@@ -179,7 +179,7 @@ export default function DrillPickerDialog({
     listDrills({
       orgId: resolvedOrgId,
       name: name ? name : undefined,
-      segmentIds: categoryId !== "All" ? [categoryId] : undefined,
+      segmentIds: categoryId !== 'All' ? [categoryId] : undefined,
       limit: DRILLS_PAGE_SIZE,
       offset: (drillsPage - 1) * DRILLS_PAGE_SIZE,
     })
@@ -192,7 +192,7 @@ export default function DrillPickerDialog({
         if (!active) return;
         setDrills([]);
         setDrillsTotalCount(0);
-        setDrillsError(err?.message || "Failed to load drills.");
+        setDrillsError(err?.message || 'Failed to load drills.');
       })
       .finally(() => {
         if (active) setDrillsLoading(false);
@@ -221,7 +221,7 @@ export default function DrillPickerDialog({
       .filter((s) => s.name?.trim())
       .map((s) => ({ id: s.id, name: s.name!.trim() }))
       .sort((a, b) => a.name.localeCompare(b.name));
-    return [{ id: "All", name: "All" }, ...named];
+    return [{ id: 'All', name: 'All' }, ...named];
   }, [segments]);
 
   const positionOptions = React.useMemo(() => {
@@ -229,10 +229,10 @@ export default function DrillPickerDialog({
     for (const drill of drills) {
       for (const pos of drill.positions) positions.add(pos);
     }
-    if (positions.size === 0) positions.add("Any");
+    if (positions.size === 0) positions.add('Any');
     const ordered = POSITION_ORDER.filter((pos) => positions.has(pos));
-    const options = ["All", ...ordered];
-    if (position !== "All" && !options.includes(position)) {
+    const options = ['All', ...ordered];
+    if (position !== 'All' && !options.includes(position)) {
       options.splice(1, 0, position);
     }
     return options;
@@ -240,10 +240,10 @@ export default function DrillPickerDialog({
 
   const availableDrills = React.useMemo(() => {
     return drills.filter((d) => {
-      if (position !== "All" && !d.positions.includes(position) && !d.positions.includes("Any")) {
+      if (position !== 'All' && !d.positions.includes(position) && !d.positions.includes('Any')) {
         return false;
       }
-      if (maxDuration !== "" && d.defaultDurationMin > maxDuration) return false;
+      if (maxDuration !== '' && d.defaultDurationMin > maxDuration) return false;
       return true;
     });
   }, [position, maxDuration, drills]);
@@ -253,7 +253,7 @@ export default function DrillPickerDialog({
   const resolveDurationMin = React.useCallback(
     (drill: DialogDrill) => {
       const raw = durationById[drill.id];
-      if (raw === undefined || raw.trim() === "") {
+      if (raw === undefined || raw.trim() === '') {
         return drill.defaultDurationMin;
       }
       const parsed = Number(raw);
@@ -288,7 +288,7 @@ export default function DrillPickerDialog({
             }}
           />
 
-          <Stack direction={isMobile ? "column" : "row"} spacing={1}>
+          <Stack direction={isMobile ? 'column' : 'row'} spacing={1}>
             <FormControl size="small" fullWidth>
               <InputLabel>Category</InputLabel>
               <Select
@@ -313,7 +313,7 @@ export default function DrillPickerDialog({
                 label="Position"
                 value={position}
                 onChange={(e) => {
-                  setPosition(e.target.value as Position | "All");
+                  setPosition(e.target.value as Position | 'All');
                   setDrillsPage(1);
                 }}
               >
@@ -331,15 +331,15 @@ export default function DrillPickerDialog({
               value={maxDuration}
               onChange={(e) => {
                 const v = e.target.value;
-                setMaxDuration(v === "" ? "" : Math.max(0, Number(v)));
+                setMaxDuration(v === '' ? '' : Math.max(0, Number(v)));
                 setDrillsPage(1);
               }}
-              inputProps={{ inputMode: "numeric" }}
+              inputProps={{ inputMode: 'numeric' }}
               fullWidth
             />
           </Stack>
 
-          <Paper variant="outlined" sx={{ overflow: "hidden" }}>
+          <Paper variant="outlined" sx={{ overflow: 'hidden' }}>
             {drillsLoading ? (
               <Box sx={{ p: 2 }}>
                 <Typography variant="body2" color="text.secondary">
@@ -362,11 +362,11 @@ export default function DrillPickerDialog({
               <Box>
                 <Box
                   sx={{
-                    display: "flex",
-                    alignItems: "center",
+                    display: 'flex',
+                    alignItems: 'center',
                     px: 2,
                     py: 0.75,
-                    color: "text.secondary",
+                    color: 'text.secondary',
                     borderBottom: `1px solid ${theme.palette.divider}`,
                   }}
                 >
@@ -375,7 +375,7 @@ export default function DrillPickerDialog({
                       DRILL
                     </Typography>
                   </Box>
-                  <Box sx={{ width: 96, textAlign: "right" }}>
+                  <Box sx={{ width: 96, textAlign: 'right' }}>
                     <Typography variant="caption" fontWeight={800}>
                       TIME (MIN)
                     </Typography>
@@ -387,23 +387,28 @@ export default function DrillPickerDialog({
                     <React.Fragment key={d.id}>
                       <ListItemButton
                         onClick={() => onAddDrill(d, resolveDurationMin(d))}
-                        sx={{ py: 1.25, alignItems: "center" }}
+                        sx={{ py: 1.25, alignItems: 'center' }}
                       >
                         <ListItemText
                           sx={{ flex: 1, mr: 1 }}
                           primary={<Typography fontWeight={900}>{d.name}</Typography>}
                           secondary={
-                            <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.25 }}>
+                            <Stack
+                              direction="row"
+                              spacing={1}
+                              alignItems="center"
+                              sx={{ mt: 0.25 }}
+                            >
                               <Typography variant="caption" color="text.secondary">
                                 {d.category}
                               </Typography>
                               <Chip
                                 size="small"
-                                label={d.positions.includes("Any") ? "Any" : d.positions.join(", ")}
+                                label={d.positions.includes('Any') ? 'Any' : d.positions.join(', ')}
                               />
                             </Stack>
                           }
-                          secondaryTypographyProps={{ component: "div" }}
+                          secondaryTypographyProps={{ component: 'div' }}
                         />
                         <TextField
                           size="small"
@@ -414,7 +419,12 @@ export default function DrillPickerDialog({
                           }
                           onClick={(e) => e.stopPropagation()}
                           onKeyDown={(e) => e.stopPropagation()}
-                          inputProps={{ min: 0, step: 1, inputMode: "numeric", "aria-label": "Time (min)" }}
+                          inputProps={{
+                            min: 0,
+                            step: 1,
+                            inputMode: 'numeric',
+                            'aria-label': 'Time (min)',
+                          }}
                           sx={{ width: 96, mr: 1 }}
                         />
                         <Button
@@ -455,10 +465,10 @@ export default function DrillPickerDialog({
       <DialogActions>
         <Button
           onClick={() => {
-            setDrillSearch("");
-            setCategoryId("All");
-            setPosition("All");
-            setMaxDuration("");
+            setDrillSearch('');
+            setCategoryId('All');
+            setPosition('All');
+            setMaxDuration('');
             setDrillsPage(1);
           }}
         >

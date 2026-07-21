@@ -1,127 +1,127 @@
-import * as React from 'react'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import CssBaseline from '@mui/material/CssBaseline'
-import Grid from '@mui/material/Grid'
-import Stack from '@mui/material/Stack'
-import Step from '@mui/material/Step'
-import StepLabel from '@mui/material/StepLabel'
-import Stepper from '@mui/material/Stepper'
-import Typography from '@mui/material/Typography'
-import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded'
-import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
-import { useNavigate } from 'react-router-dom'
+import * as React from 'react';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import CssBaseline from '@mui/material/CssBaseline';
+import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
+import Step from '@mui/material/Step';
+import StepLabel from '@mui/material/StepLabel';
+import Stepper from '@mui/material/Stepper';
+import Typography from '@mui/material/Typography';
+import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
+import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
+import { useNavigate } from 'react-router-dom';
 
-import AdminInfoForm from '../components/AdminInfoForm'
-import OrganizationForm from '../components/OrganizationForm'
-import TeamsForm from '../components/TeamsForm'
-import AppTheme from '../theme/AppTheme'
-import ColorModeIconDropdown from '../theme/ColorModeIconDropdown'
-import AnkorBrandPanel from '../components/AnkorBrandPanel'
+import AdminInfoForm from '../components/AdminInfoForm';
+import OrganizationForm from '../components/OrganizationForm';
+import TeamsForm from '../components/TeamsForm';
+import AppTheme from '../theme/AppTheme';
+import ColorModeIconDropdown from '../theme/ColorModeIconDropdown';
+import AnkorBrandPanel from '../components/AnkorBrandPanel';
 
 // JSON-only backend submit helpers
-import { buildOrgSignupPayload, submitOrgSignupJson } from '../services/orgSignUpService'
-import { listSports, type Sport } from '../services/sportsService'
+import { buildOrgSignupPayload, submitOrgSignupJson } from '../services/orgSignUpService';
+import { listSports, type Sport } from '../services/sportsService';
 
-const steps = ['Admin Info', 'Organization', 'Teams']
+const steps = ['Admin Info', 'Organization', 'Teams'];
 
 function getStepContent(step: number) {
   switch (step) {
     case 0:
-      return <AdminInfoForm />
+      return <AdminInfoForm />;
     case 1:
-      return <OrganizationForm />
+      return <OrganizationForm />;
     case 2:
-      return <TeamsForm />
+      return <TeamsForm />;
     default:
-      throw new Error('Unknown step')
+      throw new Error('Unknown step');
   }
 }
 
 export default function OrgSignUp(props: { disableCustomTheme?: boolean }) {
-  const navigate = useNavigate()
-  const [activeStep, setActiveStep] = React.useState(0)
-  const [submitting, setSubmitting] = React.useState(false)
-  const [serverError, setServerError] = React.useState<string | null>(null)
-  const [serverSuccess, setServerSuccess] = React.useState<string | null>(null)
-  const [sports, setSports] = React.useState<Sport[]>([])
-  const [sportsLoading, setSportsLoading] = React.useState(true)
-  const [sportsError, setSportsError] = React.useState<string | null>(null)
+  const navigate = useNavigate();
+  const [activeStep, setActiveStep] = React.useState(0);
+  const [submitting, setSubmitting] = React.useState(false);
+  const [serverError, setServerError] = React.useState<string | null>(null);
+  const [serverSuccess, setServerSuccess] = React.useState<string | null>(null);
+  const [sports, setSports] = React.useState<Sport[]>([]);
+  const [sportsLoading, setSportsLoading] = React.useState(true);
+  const [sportsError, setSportsError] = React.useState<string | null>(null);
 
   // Single form wrapper so we can read values and build JSON
-  const formRef = React.useRef<HTMLFormElement>(null)
+  const formRef = React.useRef<HTMLFormElement>(null);
 
-  const handleBack = () => setActiveStep((s) => Math.max(0, s - 1))
-  const goNext = () => setActiveStep((s) => Math.min(steps.length - 1, s + 1))
+  const handleBack = () => setActiveStep((s) => Math.max(0, s - 1));
+  const goNext = () => setActiveStep((s) => Math.min(steps.length - 1, s + 1));
 
   React.useEffect(() => {
-    let cancelled = false
+    let cancelled = false;
 
     async function loadSports() {
-      setSportsLoading(true)
-      setSportsError(null)
+      setSportsLoading(true);
+      setSportsError(null);
       try {
-        const result = await listSports()
+        const result = await listSports();
         if (!cancelled) {
-          setSports(result.items)
+          setSports(result.items);
         }
       } catch (err: any) {
         if (!cancelled) {
-          setSports([])
-          setSportsError(err?.message ?? 'Failed to load sports.')
+          setSports([]);
+          setSportsError(err?.message ?? 'Failed to load sports.');
         }
       } finally {
         if (!cancelled) {
-          setSportsLoading(false)
+          setSportsLoading(false);
         }
       }
     }
 
-    loadSports()
+    loadSports();
 
     return () => {
-      cancelled = true
-    }
-  }, [])
+      cancelled = true;
+    };
+  }, []);
 
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
-    e.preventDefault()
-    setServerError(null)
+    e.preventDefault();
+    setServerError(null);
 
     if (activeStep < steps.length - 1) {
-      goNext()
-      return
+      goNext();
+      return;
     }
 
     // Last step => send JSON
-    if (!formRef.current) return
+    if (!formRef.current) return;
 
     // Client-side guard for password match (optional; backend also validates)
-    const fd = new FormData(formRef.current)
-    const pw = String(fd.get('adminPassword') ?? '')
-    const pw2 = String(fd.get('adminPasswordConfirm') ?? '')
+    const fd = new FormData(formRef.current);
+    const pw = String(fd.get('adminPassword') ?? '');
+    const pw2 = String(fd.get('adminPasswordConfirm') ?? '');
     if (pw !== pw2) {
-      setServerError('Passwords do not match')
-      return
+      setServerError('Passwords do not match');
+      return;
     }
 
-    setSubmitting(true)
-    setServerSuccess(null)
+    setSubmitting(true);
+    setServerSuccess(null);
     try {
-      const payload = buildOrgSignupPayload(formRef.current)
-      const result = await submitOrgSignupJson(payload)
+      const payload = buildOrgSignupPayload(formRef.current);
+      const result = await submitOrgSignupJson(payload);
       if (!result.ok) {
-        setServerError(result.error || 'Signup failed')
-        return
+        setServerError(result.error || 'Signup failed');
+        return;
       }
-      setServerSuccess(`Organization created! orgId: ${result.orgId}`)
-      setActiveStep(steps.length) // show success screen
+      setServerSuccess(`Organization created! orgId: ${result.orgId}`);
+      setActiveStep(steps.length); // show success screen
     } catch (err: any) {
-      setServerError(err?.message ?? String(err))
+      setServerError(err?.message ?? String(err));
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   return (
     <AppTheme {...props}>
@@ -190,7 +190,11 @@ export default function OrgSignUp(props: { disableCustomTheme?: boolean }) {
                 flexGrow: 1,
               }}
             >
-              <Stepper id="desktop-stepper" activeStep={activeStep} sx={{ width: '100%', height: 40 }}>
+              <Stepper
+                id="desktop-stepper"
+                activeStep={activeStep}
+                sx={{ width: '100%', height: 40 }}
+              >
                 {steps.map((label) => (
                   <Step sx={{ ':first-child': { pl: 0 }, ':last-child': { pr: 0 } }} key={label}>
                     <StepLabel>{label}</StepLabel>
@@ -200,7 +204,6 @@ export default function OrgSignUp(props: { disableCustomTheme?: boolean }) {
             </Box>
           </Box>
 
-          
           {/* Main content */}
           <Box
             sx={{
@@ -214,13 +217,24 @@ export default function OrgSignUp(props: { disableCustomTheme?: boolean }) {
             }}
           >
             {/* Mobile stepper */}
-            <Stepper id="mobile-stepper" activeStep={activeStep} alternativeLabel sx={{ display: { sm: 'flex', md: 'none' } }}>
+            <Stepper
+              id="mobile-stepper"
+              activeStep={activeStep}
+              alternativeLabel
+              sx={{ display: { sm: 'flex', md: 'none' } }}
+            >
               {steps.map((label) => (
                 <Step
-                  sx={{ ':first-child': { pl: 0 }, ':last-child': { pr: 0 }, '& .MuiStepConnector-root': { top: { xs: 6, sm: 12 } } }}
+                  sx={{
+                    ':first-child': { pl: 0 },
+                    ':last-child': { pr: 0 },
+                    '& .MuiStepConnector-root': { top: { xs: 6, sm: 12 } },
+                  }}
                   key={label}
                 >
-                  <StepLabel sx={{ '.MuiStepLabel-labelContainer': { maxWidth: '70px' } }}>{label}</StepLabel>
+                  <StepLabel sx={{ '.MuiStepLabel-labelContainer': { maxWidth: '70px' } }}>
+                    {label}
+                  </StepLabel>
                 </Step>
               ))}
             </Stepper>
@@ -243,15 +257,19 @@ export default function OrgSignUp(props: { disableCustomTheme?: boolean }) {
               ) : (
                 <React.Fragment>
                   {/* Keep all steps mounted so FormData includes their inputs */}
-<Box sx={{ display: activeStep === 0 ? 'block' : 'none' }}>
-  <AdminInfoForm />
-</Box>
-<Box sx={{ display: activeStep === 1 ? 'block' : 'none' }}>
-  <OrganizationForm />
-</Box>
-<Box sx={{ display: activeStep === 2 ? 'block' : 'none' }}>
-  <TeamsForm sports={sports} sportsLoading={sportsLoading} sportsError={sportsError} />
-</Box>
+                  <Box sx={{ display: activeStep === 0 ? 'block' : 'none' }}>
+                    <AdminInfoForm />
+                  </Box>
+                  <Box sx={{ display: activeStep === 1 ? 'block' : 'none' }}>
+                    <OrganizationForm />
+                  </Box>
+                  <Box sx={{ display: activeStep === 2 ? 'block' : 'none' }}>
+                    <TeamsForm
+                      sports={sports}
+                      sportsLoading={sportsLoading}
+                      sportsError={sportsError}
+                    />
+                  </Box>
 
                   {/* Server feedback */}
                   {serverError && (
@@ -275,10 +293,12 @@ export default function OrgSignUp(props: { disableCustomTheme?: boolean }) {
                         flexGrow: 1,
                         gap: 1,
                         pb: { xs: 12, sm: 0 },
-                        mt: { xs: 2, sm: 2,  },
+                        mt: { xs: 2, sm: 2 },
                         mb: '60px',
                       },
-                      activeStep !== 0 ? { justifyContent: 'space-between' } : { justifyContent: 'flex-end' },
+                      activeStep !== 0
+                        ? { justifyContent: 'space-between' }
+                        : { justifyContent: 'flex-end' },
                     ]}
                   >
                     {activeStep !== 0 && (
@@ -310,7 +330,11 @@ export default function OrgSignUp(props: { disableCustomTheme?: boolean }) {
                       variant="contained"
                       endIcon={<ChevronRightRoundedIcon />}
                       type={activeStep === steps.length - 1 ? 'submit' : 'button'}
-                      onClick={activeStep === steps.length - 1 ? undefined : () => setActiveStep((s) => s + 1)}
+                      onClick={
+                        activeStep === steps.length - 1
+                          ? undefined
+                          : () => setActiveStep((s) => s + 1)
+                      }
                       sx={{ width: { xs: '100%', sm: 'fit-content' } }}
                       disabled={submitting}
                     >
@@ -324,5 +348,5 @@ export default function OrgSignUp(props: { disableCustomTheme?: boolean }) {
         </Grid>
       </Grid>
     </AppTheme>
-  )
+  );
 }

@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Stack,
   Typography,
@@ -10,13 +10,13 @@ import {
   Button,
   Collapse,
   InputAdornment,
-} from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import type { DrillTag } from "../../services/drillsService";
-import type { SegmentOption } from "../../utils/options";
-import type { DrillFilterField, DrillFilters } from "../../types";
+} from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import type { DrillTag } from '../../services/drillsService';
+import type { SegmentOption } from '../../utils/options';
+import type { DrillFilterField, DrillFilters } from '../../types';
 
 type DrillsFiltersPanelProps = {
   query: string;
@@ -65,12 +65,9 @@ export default function DrillsFiltersPanel({
               fullWidth
               size="small"
               value={filters.segmentId}
-              onChange={handleFilterChange("segmentId")}
+              onChange={handleFilterChange('segmentId')}
               error={Boolean(segmentsError)}
-              helperText={
-                segmentsError ||
-                (segmentsLoading ? "Loading segments..." : undefined)
-              }
+              helperText={segmentsError || (segmentsLoading ? 'Loading segments...' : undefined)}
               SelectProps={{ displayEmpty: true }}
             >
               <MenuItem value="">All segments</MenuItem>
@@ -90,11 +87,11 @@ export default function DrillsFiltersPanel({
               size="small"
               onClick={() => setShowAdvancedFilters((prev) => !prev)}
               endIcon={showAdvancedFilters ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-              sx={{ textTransform: "none" }}
+              sx={{ textTransform: 'none' }}
               aria-expanded={showAdvancedFilters}
               aria-controls="drills-advanced-filters"
             >
-              {showAdvancedFilters ? "Hide" : "Show"}
+              {showAdvancedFilters ? 'Hide' : 'Show'}
             </Button>
           </Stack>
 
@@ -110,7 +107,7 @@ export default function DrillsFiltersPanel({
                     type="number"
                     size="small"
                     value={filters.minAge}
-                    onChange={handleFilterChange("minAge")}
+                    onChange={handleFilterChange('minAge')}
                     inputProps={{ min: 0 }}
                     fullWidth
                   />
@@ -119,7 +116,7 @@ export default function DrillsFiltersPanel({
                     type="number"
                     size="small"
                     value={filters.maxAge}
-                    onChange={handleFilterChange("maxAge")}
+                    onChange={handleFilterChange('maxAge')}
                     inputProps={{ min: 0 }}
                     fullWidth
                   />
@@ -136,7 +133,7 @@ export default function DrillsFiltersPanel({
                     type="number"
                     size="small"
                     value={filters.minPlayers}
-                    onChange={handleFilterChange("minPlayers")}
+                    onChange={handleFilterChange('minPlayers')}
                     inputProps={{ min: 0 }}
                     fullWidth
                   />
@@ -145,7 +142,7 @@ export default function DrillsFiltersPanel({
                     type="number"
                     size="small"
                     value={filters.maxPlayers}
-                    onChange={handleFilterChange("maxPlayers")}
+                    onChange={handleFilterChange('maxPlayers')}
                     inputProps={{ min: 0 }}
                     fullWidth
                   />
@@ -200,8 +197,8 @@ export default function DrillsFiltersPanel({
                 key={tag.id}
                 label={tag.name}
                 size="small"
-                color={active ? "primary" : "default"}
-                variant={active ? "filled" : "outlined"}
+                color={active ? 'primary' : 'default'}
+                variant={active ? 'filled' : 'outlined'}
                 onClick={() => onToggleTag(tag.id)}
               />
             );

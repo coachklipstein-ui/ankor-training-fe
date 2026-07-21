@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Box,
   Chip,
@@ -20,20 +20,20 @@ import {
   Typography,
   Button,
   useMediaQuery,
-} from "@mui/material";
-import { useTheme } from "@mui/material/styles";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../app/providers/AuthProvider";
+} from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
 
-import AnchorIcon from "@mui/icons-material/Anchor";
-import AddIcon from "@mui/icons-material/Add";
-import SearchIcon from "@mui/icons-material/Search";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
-import SaveIcon from "@mui/icons-material/Save";
+import AnchorIcon from '@mui/icons-material/Anchor';
+import AddIcon from '@mui/icons-material/Add';
+import SearchIcon from '@mui/icons-material/Search';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import SaveIcon from '@mui/icons-material/Save';
 
-import { createPlan } from "../services/practicePlanService";
-import DrillPickerDialog, { type DialogDrill } from "../components/DrillPickerDialog";
+import { createPlan } from '../services/practicePlanService';
+import DrillPickerDialog, { type DialogDrill } from '../components/DrillPickerDialog';
 
 import {
   DndContext,
@@ -42,14 +42,14 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
-} from "@dnd-kit/core";
+} from '@dnd-kit/core';
 import {
   SortableContext,
   verticalListSortingStrategy,
   useSortable,
   arrayMove,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 /* ---------------------------------------
    Types + Helpers
@@ -74,13 +74,13 @@ function formatHeaderTimestamp(iso: string) {
   // Similar to screenshot “DECEMBER 18, 2025 AT 11:19 AM”
   const d = new Date(iso);
   const date = new Intl.DateTimeFormat(undefined, {
-    month: "long",
-    day: "2-digit",
-    year: "numeric",
+    month: 'long',
+    day: '2-digit',
+    year: 'numeric',
   }).format(d);
   const time = new Intl.DateTimeFormat(undefined, {
-    hour: "numeric",
-    minute: "2-digit",
+    hour: 'numeric',
+    minute: '2-digit',
   }).format(d);
   return `${date} at ${time}`.toUpperCase();
 }
@@ -106,14 +106,10 @@ function SortableSegmentRow({
   onOpenMenu: (evt: React.MouseEvent<HTMLElement>) => void;
   disabledDrag: boolean;
 }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id, disabled: disabledDrag });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+    disabled: disabledDrag,
+  });
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -127,19 +123,19 @@ function SortableSegmentRow({
         alignItems="flex-start"
         sx={{
           py: 1.25,
-          cursor: disabledDrag ? "default" : "grab",
-          "&:active": { cursor: disabledDrag ? "default" : "grabbing" },
+          cursor: disabledDrag ? 'default' : 'grab',
+          '&:active': { cursor: disabledDrag ? 'default' : 'grabbing' },
         }}
       >
         {/* Drag handle */}
         <ListItemIcon sx={{ minWidth: 40, mt: 0.4 }}>
           <Box
             sx={{
-              display: "flex",
-              alignItems: "center",
+              display: 'flex',
+              alignItems: 'center',
               gap: 0.5,
-              color: "text.secondary",
-              userSelect: "none",
+              color: 'text.secondary',
+              userSelect: 'none',
             }}
             {...(!disabledDrag ? attributes : {})}
             {...(!disabledDrag ? listeners : {})}
@@ -161,25 +157,25 @@ function SortableSegmentRow({
             {drillName}
           </Typography>
           {notes ? (
-            <Typography variant="caption" color="text.secondary" noWrap sx={{ display: "block" }}>
+            <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>
               {notes}
             </Typography>
           ) : (
-            <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
               No notes
             </Typography>
           )}
         </Box>
 
         {/* Duration */}
-        <Box sx={{ width: 92, textAlign: "right", pt: 0.2 }}>
+        <Box sx={{ width: 92, textAlign: 'right', pt: 0.2 }}>
           <Typography variant="body2" fontWeight={800}>
             {durationMin}m
           </Typography>
         </Box>
 
         {/* Menu */}
-        <IconButton edge="end" onClick={onOpenMenu} sx={{ ml: 0.5, alignSelf: "center" }}>
+        <IconButton edge="end" onClick={onOpenMenu} sx={{ ml: 0.5, alignSelf: 'center' }}>
           <MoreHorizIcon />
         </IconButton>
       </ListItemButton>
@@ -195,21 +191,21 @@ function SortableSegmentRow({
 
 export default function NewPlanPage() {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
   const { profile, user } = useAuth();
-  const resolvedOrgId = profile?.default_org_id?.trim() || "";
-  const resolvedUserId = user?.id?.trim() || "";
+  const resolvedOrgId = profile?.default_org_id?.trim() || '';
+  const resolvedUserId = user?.id?.trim() || '';
 
   // mock “plan header”
-  const [planName, setPlanName] = React.useState("Myplan2");
+  const [planName, setPlanName] = React.useState('Myplan2');
   const [updatedAt] = React.useState(() => new Date().toISOString());
   const [isSaving, setIsSaving] = React.useState(false);
   const [saveError, setSaveError] = React.useState<string | null>(null);
 
   // segments
   const [segments, setSegments] = React.useState<PlanSegment[]>([]);
-  const [segmentSearch, setSegmentSearch] = React.useState("");
+  const [segmentSearch, setSegmentSearch] = React.useState('');
 
   // add drills dialog
   const [addOpen, setAddOpen] = React.useState(false);
@@ -221,17 +217,18 @@ export default function NewPlanPage() {
   // edit segment dialog
   const [editOpen, setEditOpen] = React.useState(false);
   const [editDuration, setEditDuration] = React.useState<number>(10);
-  const [editNotes, setEditNotes] = React.useState<string>("");
+  const [editNotes, setEditNotes] = React.useState<string>('');
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 6 }, // helps avoid accidental drags while scrolling
-    })
+    }),
   );
 
   const totalDuration = React.useMemo(
-    () => segments.reduce((sum, s) => sum + (Number.isFinite(s.durationMin) ? s.durationMin : 0), 0),
-    [segments]
+    () =>
+      segments.reduce((sum, s) => sum + (Number.isFinite(s.durationMin) ? s.durationMin : 0), 0),
+    [segments],
   );
 
   const filteredSegments = React.useMemo(() => {
@@ -239,7 +236,7 @@ export default function NewPlanPage() {
     if (!q) return segments;
 
     return segments.filter((s) => {
-      const name = s.drillName ?? "";
+      const name = s.drillName ?? '';
       return name.toLowerCase().includes(q) || s.notes.toLowerCase().includes(q);
     });
   }, [segments, segmentSearch]);
@@ -255,7 +252,7 @@ export default function NewPlanPage() {
         drillId: drill.id,
         drillName: drill.name,
         durationMin,
-        notes: "",
+        notes: '',
       },
     ]);
   }
@@ -304,11 +301,13 @@ export default function NewPlanPage() {
         s.id === menuSegId
           ? {
               ...s,
-              durationMin: Number.isFinite(editDuration) ? Math.max(0, editDuration) : s.durationMin,
+              durationMin: Number.isFinite(editDuration)
+                ? Math.max(0, editDuration)
+                : s.durationMin,
               notes: editNotes,
             }
-          : s
-      )
+          : s,
+      ),
     );
     setEditOpen(false);
   }
@@ -322,19 +321,19 @@ export default function NewPlanPage() {
     const name = planName.trim();
 
     if (!ownerUserId) {
-      setSaveError("Missing user_id for this account.");
+      setSaveError('Missing user_id for this account.');
       return;
     }
     if (!resolvedOrgId) {
-      setSaveError("Missing org_id for this account.");
+      setSaveError('Missing org_id for this account.');
       return;
     }
     if (!name) {
-      setSaveError("Plan name is required.");
+      setSaveError('Plan name is required.');
       return;
     }
     if (segments.length === 0) {
-      setSaveError("Add at least one drill before saving.");
+      setSaveError('Add at least one drill before saving.');
       return;
     }
 
@@ -352,18 +351,18 @@ export default function NewPlanPage() {
       const created = await createPlan({
         owner_user_id: ownerUserId,
         org_id: resolvedOrgId,
-        type: "custom",
+        type: 'custom',
         name,
         estimated_minutes: totalDuration,
         items,
       });
 
       if (!created?.id) {
-        throw new Error("Plan created but no id was returned.");
+        throw new Error('Plan created but no id was returned.');
       }
       navigate(`/practice-plans/${created.id}/edit`);
     } catch (err: any) {
-      setSaveError(err?.message || "Failed to create plan.");
+      setSaveError(err?.message || 'Failed to create plan.');
     } finally {
       setIsSaving(false);
     }
@@ -381,7 +380,7 @@ export default function NewPlanPage() {
     Boolean(resolvedUserId) &&
     Boolean(resolvedOrgId) &&
     !isSaving;
-  const headerChip = segments.length === 0 ? "Draft" : "In progress";
+  const headerChip = segments.length === 0 ? 'Draft' : 'In progress';
 
   return (
     <Box>
@@ -395,7 +394,12 @@ export default function NewPlanPage() {
               {formatHeaderTimestamp(updatedAt)}
             </Typography>
 
-            <Stack direction={isMobile ? "column" : "row"} spacing={1} alignItems={isMobile ? "flex-start" : "center"} sx={{ mt: 0.25 }}>
+            <Stack
+              direction={isMobile ? 'column' : 'row'}
+              spacing={1}
+              alignItems={isMobile ? 'flex-start' : 'center'}
+              sx={{ mt: 0.25 }}
+            >
               <TextField
                 value={planName}
                 onChange={(e) => setPlanName(e.target.value)}
@@ -404,7 +408,7 @@ export default function NewPlanPage() {
                 inputProps={{ style: { fontWeight: 900, fontSize: 20 } }}
                 sx={{ minWidth: 220, maxWidth: 420 }}
               />
-              <Chip size="small" label={headerChip} sx={{ textTransform: "capitalize" }} />
+              <Chip size="small" label={headerChip} sx={{ textTransform: 'capitalize' }} />
             </Stack>
 
             <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
@@ -415,18 +419,18 @@ export default function NewPlanPage() {
                 onClick={handleSavePlan}
                 disabled={!canSave}
               >
-                {isSaving ? "Saving..." : "Save Plan"}
+                {isSaving ? 'Saving...' : 'Save Plan'}
               </Button>
             </Stack>
             {saveError && (
-              <Typography variant="caption" color="error" sx={{ display: "block", mt: 0.5 }}>
+              <Typography variant="caption" color="error" sx={{ display: 'block', mt: 0.5 }}>
                 {saveError}
               </Typography>
             )}
           </Box>
 
           {/* (Optional) Back */}
-          <Button variant="text" onClick={() => navigate(-1)} sx={{ alignSelf: "flex-start" }}>
+          <Button variant="text" onClick={() => navigate(-1)} sx={{ alignSelf: 'flex-start' }}>
             Back
           </Button>
         </Stack>
@@ -444,7 +448,7 @@ export default function NewPlanPage() {
               setAddOpen(true);
             }}
             aria-label="add drill"
-            sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: "999px" }}
+            sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: '999px' }}
           >
             <AddIcon />
           </IconButton>
@@ -467,13 +471,13 @@ export default function NewPlanPage() {
         />
 
         {dragDisabled && (
-          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
             Drag & drop is disabled while searching.
           </Typography>
         )}
 
         {/* Table header (like screenshot) */}
-        <Box sx={{ display: "flex", gap: 1, px: 1.5, pb: 0.75, color: "text.secondary" }}>
+        <Box sx={{ display: 'flex', gap: 1, px: 1.5, pb: 0.75, color: 'text.secondary' }}>
           <Box sx={{ width: 40 }} />
           <Box sx={{ width: 64 }}>
             <Typography variant="caption" fontWeight={900}>
@@ -485,7 +489,7 @@ export default function NewPlanPage() {
               DRILL NAME
             </Typography>
           </Box>
-          <Box sx={{ width: 92, textAlign: "right" }}>
+          <Box sx={{ width: 92, textAlign: 'right' }}>
             <Typography variant="caption" fontWeight={900}>
               DURATION
             </Typography>
@@ -493,7 +497,7 @@ export default function NewPlanPage() {
           <Box sx={{ width: 44 }} />
         </Box>
 
-        <Paper variant="outlined" sx={{ overflow: "hidden" }}>
+        <Paper variant="outlined" sx={{ overflow: 'hidden' }}>
           {filteredSegments.length === 0 ? (
             <Box sx={{ p: 2 }}>
               <Typography variant="body2" color="text.secondary">
@@ -501,8 +505,15 @@ export default function NewPlanPage() {
               </Typography>
             </Box>
           ) : (
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <SortableContext items={segments.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={segments.map((s) => s.id)}
+                strategy={verticalListSortingStrategy}
+              >
                 <List disablePadding>
                   {(segmentSearch.trim() ? filteredSegments : segments).map((seg) => {
                     const idx = segments.findIndex((x) => x.id === seg.id);
@@ -511,7 +522,7 @@ export default function NewPlanPage() {
                         key={seg.id}
                         id={seg.id}
                         index={idx}
-                        drillName={seg.drillName ?? "Unknown drill"}
+                        drillName={seg.drillName ?? 'Unknown drill'}
                         durationMin={seg.durationMin}
                         notes={seg.notes}
                         disabledDrag={dragDisabled}
@@ -530,8 +541,8 @@ export default function NewPlanPage() {
           anchorEl={menuAnchorEl}
           open={Boolean(menuAnchorEl)}
           onClose={closeRowMenu}
-          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-          transformOrigin={{ vertical: "top", horizontal: "right" }}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         >
           <MenuItem
             onClick={() => {
@@ -549,7 +560,7 @@ export default function NewPlanPage() {
               removeSegment(menuSegId);
               closeRowMenu();
             }}
-            sx={{ color: "error.main" }}
+            sx={{ color: 'error.main' }}
           >
             Remove
           </MenuItem>
@@ -586,7 +597,7 @@ export default function NewPlanPage() {
               size="small"
               value={editDuration}
               onChange={(e) => setEditDuration(Math.max(0, Number(e.target.value)))}
-              inputProps={{ inputMode: "numeric" }}
+              inputProps={{ inputMode: 'numeric' }}
             />
             <TextField
               label="Notes"

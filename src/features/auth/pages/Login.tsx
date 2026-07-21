@@ -1,5 +1,5 @@
-import * as React from 'react'
-import { Link as RouterLink, useNavigate } from 'react-router-dom'
+import * as React from 'react';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import {
   Alert,
   Box,
@@ -14,55 +14,55 @@ import {
   Stack,
   TextField,
   Typography,
-} from '@mui/material'
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
-import MailOutlineIcon from '@mui/icons-material/MailOutline'
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
-import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined'
-import { useAuth } from '../../../app/providers/AuthProvider'
-import ForgotPassword from '../components/ForgotPassword'
-import AppTheme from '../theme/AppTheme'
-import ColorModeSelect from '../theme/ColorModeSelect'
+} from '@mui/material';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
+import { useAuth } from '../../../app/providers/AuthProvider';
+import ForgotPassword from '../components/ForgotPassword';
+import AppTheme from '../theme/AppTheme';
+import ColorModeSelect from '../theme/ColorModeSelect';
 
 const Login: React.FC = () => {
-  const navigate = useNavigate()
-  const { loading, error, signIn, isAuthenticated } = useAuth()
-  const [busy, setBusy] = React.useState(false)
-  const [email, setEmail] = React.useState('')
-  const [password, setPassword] = React.useState('')
-  const [localMsg, setLocalMsg] = React.useState<string | null>(null)
-  const [showPw, setShowPw] = React.useState(false)
-  const [forgotOpen, setForgotOpen] = React.useState(false)
+  const navigate = useNavigate();
+  const { loading, error, signIn, isAuthenticated } = useAuth();
+  const [busy, setBusy] = React.useState(false);
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [localMsg, setLocalMsg] = React.useState<string | null>(null);
+  const [showPw, setShowPw] = React.useState(false);
+  const [forgotOpen, setForgotOpen] = React.useState(false);
 
   React.useEffect(() => {
     if (!loading && isAuthenticated) {
-      navigate('/', { replace: true })
+      navigate('/', { replace: true });
     }
-  }, [loading, isAuthenticated, navigate])
+  }, [loading, isAuthenticated, navigate]);
 
   if (loading) {
     return (
       <Box sx={{ minHeight: '100dvh', display: 'grid', placeItems: 'center' }}>
         <CircularProgress />
       </Box>
-    )
+    );
   }
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
-      setLocalMsg(null)
-      setBusy(true)
-      await signIn(email.trim(), password)
-      navigate('/', { replace: true })
+      setLocalMsg(null);
+      setBusy(true);
+      await signIn(email.trim(), password);
+      navigate('/', { replace: true });
     } catch (err: any) {
-      const msg = err?.message ?? 'Unable to sign in. Please try again.'
-      setLocalMsg(msg)
+      const msg = err?.message ?? 'Unable to sign in. Please try again.';
+      setLocalMsg(msg);
     } finally {
-      setBusy(false)
+      setBusy(false);
     }
-  }
+  };
 
   return (
     <AppTheme>
@@ -92,11 +92,7 @@ const Login: React.FC = () => {
         >
           <Stack spacing={3}>
             <Stack direction="row" alignItems="center" spacing={1}>
-              <IconButton
-                size="small"
-                onClick={() => navigate(-1)}
-                aria-label="Go back"
-              >
+              <IconButton size="small" onClick={() => navigate(-1)} aria-label="Go back">
                 <ArrowBackIosNewIcon fontSize="small" />
               </IconButton>
               <Typography variant="subtitle1" color="text.secondary">
@@ -152,11 +148,7 @@ const Login: React.FC = () => {
                         onClick={() => setShowPw((s) => !s)}
                         aria-label={showPw ? 'Hide password' : 'Show password'}
                       >
-                        {showPw ? (
-                          <VisibilityOffOutlinedIcon />
-                        ) : (
-                          <VisibilityOutlinedIcon />
-                        )}
+                        {showPw ? <VisibilityOffOutlinedIcon /> : <VisibilityOutlinedIcon />}
                       </IconButton>
                     </InputAdornment>
                   ),
@@ -164,11 +156,7 @@ const Login: React.FC = () => {
               />
 
               <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Button
-                  variant="text"
-                  size="small"
-                  onClick={() => setForgotOpen(true)}
-                >
+                <Button variant="text" size="small" onClick={() => setForgotOpen(true)}>
                   Forgot Password?
                 </Button>
               </Box>
@@ -184,9 +172,7 @@ const Login: React.FC = () => {
               </Button>
             </Stack>
 
-            {(localMsg || error) && (
-              <Alert severity="error">{localMsg || error}</Alert>
-            )}
+            {(localMsg || error) && <Alert severity="error">{localMsg || error}</Alert>}
 
             <Divider>
               <Typography variant="body2" color="text.secondary">
@@ -215,7 +201,7 @@ const Login: React.FC = () => {
 
       <ForgotPassword open={forgotOpen} handleClose={() => setForgotOpen(false)} />
     </AppTheme>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;

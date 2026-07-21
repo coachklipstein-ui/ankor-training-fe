@@ -1,58 +1,58 @@
 export type ReportVideo = {
-  id: string
-  skillId?: string | null
-  title: string
-  duration: string
-  thumbnailUrl?: string | null
-  playUrl?: string | null
-  tag?: string | null
-}
+  id: string;
+  skillId?: string | null;
+  title: string;
+  duration: string;
+  thumbnailUrl?: string | null;
+  playUrl?: string | null;
+  tag?: string | null;
+};
 
 export type ReportFocusArea = {
-  id: string
-  name: string
-  score: number
-}
+  id: string;
+  name: string;
+  score: number;
+};
 
 export type ReportSkill = {
-  id: string
-  name: string
-  category: string
-  score: number
-  notes?: string | null
-}
+  id: string;
+  name: string;
+  category: string;
+  score: number;
+  notes?: string | null;
+};
 
 export type ReportWorkoutLevel = {
-  id: string
-  level: number
-  title: string
-  targetReps: number
-  drills: ReportVideo[]
-}
+  id: string;
+  level: number;
+  title: string;
+  targetReps: number;
+  drills: ReportVideo[];
+};
 
 export type ReportDataCategory = {
-  id: string
-  name: string
+  id: string;
+  name: string;
   subskills: {
-    id: string
-    name: string
-    score: number
-  }[]
-}
+    id: string;
+    name: string;
+    score: number;
+  }[];
+};
 
 export type EvaluationReport = {
-  id: string
-  athleteName: string
-  evaluatorName: string
-  scorecardTemplate: string
-  evaluatedAt: string
-  evaluationId: string
-  focusAreas: ReportFocusArea[]
-  skills: ReportSkill[]
-  skillVideos: ReportVideo[]
-  workouts: ReportWorkoutLevel[]
-  dataByCategory: ReportDataCategory[]
-}
+  id: string;
+  athleteName: string;
+  evaluatorName: string;
+  scorecardTemplate: string;
+  evaluatedAt: string;
+  evaluationId: string;
+  focusAreas: ReportFocusArea[];
+  skills: ReportSkill[];
+  skillVideos: ReportVideo[];
+  workouts: ReportWorkoutLevel[];
+  dataByCategory: ReportDataCategory[];
+};
 
 export const MOCK_EVALUATION_REPORTS: EvaluationReport[] = [
   {
@@ -427,4 +427,4 @@ export const MOCK_EVALUATION_REPORTS: EvaluationReport[] = [
       },
     ],
   },
-]
+];

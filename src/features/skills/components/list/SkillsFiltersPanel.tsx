@@ -6,9 +6,9 @@ import {
   Paper,
   Divider,
   InputAdornment,
-} from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import type { SkillListFilters } from "../../types";
+} from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import type { SkillListFilters } from '../../types';
 
 type SkillsFiltersPanelProps = {
   query: string;

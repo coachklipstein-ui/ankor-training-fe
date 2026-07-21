@@ -1,15 +1,10 @@
 // src/services/practicePlanService.ts
 // Fetch wrappers to call the practice plan endpoints.
 
-import { apiFetch } from '../../../shared/api/apiClient'
+import { apiFetch } from '../../../shared/api/apiClient';
 
 export type PlanListType =
-  | "custom"
-  | "custom-plans"
-  | "org-plans"
-  | "prebuild"
-  | "invited-plans"
-  | (string & {});
+  'custom' | 'custom-plans' | 'org-plans' | 'prebuild' | 'invited-plans' | (string & {});
 
 export type PlanListFilter = {
   type: PlanListType;
@@ -26,8 +21,8 @@ export type ListInvitedPlansParams = {
   offset?: number | string;
 };
 
-export type PlanVisibility = "private" | "org" | "public" | (string & {});
-export type PlanStatus = "draft" | "published" | "archived" | (string & {});
+export type PlanVisibility = 'private' | 'org' | 'public' | (string & {});
+export type PlanStatus = 'draft' | 'published' | 'archived' | (string & {});
 
 export type PracticePlanItemInput = Record<string, unknown>;
 export type PracticePlanItem = Record<string, unknown>;
@@ -58,8 +53,7 @@ export type PlansListResponse =
   | { ok: false; error: string };
 
 export type PlanDetailResponse =
-  | { ok: true; plan?: any; data?: any }
-  | { ok: false; error: string };
+  { ok: true; plan?: any; data?: any } | { ok: false; error: string };
 
 export type CreatePlanInput = {
   owner_user_id: string;
@@ -107,18 +101,13 @@ export type InvitePlanResponse =
   | { ok: false; error: string };
 
 const DEFAULT_BASE_URL =
-  ((typeof import.meta !== "undefined" &&
+  ((typeof import.meta !== 'undefined' &&
     (import.meta as any).env &&
-    (import.meta as any).env.VITE_BACKEND_URL) as string) ||
-  "http://localhost:8000";
+    (import.meta as any).env.VITE_BACKEND_URL) as string) || 'http://localhost:8000';
 
 function coerceInteger(value: unknown, field: string): number {
   const parsed =
-    typeof value === "number"
-      ? value
-      : typeof value === "string"
-        ? Number(value.trim())
-        : NaN;
+    typeof value === 'number' ? value : typeof value === 'string' ? Number(value.trim()) : NaN;
 
   if (!Number.isFinite(parsed) || !Number.isInteger(parsed)) {
     throw new Error(`${field} must be an integer.`);
@@ -128,25 +117,22 @@ function coerceInteger(value: unknown, field: string): number {
 }
 
 function normalizeLimit(value: unknown) {
-  const parsed = value === undefined ? 50 : coerceInteger(value ?? 0, "limit");
+  const parsed = value === undefined ? 50 : coerceInteger(value ?? 0, 'limit');
   if (parsed < 1 || parsed > 200) {
-    throw new Error("limit must be between 1 and 200.");
+    throw new Error('limit must be between 1 and 200.');
   }
   return parsed;
 }
 
 function normalizeOffset(value: unknown) {
-  const parsed = value === undefined ? 0 : coerceInteger(value ?? 0, "offset");
+  const parsed = value === undefined ? 0 : coerceInteger(value ?? 0, 'offset');
   if (parsed < 0) {
-    throw new Error("offset must be at least 0.");
+    throw new Error('offset must be at least 0.');
   }
   return parsed;
 }
 
-function normalizeNullableInteger(
-  value: unknown,
-  field: string,
-): number | null | undefined {
+function normalizeNullableInteger(value: unknown, field: string): number | null | undefined {
   if (value === undefined) return undefined;
   if (value === null) return null;
   const parsed = coerceInteger(value, field);
@@ -161,7 +147,7 @@ function normalizeStringArray(raw: unknown): string[] {
   const seen = new Set<string>();
   const out: string[] = [];
   for (const entry of raw) {
-    if (typeof entry !== "string") continue;
+    if (typeof entry !== 'string') continue;
     const trimmed = entry.trim();
     if (!trimmed) continue;
     if (seen.has(trimmed)) continue;
@@ -172,8 +158,8 @@ function normalizeStringArray(raw: unknown): string[] {
 }
 
 function normalizeTags(raw: unknown): string[] {
-  if (typeof raw === "string") {
-    return normalizeStringArray(raw.split(","));
+  if (typeof raw === 'string') {
+    return normalizeStringArray(raw.split(','));
   }
   return normalizeStringArray(raw);
 }
@@ -181,11 +167,7 @@ function normalizeTags(raw: unknown): string[] {
 function normalizeEstimatedMinutes(value: unknown): number | null {
   if (value === null || value === undefined) return null;
   const parsed =
-    typeof value === "number"
-      ? value
-      : typeof value === "string"
-        ? Number(value)
-        : NaN;
+    typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN;
   return Number.isFinite(parsed) ? Number(parsed) : null;
 }
 
@@ -208,48 +190,39 @@ function normalizePlan(raw: any): PracticePlan {
   const items = normalizePlanItems(raw);
 
   return {
-    id: raw?.id ?? "",
+    id: raw?.id ?? '',
     org_id:
-      typeof raw?.org_id === "string"
+      typeof raw?.org_id === 'string'
         ? raw.org_id
-        : typeof raw?.orgId === "string"
+        : typeof raw?.orgId === 'string'
           ? raw.orgId
           : null,
     owner_user_id:
-      typeof raw?.owner_user_id === "string"
+      typeof raw?.owner_user_id === 'string'
         ? raw.owner_user_id
-        : typeof raw?.ownerUserId === "string"
+        : typeof raw?.ownerUserId === 'string'
           ? raw.ownerUserId
-          : typeof raw?.user_id === "string"
+          : typeof raw?.user_id === 'string'
             ? raw.user_id
             : null,
     name:
-      typeof raw?.name === "string"
-        ? raw.name
-        : typeof raw?.title === "string"
-          ? raw.title
-          : "",
+      typeof raw?.name === 'string' ? raw.name : typeof raw?.title === 'string' ? raw.title : '',
     description:
-      typeof raw?.description === "string"
+      typeof raw?.description === 'string'
         ? raw.description
         : raw?.description === null
           ? null
-          : typeof raw?.summary === "string"
+          : typeof raw?.summary === 'string'
             ? raw.summary
             : null,
-    visibility: typeof raw?.visibility === "string" ? raw.visibility : null,
-    status: typeof raw?.status === "string" ? raw.status : null,
+    visibility: typeof raw?.visibility === 'string' ? raw.visibility : null,
+    status: typeof raw?.status === 'string' ? raw.status : null,
     tags: normalizeTags(raw?.tags ?? raw?.tag_list ?? raw?.plan_tags),
     estimated_minutes: normalizeEstimatedMinutes(
       raw?.estimated_minutes ?? raw?.estimatedMinutes ?? raw?.estimated_min,
     ),
-    created_at: raw?.created_at ?? raw?.createdAt ?? "",
-    updated_at:
-      raw?.updated_at ??
-      raw?.updatedAt ??
-      raw?.created_at ??
-      raw?.createdAt ??
-      "",
+    created_at: raw?.created_at ?? raw?.createdAt ?? '',
+    updated_at: raw?.updated_at ?? raw?.updatedAt ?? raw?.created_at ?? raw?.createdAt ?? '',
     ...(items ? { items } : {}),
   };
 }
@@ -258,25 +231,25 @@ function normalizeInvitedPlan(raw: any): InvitedPlan {
   const plan = normalizePlan(raw);
 
   const memberRole =
-    typeof raw?.member_role === "string"
+    typeof raw?.member_role === 'string'
       ? raw.member_role
-      : typeof raw?.memberRole === "string"
+      : typeof raw?.memberRole === 'string'
         ? raw.memberRole
-        : typeof raw?.role === "string"
+        : typeof raw?.role === 'string'
           ? raw.role
           : null;
 
   const invitedAt =
-    typeof raw?.invited_at === "string"
+    typeof raw?.invited_at === 'string'
       ? raw.invited_at
-      : typeof raw?.invitedAt === "string"
+      : typeof raw?.invitedAt === 'string'
         ? raw.invitedAt
         : null;
 
   const invitedBy =
-    typeof raw?.invited_by === "string"
+    typeof raw?.invited_by === 'string'
       ? raw.invited_by
-      : typeof raw?.invitedBy === "string"
+      : typeof raw?.invitedBy === 'string'
         ? raw.invitedBy
         : null;
 
@@ -290,20 +263,20 @@ function normalizeInvitedPlan(raw: any): InvitedPlan {
 
 function normalizeCreatePayload(input: CreatePlanInput) {
   if (!input.owner_user_id?.trim()) {
-    throw new Error("owner_user_id is required.");
+    throw new Error('owner_user_id is required.');
   }
 
-  const name = String(input.name ?? "").trim();
+  const name = String(input.name ?? '').trim();
   if (!name) {
-    throw new Error("name is required.");
+    throw new Error('name is required.');
   }
   if (name.length > 200) {
-    throw new Error("name must be at most 200 characters.");
+    throw new Error('name must be at most 200 characters.');
   }
 
   const items = Array.isArray(input.items) ? input.items : [];
   if (items.length < 1) {
-    throw new Error("items is required.");
+    throw new Error('items is required.');
   }
 
   const payload: Record<string, unknown> = {
@@ -314,9 +287,9 @@ function normalizeCreatePayload(input: CreatePlanInput) {
   };
 
   if (input.type !== undefined) {
-    const trimmed = String(input.type ?? "").trim();
+    const trimmed = String(input.type ?? '').trim();
     if (!trimmed) {
-      throw new Error("type is required.");
+      throw new Error('type is required.');
     }
     payload.type = trimmed;
   }
@@ -336,7 +309,7 @@ function normalizeCreatePayload(input: CreatePlanInput) {
     } else {
       const trimmed = String(input.description).trim();
       if (trimmed.length > 4000) {
-        throw new Error("description must be at most 4000 characters.");
+        throw new Error('description must be at most 4000 characters.');
       }
       payload.description = trimmed ? trimmed : null;
     }
@@ -345,7 +318,7 @@ function normalizeCreatePayload(input: CreatePlanInput) {
   if (input.visibility !== undefined) {
     const trimmed = String(input.visibility).trim();
     if (!trimmed) {
-      throw new Error("visibility is required.");
+      throw new Error('visibility is required.');
     }
     payload.visibility = trimmed;
   }
@@ -353,15 +326,12 @@ function normalizeCreatePayload(input: CreatePlanInput) {
   if (input.status !== undefined) {
     const trimmed = String(input.status).trim();
     if (!trimmed) {
-      throw new Error("status is required.");
+      throw new Error('status is required.');
     }
     payload.status = trimmed;
   }
 
-  const estimated = normalizeNullableInteger(
-    input.estimated_minutes,
-    "estimated_minutes",
-  );
+  const estimated = normalizeNullableInteger(input.estimated_minutes, 'estimated_minutes');
   if (estimated !== undefined) {
     payload.estimated_minutes = estimated;
   }
@@ -373,12 +343,12 @@ function normalizeUpdatePayload(input: UpdatePlanInput) {
   const payload: Record<string, unknown> = {};
 
   if (input.name !== undefined) {
-    const trimmed = String(input.name ?? "").trim();
+    const trimmed = String(input.name ?? '').trim();
     if (!trimmed) {
-      throw new Error("name is required.");
+      throw new Error('name is required.');
     }
     if (trimmed.length > 200) {
-      throw new Error("name must be at most 200 characters.");
+      throw new Error('name must be at most 200 characters.');
     }
     payload.name = trimmed;
   }
@@ -389,7 +359,7 @@ function normalizeUpdatePayload(input: UpdatePlanInput) {
     } else {
       const trimmed = String(input.description).trim();
       if (trimmed.length > 4000) {
-        throw new Error("description must be at most 4000 characters.");
+        throw new Error('description must be at most 4000 characters.');
       }
       payload.description = trimmed ? trimmed : null;
     }
@@ -397,22 +367,22 @@ function normalizeUpdatePayload(input: UpdatePlanInput) {
 
   if (input.visibility !== undefined) {
     if (input.visibility === null) {
-      throw new Error("visibility cannot be null.");
+      throw new Error('visibility cannot be null.');
     }
     const trimmed = String(input.visibility).trim();
     if (!trimmed) {
-      throw new Error("visibility is required.");
+      throw new Error('visibility is required.');
     }
     payload.visibility = trimmed;
   }
 
   if (input.status !== undefined) {
     if (input.status === null) {
-      throw new Error("status cannot be null.");
+      throw new Error('status cannot be null.');
     }
     const trimmed = String(input.status).trim();
     if (!trimmed) {
-      throw new Error("status is required.");
+      throw new Error('status is required.');
     }
     payload.status = trimmed;
   }
@@ -422,10 +392,7 @@ function normalizeUpdatePayload(input: UpdatePlanInput) {
   }
 
   if (input.estimated_minutes !== undefined) {
-    const estimated = normalizeNullableInteger(
-      input.estimated_minutes,
-      "estimated_minutes",
-    );
+    const estimated = normalizeNullableInteger(input.estimated_minutes, 'estimated_minutes');
     payload.estimated_minutes = estimated ?? null;
   }
 
@@ -450,7 +417,7 @@ function normalizeUpdatePayload(input: UpdatePlanInput) {
 function normalizeInvitePayload(input: InvitePlanInput) {
   const userIds = normalizeStringArray(input.user_ids);
   if (userIds.length < 1) {
-    throw new Error("user_ids is required.");
+    throw new Error('user_ids is required.');
   }
 
   const payload: Record<string, unknown> = {
@@ -463,7 +430,7 @@ function normalizeInvitePayload(input: InvitePlanInput) {
     } else {
       const trimmed = String(input.added_by).trim();
       if (!trimmed) {
-        throw new Error("added_by cannot be empty.");
+        throw new Error('added_by cannot be empty.');
       }
       payload.added_by = trimmed;
     }
@@ -474,29 +441,29 @@ function normalizeInvitePayload(input: InvitePlanInput) {
 
 function buildListQuery(filter: PlanListFilter) {
   const params = new URLSearchParams();
-  const type = String(filter.type ?? "").trim();
+  const type = String(filter.type ?? '').trim();
 
   if (!type) {
-    throw new Error("type is required.");
+    throw new Error('type is required.');
   }
 
-  if ((type === "custom-plans" || type === "custom") && !filter.user_id?.trim()) {
-    throw new Error("user_id (UUID) is required for type=custom/custom-plans");
+  if ((type === 'custom-plans' || type === 'custom') && !filter.user_id?.trim()) {
+    throw new Error('user_id (UUID) is required for type=custom/custom-plans');
   }
 
-  params.set("type", type);
-  if (filter.user_id?.trim()) params.set("user_id", filter.user_id.trim());
+  params.set('type', type);
+  if (filter.user_id?.trim()) params.set('user_id', filter.user_id.trim());
 
   const limit = normalizeLimit(filter.limit);
   const offset = normalizeOffset(filter.offset);
-  params.set("limit", String(limit));
-  params.set("offset", String(offset));
+  params.set('limit', String(limit));
+  params.set('offset', String(offset));
 
   return params.toString();
 }
 
 function normalizeCount(value: unknown): number | undefined {
-  if (typeof value === "number") return value;
+  if (typeof value === 'number') return value;
   if (value === null || value === undefined) return undefined;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : undefined;
@@ -510,35 +477,33 @@ export async function listInvited(
   baseUrl = DEFAULT_BASE_URL,
 ): Promise<{ items: InvitedPlan[]; count?: number }> {
   if (!params?.user_id?.trim()) {
-    throw new Error("user_id (UUID) is required for invited plans.");
+    throw new Error('user_id (UUID) is required for invited plans.');
   }
 
   const sp = new URLSearchParams();
-  sp.set("user_id", params.user_id.trim());
+  sp.set('user_id', params.user_id.trim());
 
   const limit = normalizeLimit(params.limit);
   const offset = normalizeOffset(params.offset);
-  sp.set("limit", String(limit));
-  sp.set("offset", String(offset));
+  sp.set('limit', String(limit));
+  sp.set('offset', String(offset));
 
   const url = `${baseUrl}/functions/v1/api/plans/invited?${sp.toString()}`;
 
   const res = await apiFetch(url, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
     orgId: params.orgId ?? null,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | PlansListResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as PlansListResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if (!data?.ok) {
-    throw new Error((data as any)?.error || "Failed to load invited plans.");
+    throw new Error((data as any)?.error || 'Failed to load invited plans.');
   }
 
   const rawItems = (data.items ?? (data as any).plans ?? (data as any).data ?? []) as unknown[];
@@ -559,21 +524,19 @@ export async function listPlansByType(
   const url = `${baseUrl}/functions/v1/api/plans/list?${qs}`;
 
   const res = await apiFetch(url, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
     orgId: filter.orgId ?? null,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | PlansListResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as PlansListResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if (!data?.ok) {
-    throw new Error((data as any)?.error || "Failed to load plans.");
+    throw new Error((data as any)?.error || 'Failed to load plans.');
   }
 
   const rawItems = (data.items ?? (data as any).plans ?? (data as any).data ?? []) as unknown[];
@@ -591,33 +554,31 @@ export async function getPlanById(
   options: { orgId?: string | null; baseUrl?: string } = {},
 ): Promise<PracticePlan> {
   if (!planId?.trim()) {
-    throw new Error("planId is required.");
+    throw new Error('planId is required.');
   }
 
   const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
   const url = `${baseUrl}/functions/v1/api/plans/${planId}`;
 
   const res = await apiFetch(url, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
     orgId,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | PlanDetailResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as PlanDetailResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if ((data as any)?.ok === false) {
-    throw new Error((data as any)?.error || "Failed to load plan.");
+    throw new Error((data as any)?.error || 'Failed to load plan.');
   }
 
   const raw = (data as any)?.plan ?? (data as any)?.data ?? data;
-  if (!raw || typeof raw !== "object") {
-    throw new Error("Invalid response from plan detail endpoint.");
+  if (!raw || typeof raw !== 'object') {
+    throw new Error('Invalid response from plan detail endpoint.');
   }
 
   return normalizePlan(raw);
@@ -634,27 +595,25 @@ export async function createPlan(
   const url = `${baseUrl}/functions/v1/api/plans`;
 
   const res = await apiFetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
     orgId: payload.org_id ?? null,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | PlanDetailResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as PlanDetailResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if ((data as any)?.ok === false) {
-    throw new Error((data as any)?.error || "Failed to create plan.");
+    throw new Error((data as any)?.error || 'Failed to create plan.');
   }
 
   const raw = (data as any)?.plan ?? (data as any)?.data ?? data;
-  if (!raw || typeof raw !== "object") {
-    throw new Error("Invalid response from plan create endpoint.");
+  if (!raw || typeof raw !== 'object') {
+    throw new Error('Invalid response from plan create endpoint.');
   }
 
   return normalizePlan(raw);
@@ -669,7 +628,7 @@ export async function updatePlan(
   options: { orgId?: string | null; baseUrl?: string } = {},
 ): Promise<PracticePlan> {
   if (!planId?.trim()) {
-    throw new Error("planId is required.");
+    throw new Error('planId is required.');
   }
 
   const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
@@ -677,27 +636,25 @@ export async function updatePlan(
   const url = `${baseUrl}/functions/v1/api/plans/${planId}`;
 
   const res = await apiFetch(url, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
     orgId,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | PlanDetailResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as PlanDetailResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if ((data as any)?.ok === false) {
-    throw new Error((data as any)?.error || "Failed to update plan.");
+    throw new Error((data as any)?.error || 'Failed to update plan.');
   }
 
   const raw = (data as any)?.plan ?? (data as any)?.data ?? data;
-  if (!raw || typeof raw !== "object") {
-    throw new Error("Invalid response from plan update endpoint.");
+  if (!raw || typeof raw !== 'object') {
+    throw new Error('Invalid response from plan update endpoint.');
   }
 
   return normalizePlan(raw);
@@ -713,40 +670,37 @@ export async function invitePlanUsers(
   baseUrl = DEFAULT_BASE_URL,
 ): Promise<InvitePlanResult> {
   if (!planId?.trim()) {
-    throw new Error("planId is required.");
+    throw new Error('planId is required.');
   }
   if (!org_id?.trim()) {
-    throw new Error("org_id is required.");
+    throw new Error('org_id is required.');
   }
 
   const payload = normalizeInvitePayload(input);
   const sp = new URLSearchParams();
-  sp.set("org_id", org_id.trim());
+  sp.set('org_id', org_id.trim());
 
   const url = `${baseUrl}/functions/v1/api/plans/${planId}/invite?${sp.toString()}`;
 
   const res = await apiFetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
     orgId: org_id,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | InvitePlanResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as InvitePlanResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if (!data?.ok) {
-    throw new Error((data as any)?.error || "Failed to invite plan users.");
+    throw new Error((data as any)?.error || 'Failed to invite plan users.');
   }
 
   return {
-    plan_id:
-      typeof (data as any)?.plan_id === "string" ? (data as any).plan_id : planId,
+    plan_id: typeof (data as any)?.plan_id === 'string' ? (data as any).plan_id : planId,
     invited_user_ids: normalizeStringArray((data as any)?.invited_user_ids),
     skipped_user_ids: normalizeStringArray((data as any)?.skipped_user_ids),
   };

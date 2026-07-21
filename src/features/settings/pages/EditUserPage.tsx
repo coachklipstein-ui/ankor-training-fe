@@ -1,4 +1,4 @@
-import * as React from 'react'
+import * as React from 'react';
 import {
   Alert,
   Box,
@@ -10,11 +10,11 @@ import {
   Switch,
   TextField,
   Typography,
-} from '@mui/material'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import SaveIcon from '@mui/icons-material/Save'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { useAuth } from '../../../app/providers/AuthProvider'
+} from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import SaveIcon from '@mui/icons-material/Save';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
 import {
   getManagedUser,
   updateManagedUser,
@@ -22,7 +22,7 @@ import {
   type ManagedOrgRole,
   type ManagedUser,
   type UserListItem,
-} from '../services/usersService'
+} from '../services/usersService';
 
 const ROLE_OPTIONS: ManagedOrgRole[] = [
   'owner',
@@ -32,119 +32,119 @@ const ROLE_OPTIONS: ManagedOrgRole[] = [
   'parent',
   'staff',
   'viewer',
-]
+];
 
 function roleLabel(role: string) {
-  return role.replace(/^./, (c) => c.toUpperCase())
+  return role.replace(/^./, (c) => c.toUpperCase());
 }
 
 function toInitialUser(value: unknown): UserListItem | null {
-  if (!value || typeof value !== 'object') return null
-  const raw = value as Partial<UserListItem>
-  return typeof raw.user_id === 'string' ? raw as UserListItem : null
+  if (!value || typeof value !== 'object') return null;
+  const raw = value as Partial<UserListItem>;
+  return typeof raw.user_id === 'string' ? (raw as UserListItem) : null;
 }
 
 export default function EditUserPage() {
-  const { id = '' } = useParams()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { profile, loading: authLoading } = useAuth()
-  const initialUser = toInitialUser((location.state as any)?.user)
+  const { id = '' } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { profile, loading: authLoading } = useAuth();
+  const initialUser = toInitialUser((location.state as any)?.user);
 
-  const [user, setUser] = React.useState<ManagedUser | null>(null)
-  const [role, setRole] = React.useState<ManagedOrgRole>('viewer')
-  const [isActive, setIsActive] = React.useState(true)
-  const [password, setPassword] = React.useState('')
-  const [confirmPassword, setConfirmPassword] = React.useState('')
-  const [loading, setLoading] = React.useState(false)
-  const [saving, setSaving] = React.useState(false)
-  const [error, setError] = React.useState<string | null>(null)
-  const [success, setSuccess] = React.useState<string | null>(null)
+  const [user, setUser] = React.useState<ManagedUser | null>(null);
+  const [role, setRole] = React.useState<ManagedOrgRole>('viewer');
+  const [isActive, setIsActive] = React.useState(true);
+  const [password, setPassword] = React.useState('');
+  const [confirmPassword, setConfirmPassword] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const [saving, setSaving] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [success, setSuccess] = React.useState<string | null>(null);
 
-  const orgId = profile?.default_org_id?.trim() ?? ''
+  const orgId = profile?.default_org_id?.trim() ?? '';
 
   React.useEffect(() => {
-    let active = true
+    let active = true;
 
     async function loadUser() {
-      if (authLoading) return
+      if (authLoading) return;
       if (!orgId) {
-        setError('Missing org_id for this account.')
-        return
+        setError('Missing org_id for this account.');
+        return;
       }
       if (!id.trim()) {
-        setError('Missing user id.')
-        return
+        setError('Missing user id.');
+        return;
       }
 
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
       try {
-        const data = await getManagedUser({ userId: id, orgId })
-        if (!active) return
-        setUser(data)
-        setRole(data.org_role ?? 'viewer')
-        setIsActive(data.is_active ?? true)
+        const data = await getManagedUser({ userId: id, orgId });
+        if (!active) return;
+        setUser(data);
+        setRole(data.org_role ?? 'viewer');
+        setIsActive(data.is_active ?? true);
       } catch (err) {
-        if (!active) return
-        setError(err instanceof Error ? err.message : 'Failed to load user.')
+        if (!active) return;
+        setError(err instanceof Error ? err.message : 'Failed to load user.');
       } finally {
-        if (active) setLoading(false)
+        if (active) setLoading(false);
       }
     }
 
-    void loadUser()
+    void loadUser();
 
     return () => {
-      active = false
-    }
-  }, [authLoading, id, orgId])
+      active = false;
+    };
+  }, [authLoading, id, orgId]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setError(null)
-    setSuccess(null)
+    event.preventDefault();
+    setError(null);
+    setSuccess(null);
 
-    const trimmedPassword = password.trim()
+    const trimmedPassword = password.trim();
     if (trimmedPassword || confirmPassword.trim()) {
       if (trimmedPassword.length < 6) {
-        setError('Password must be at least 6 characters.')
-        return
+        setError('Password must be at least 6 characters.');
+        return;
       }
       if (trimmedPassword !== confirmPassword.trim()) {
-        setError('Passwords do not match.')
-        return
+        setError('Passwords do not match.');
+        return;
       }
     }
 
     if (!orgId) {
-      setError('Missing org_id for this account.')
-      return
+      setError('Missing org_id for this account.');
+      return;
     }
 
-    setSaving(true)
+    setSaving(true);
     try {
       const updated = await updateManagedUser(id, {
         org_id: orgId,
         role,
         is_active: isActive,
         ...(trimmedPassword ? { password: trimmedPassword } : {}),
-      })
-      setUser(updated)
-      setRole(updated.org_role ?? role)
-      setIsActive(updated.is_active ?? isActive)
-      setPassword('')
-      setConfirmPassword('')
-      setSuccess('User updated.')
+      });
+      setUser(updated);
+      setRole(updated.org_role ?? role);
+      setIsActive(updated.is_active ?? isActive);
+      setPassword('');
+      setConfirmPassword('');
+      setSuccess('User updated.');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update user.')
+      setError(err instanceof Error ? err.message : 'Failed to update user.');
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
   }
 
-  const displayName = user?.full_name || userLabel(initialUser)
-  const email = user?.email ?? null
+  const displayName = user?.full_name || userLabel(initialUser);
+  const email = user?.email ?? null;
 
   return (
     <Box sx={{ width: '100%', maxWidth: 760 }}>
@@ -158,25 +158,30 @@ export default function EditUserPage() {
       </Button>
 
       <Stack spacing={0.5} sx={{ mb: 2 }}>
-        <Typography variant="h5" fontWeight={700}>Edit User</Typography>
+        <Typography variant="h5" fontWeight={700}>
+          Edit User
+        </Typography>
         <Typography variant="body2" color="text.secondary">
           {displayName}
           {email ? ` · ${email}` : ''}
         </Typography>
       </Stack>
 
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-      {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+      {success && (
+        <Alert severity="success" sx={{ mb: 2 }}>
+          {success}
+        </Alert>
+      )}
 
       <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2 }}>
         <Box component="form" onSubmit={handleSubmit}>
           <Stack spacing={2.25}>
-            <TextField
-              label="User ID"
-              value={id}
-              disabled
-              fullWidth
-            />
+            <TextField label="User ID" value={id} disabled fullWidth />
 
             <TextField
               select
@@ -249,5 +254,5 @@ export default function EditUserPage() {
         </Box>
       </Paper>
     </Box>
-  )
+  );
 }

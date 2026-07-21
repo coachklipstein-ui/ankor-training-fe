@@ -16,7 +16,7 @@ export default function AnkorBrandPanel() {
       <Stack spacing={1.5} alignItems="center" sx={{ textAlign: 'center' }}>
         <Box
           component="img"
-          src="/logo-ankor.png"            // served from public/
+          src="/logo-ankor.png" // served from public/
           alt="Ankor Lacrosse Logo"
           sx={{ width: 96, height: 96, objectFit: 'contain', mb: 0.5 }}
         />

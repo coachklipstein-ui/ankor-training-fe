@@ -11,21 +11,21 @@
   ToggleButtonGroup,
   Typography,
   Button,
-} from '@mui/material'
-import type { ScorecardSubskill } from '../types'
+} from '@mui/material';
+import type { ScorecardSubskill } from '../types';
 
 type EvaluationSubskillsDialogProps = {
-  open: boolean
-  categoryName?: string | null
-  categoryDescription?: string | null
-  skills: ScorecardSubskill[]
-  ratings: Record<string, number | null>
-  onRatingChange: (skillId: string, rating: number | null) => void
-  onCancel: () => void
-  onSave: () => void
-}
+  open: boolean;
+  categoryName?: string | null;
+  categoryDescription?: string | null;
+  skills: ScorecardSubskill[];
+  ratings: Record<string, number | null>;
+  onRatingChange: (skillId: string, rating: number | null) => void;
+  onCancel: () => void;
+  onSave: () => void;
+};
 
-const DEFAULT_RATING_OPTIONS = [1, 2, 3, 4, 5]
+const DEFAULT_RATING_OPTIONS = [1, 2, 3, 4, 5];
 
 export default function EvaluationSubskillsDialog({
   open,
@@ -59,7 +59,7 @@ export default function EvaluationSubskillsDialog({
         ) : (
           <List dense>
             {skills.map((skill) => {
-              const skillKey = skill.skill_id ?? skill.id
+              const skillKey = skill.skill_id ?? skill.id;
 
               return (
                 <ListItem
@@ -75,7 +75,7 @@ export default function EvaluationSubskillsDialog({
                     value={ratings[skillKey] ?? null}
                     exclusive
                     onChange={(_, newValue: number | null) => {
-                      onRatingChange(skillKey, newValue)
+                      onRatingChange(skillKey, newValue);
                     }}
                     aria-label={`${skill.name} rating`}
                   >
@@ -95,7 +95,7 @@ export default function EvaluationSubskillsDialog({
                     ))}
                   </ToggleButtonGroup>
                 </ListItem>
-              )
+              );
             })}
           </List>
         )}
@@ -107,5 +107,5 @@ export default function EvaluationSubskillsDialog({
         </Button>
       </DialogActions>
     </Dialog>
-  )
+  );
 }

@@ -9,18 +9,18 @@
   TextField,
   Typography,
   Stack,
-} from '@mui/material'
-import type { Athlete, PastEvaluationRow } from '../types'
+} from '@mui/material';
+import type { Athlete, PastEvaluationRow } from '../types';
 
 type PastEvaluationsPanelProps = {
-  layout: 'side' | 'stack'
-  athletes: Athlete[]
-  activeAthleteId: string | null
-  onAthleteChange: (nextId: string | null) => void
-  loading: boolean
-  error: string | null
-  evaluations: PastEvaluationRow[]
-}
+  layout: 'side' | 'stack';
+  athletes: Athlete[];
+  activeAthleteId: string | null;
+  onAthleteChange: (nextId: string | null) => void;
+  loading: boolean;
+  error: string | null;
+  evaluations: PastEvaluationRow[];
+};
 
 export default function PastEvaluationsPanel({
   layout,
@@ -46,11 +46,7 @@ export default function PastEvaluationsPanel({
 
       {athletes.length > 0 ? (
         <Box sx={{ mb: 2 }}>
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ display: 'block', mb: 0.5 }}
-          >
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
             Athlete
           </Typography>
           <TextField
@@ -147,5 +143,5 @@ export default function PastEvaluationsPanel({
         )}
       </Box>
     </Paper>
-  )
+  );
 }

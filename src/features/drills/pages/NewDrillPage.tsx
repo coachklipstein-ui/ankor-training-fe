@@ -1,32 +1,21 @@
-import * as React from "react";
-import {
-  Box,
-  Stack,
-  Typography,
-  Button,
-} from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../app/providers/AuthProvider";
+import * as React from 'react';
+import { Box, Stack, Typography, Button } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
 import {
   createDrill,
   listDrillSegments,
   listDrillTags,
   type DrillTag,
-} from "../services/drillsService";
-import DrillFormFields from "../components/DrillFormFields";
-import {
-  normalizeTagOptions,
-  toSegmentOptions,
-  type SegmentOption,
-} from "../utils/options";
-import { createInitialDrillForm, type DrillFormState } from "../utils/drillForm";
-import { extractYouTubeId } from "../utils/youtube";
-import { validateDrillForm } from "../utils/validation";
+} from '../services/drillsService';
+import DrillFormFields from '../components/DrillFormFields';
+import { normalizeTagOptions, toSegmentOptions, type SegmentOption } from '../utils/options';
+import { createInitialDrillForm, type DrillFormState } from '../utils/drillForm';
+import { extractYouTubeId } from '../utils/youtube';
+import { validateDrillForm } from '../utils/validation';
 
 export default function NewDrillPage() {
-  const [form, setForm] = React.useState<DrillFormState>(
-    createInitialDrillForm(),
-  );
+  const [form, setForm] = React.useState<DrillFormState>(createInitialDrillForm());
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [saving, setSaving] = React.useState(false);
   const [submitError, setSubmitError] = React.useState<string | null>(null);
@@ -54,7 +43,7 @@ export default function NewDrillPage() {
       setSegmentsError(null);
       if (!orgId) {
         setSegmentsLoading(false);
-        setSegmentsError("Missing org_id. Please sign in again.");
+        setSegmentsError('Missing org_id. Please sign in again.');
         setSegmentOptions([]);
         return;
       }
@@ -64,9 +53,7 @@ export default function NewDrillPage() {
         setSegmentOptions(toSegmentOptions(segments));
       } catch (err) {
         if (!active) return;
-        setSegmentsError(
-          err instanceof Error ? err.message : "Failed to load segments.",
-        );
+        setSegmentsError(err instanceof Error ? err.message : 'Failed to load segments.');
         setSegmentOptions([]);
       } finally {
         if (active) setSegmentsLoading(false);
@@ -78,7 +65,7 @@ export default function NewDrillPage() {
       setTagsError(null);
       if (!orgId) {
         setTagsLoading(false);
-        setTagsError("Missing org_id. Please sign in again.");
+        setTagsError('Missing org_id. Please sign in again.');
         setTagOptions([]);
         return;
       }
@@ -88,7 +75,7 @@ export default function NewDrillPage() {
         setTagOptions(normalizeTagOptions(tags));
       } catch (err) {
         if (!active) return;
-        setTagsError(err instanceof Error ? err.message : "Failed to load tags.");
+        setTagsError(err instanceof Error ? err.message : 'Failed to load tags.');
         setTagOptions([]);
       } finally {
         if (active) setTagsLoading(false);
@@ -103,11 +90,10 @@ export default function NewDrillPage() {
     };
   }, [orgId]);
 
-  const handleChange = (field: keyof DrillFormState) => (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    setForm((prev) => ({ ...prev, [field]: event.target.value }));
-  };
+  const handleChange =
+    (field: keyof DrillFormState) => (event: React.ChangeEvent<HTMLInputElement>) => {
+      setForm((prev) => ({ ...prev, [field]: event.target.value }));
+    };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -117,11 +103,11 @@ export default function NewDrillPage() {
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
     if (!orgId) {
-      setSubmitError("Missing org_id. Please sign in again.");
+      setSubmitError('Missing org_id. Please sign in again.');
       return;
     }
     if (!userId) {
-      setSubmitError("Missing user id. Please sign in again.");
+      setSubmitError('Missing user id. Please sign in again.');
       return;
     }
 
@@ -148,7 +134,7 @@ export default function NewDrillPage() {
         media: form.youtubeUrl.trim()
           ? [
               {
-                type: "video",
+                type: 'video',
                 url: form.youtubeUrl.trim(),
                 title: form.name.trim() || null,
               },
@@ -159,10 +145,9 @@ export default function NewDrillPage() {
       const result = await createDrill(payload);
       const newId = (result as any)?.drill?.id;
       if (newId) navigate(`/drills/${newId}`);
-      else navigate("/drills");
+      else navigate('/drills');
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to save drill.";
+      const message = err instanceof Error ? err.message : 'Failed to save drill.';
       setSubmitError(message);
     } finally {
       setSaving(false);
@@ -175,12 +160,12 @@ export default function NewDrillPage() {
         spacing={3}
         component="form"
         onSubmit={handleSubmit}
-        sx={{ maxWidth: 1400, width: "100%", mx: "auto" }}
+        sx={{ maxWidth: 1400, width: '100%', mx: 'auto' }}
       >
         <Stack
-          direction={{ xs: "column", sm: "row" }}
+          direction={{ xs: 'column', sm: 'row' }}
           spacing={2}
-          alignItems={{ sm: "center" }}
+          alignItems={{ sm: 'center' }}
           justifyContent="space-between"
         >
           <Box>
@@ -191,12 +176,12 @@ export default function NewDrillPage() {
               Add a drill to your library.
             </Typography>
           </Box>
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-            <Button variant="outlined" onClick={() => navigate("/drills")}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+            <Button variant="outlined" onClick={() => navigate('/drills')}>
               Cancel
             </Button>
             <Button type="submit" variant="contained" disabled={saving}>
-              {saving ? "Saving..." : "Save"}
+              {saving ? 'Saving...' : 'Save'}
             </Button>
           </Stack>
         </Stack>
@@ -218,9 +203,7 @@ export default function NewDrillPage() {
           tagsError={tagsError}
           youtubeId={youtubeId}
           onFieldChange={handleChange}
-          onSkillTagsChange={(value) =>
-            setForm((prev) => ({ ...prev, skillTags: value }))
-          }
+          onSkillTagsChange={(value) => setForm((prev) => ({ ...prev, skillTags: value }))}
         />
       </Stack>
     </Box>

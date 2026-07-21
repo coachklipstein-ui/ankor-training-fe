@@ -1,19 +1,19 @@
-import * as React from 'react'
-import { Box, Paper, Stack, Typography } from '@mui/material'
-import { DataGrid, type GridColDef } from '@mui/x-data-grid'
-import EvaluationColumnMenu from './EvaluationColumnMenu'
-import type { Athlete } from '../types'
+import * as React from 'react';
+import { Box, Paper, Stack, Typography } from '@mui/material';
+import { DataGrid, type GridColDef } from '@mui/x-data-grid';
+import EvaluationColumnMenu from './EvaluationColumnMenu';
+import type { Athlete } from '../types';
 
 type NewEvaluationDesktopPanelProps = {
-  canRenderMatrix: boolean
-  rows: any[]
-  columns: GridColDef[]
-  processRowUpdate: (newRow: any, oldRow: any) => any
-  onOpenBulkDialog: (athleteField: string) => void
-  selectedAthletes: Athlete[]
-  onAthleteChange: (nextId: string | null) => void
-  onOpenSkillsDialog: (athleteId: string, categoryId: string) => void
-}
+  canRenderMatrix: boolean;
+  rows: any[];
+  columns: GridColDef[];
+  processRowUpdate: (newRow: any, oldRow: any) => any;
+  onOpenBulkDialog: (athleteField: string) => void;
+  selectedAthletes: Athlete[];
+  onAthleteChange: (nextId: string | null) => void;
+  onOpenSkillsDialog: (athleteId: string, categoryId: string) => void;
+};
 
 export default function NewEvaluationDesktopPanel({
   canRenderMatrix,
@@ -28,7 +28,7 @@ export default function NewEvaluationDesktopPanel({
   const isAthleteField = React.useCallback(
     (field: string) => selectedAthletes.some((athlete) => athlete.id === field),
     [selectedAthletes],
-  )
+  );
 
   return (
     <Stack direction={{ xs: 'column', lg: 'row' }} spacing={2} alignItems="stretch">
@@ -51,13 +51,13 @@ export default function NewEvaluationDesktopPanel({
                 columnMenu: { onBulkActions: onOpenBulkDialog } as any,
               }}
               onCellClick={(params) => {
-                const field = params.field as string
-                if (isAthleteField(field)) onAthleteChange(field)
+                const field = params.field as string;
+                if (isAthleteField(field)) onAthleteChange(field);
               }}
               onCellDoubleClick={(params) => {
-                const field = params.field as string
-                if (!isAthleteField(field)) return
-                onOpenSkillsDialog(field, String(params.id))
+                const field = params.field as string;
+                if (!isAthleteField(field)) return;
+                onOpenSkillsDialog(field, String(params.id));
               }}
             />
           ) : (
@@ -79,5 +79,5 @@ export default function NewEvaluationDesktopPanel({
         </Paper>
       </Box>
     </Stack>
-  )
+  );
 }

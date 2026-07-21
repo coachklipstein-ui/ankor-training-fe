@@ -13,24 +13,24 @@
   ListItemText,
   TextField,
   Typography,
-} from '@mui/material'
-import type { Athlete, ScorecardCategory } from '../types'
+} from '@mui/material';
+import type { Athlete, ScorecardCategory } from '../types';
 
 type EvaluationBulkActionsDialogProps = {
-  open: boolean
-  categories: ScorecardCategory[]
-  selectedCategoryIds: string[]
-  onCategoryIdsChange: (next: string[]) => void
-  bulkValue: number | ''
-  onBulkValueChange: (next: number | '') => void
-  athletes: Athlete[]
-  selectedAthleteIds: string[]
-  onToggleAthlete: (athleteId: string) => void
-  onSelectAll: () => void
-  onClearAll: () => void
-  onCancel: () => void
-  onApply: () => void
-}
+  open: boolean;
+  categories: ScorecardCategory[];
+  selectedCategoryIds: string[];
+  onCategoryIdsChange: (next: string[]) => void;
+  bulkValue: number | '';
+  onBulkValueChange: (next: number | '') => void;
+  athletes: Athlete[];
+  selectedAthleteIds: string[];
+  onToggleAthlete: (athleteId: string) => void;
+  onSelectAll: () => void;
+  onClearAll: () => void;
+  onCancel: () => void;
+  onApply: () => void;
+};
 
 export default function EvaluationBulkActionsDialog({
   open,
@@ -70,14 +70,10 @@ export default function EvaluationBulkActionsDialog({
               getOptionLabel={(option) => option.name}
               value={categories.filter((cat) => selectedCategoryIds.includes(cat.id))}
               onChange={(_, newValue) => {
-                onCategoryIdsChange(newValue.map((cat) => cat.id))
+                onCategoryIdsChange(newValue.map((cat) => cat.id));
               }}
               renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Select categories"
-                  placeholder="Choose one or more"
-                />
+                <TextField {...params} label="Select categories" placeholder="Choose one or more" />
               )}
             />
           </Box>
@@ -93,8 +89,8 @@ export default function EvaluationBulkActionsDialog({
               fullWidth
               value={bulkValue}
               onChange={(e) => {
-                const val = e.target.value
-                onBulkValueChange(val === '' ? '' : Number(val))
+                const val = e.target.value;
+                onBulkValueChange(val === '' ? '' : Number(val));
               }}
               inputProps={{ min: 1, max: 5 }}
             />
@@ -126,19 +122,15 @@ export default function EvaluationBulkActionsDialog({
             }}
           >
             {athletes.map((athlete) => {
-              const checked = selectedAthleteIds.includes(athlete.id)
+              const checked = selectedAthleteIds.includes(athlete.id);
               return (
-                <ListItem
-                  key={athlete.id}
-                  button
-                  onClick={() => onToggleAthlete(athlete.id)}
-                >
+                <ListItem key={athlete.id} button onClick={() => onToggleAthlete(athlete.id)}>
                   <ListItemIcon sx={{ minWidth: 32 }}>
                     <Checkbox edge="start" checked={checked} tabIndex={-1} disableRipple />
                   </ListItemIcon>
                   <ListItemText primary={athlete.full_name} />
                 </ListItem>
-              )
+              );
             })}
             {athletes.length === 0 && (
               <Box sx={{ p: 2 }}>
@@ -156,14 +148,12 @@ export default function EvaluationBulkActionsDialog({
           onClick={onApply}
           variant="contained"
           disabled={
-            bulkValue === '' ||
-            selectedAthleteIds.length === 0 ||
-            selectedCategoryIds.length === 0
+            bulkValue === '' || selectedAthleteIds.length === 0 || selectedCategoryIds.length === 0
           }
         >
           Apply
         </Button>
       </DialogActions>
     </Dialog>
-  )
+  );
 }

@@ -1,19 +1,19 @@
-﻿import * as React from 'react'
-import { Button, Chip, Paper, Stack } from '@mui/material'
-import DeleteIcon from '@mui/icons-material/Delete'
-import { DataGrid, GridColDef } from '@mui/x-data-grid'
-import type { EvaluationListRow } from '../../api/evaluationsApi'
-import { formatDateTime } from '../../utils/formatDateTime'
-import { getEvaluationStatusUi } from '../../utils/evaluationStatus'
+﻿import * as React from 'react';
+import { Button, Chip, Paper, Stack } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import type { EvaluationListRow } from '../../api/evaluationsApi';
+import { formatDateTime } from '../../utils/formatDateTime';
+import { getEvaluationStatusUi } from '../../utils/evaluationStatus';
 
 type EvaluationsListTableProps = {
-  rows: EvaluationListRow[]
-  loading: boolean
-  onView: (id: string) => void
-  onEdit: (id: string) => void
-  onDelete: (row: EvaluationListRow) => void
-  deletingId: string | null
-}
+  rows: EvaluationListRow[];
+  loading: boolean;
+  onView: (id: string) => void;
+  onEdit: (id: string) => void;
+  onDelete: (row: EvaluationListRow) => void;
+  deletingId: string | null;
+};
 
 export default function EvaluationsListTable({
   rows,
@@ -56,8 +56,8 @@ export default function EvaluationsListTable({
         width: 140,
         sortable: true,
         renderCell: (params) => {
-          const ui = getEvaluationStatusUi((params.value as string | null) ?? null)
-          return <Chip size="small" label={ui.label} color={ui.color} />
+          const ui = getEvaluationStatusUi((params.value as string | null) ?? null);
+          return <Chip size="small" label={ui.label} color={ui.color} />;
         },
       },
       {
@@ -69,7 +69,7 @@ export default function EvaluationsListTable({
         align: 'center',
         headerAlign: 'center',
         renderCell: (params) => {
-          const row = params.row as EvaluationListRow
+          const row = params.row as EvaluationListRow;
 
           return (
             <Stack direction="row" spacing={1}>
@@ -77,8 +77,8 @@ export default function EvaluationsListTable({
                 size="small"
                 variant="outlined"
                 onClick={(event) => {
-                  event.stopPropagation()
-                  onView(row.id)
+                  event.stopPropagation();
+                  onView(row.id);
                 }}
               >
                 View
@@ -87,8 +87,8 @@ export default function EvaluationsListTable({
                 size="small"
                 variant="contained"
                 onClick={(event) => {
-                  event.stopPropagation()
-                  onEdit(row.id)
+                  event.stopPropagation();
+                  onEdit(row.id);
                 }}
               >
                 Edit
@@ -100,19 +100,19 @@ export default function EvaluationsListTable({
                 startIcon={<DeleteIcon />}
                 disabled={deletingId === row.id}
                 onClick={(event) => {
-                  event.stopPropagation()
-                  onDelete(row)
+                  event.stopPropagation();
+                  onDelete(row);
                 }}
               >
                 Delete
               </Button>
             </Stack>
-          )
+          );
         },
       },
     ],
     [deletingId, onDelete, onEdit, onView],
-  )
+  );
 
   return (
     <Paper sx={{ height: 560, p: 1 }}>
@@ -128,10 +128,10 @@ export default function EvaluationsListTable({
           pagination: { paginationModel: { pageSize: 10, page: 0 } },
         }}
         onRowClick={(params) => {
-          const row = params.row as EvaluationListRow
-          onView(row.id)
+          const row = params.row as EvaluationListRow;
+          onView(row.id);
         }}
       />
     </Paper>
-  )
+  );
 }

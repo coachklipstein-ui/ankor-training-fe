@@ -1,23 +1,26 @@
 #!/usr/bin/env node
 
-import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
-import { createClient } from "@supabase/supabase-js";
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { createClient } from '@supabase/supabase-js';
 
 function readDotEnv() {
-  const path = resolve(process.cwd(), ".env");
+  const path = resolve(process.cwd(), '.env');
   if (!existsSync(path)) return {};
 
   return Object.fromEntries(
-    readFileSync(path, "utf8")
+    readFileSync(path, 'utf8')
       .split(/\r?\n/)
       .map((line) => line.trim())
-      .filter((line) => line && !line.startsWith("#"))
+      .filter((line) => line && !line.startsWith('#'))
       .map((line) => {
-        const index = line.indexOf("=");
-        if (index === -1) return [line, ""];
+        const index = line.indexOf('=');
+        if (index === -1) return [line, ''];
         const key = line.slice(0, index).trim();
-        const value = line.slice(index + 1).trim().replace(/^['"]|['"]$/g, "");
+        const value = line
+          .slice(index + 1)
+          .trim()
+          .replace(/^['"]|['"]$/g, '');
         return [key, value];
       }),
   );
@@ -27,11 +30,11 @@ function parseArgs(argv) {
   const args = {};
   for (let i = 0; i < argv.length; i += 1) {
     const current = argv[i];
-    if (!current.startsWith("--")) continue;
+    if (!current.startsWith('--')) continue;
 
     const key = current.slice(2);
     const next = argv[i + 1];
-    if (!next || next.startsWith("--")) {
+    if (!next || next.startsWith('--')) {
       args[key] = true;
       continue;
     }
@@ -59,17 +62,17 @@ Options:
 }
 
 function requireValue(name, value) {
-  if (typeof value === "string" && value.trim()) return value.trim();
+  if (typeof value === 'string' && value.trim()) return value.trim();
   throw new Error(`Missing ${name}.\n\n${usage()}`);
 }
 
 function normalizeBaseUrl(baseUrl) {
-  return baseUrl.replace(/\/+$/, "");
+  return baseUrl.replace(/\/+$/, '');
 }
 
 function tagId(tag) {
-  if (typeof tag === "string") return tag;
-  if (tag && typeof tag === "object") {
+  if (typeof tag === 'string') return tag;
+  if (tag && typeof tag === 'object') {
     return tag.id ?? tag.skill_id ?? tag.skillId ?? null;
   }
   return null;
@@ -84,25 +87,17 @@ function unwrapDrill(json) {
   return json?.drill ?? json?.data ?? json;
 }
 
-async function request({
-  baseUrl,
-  token,
-  orgId,
-  method,
-  path,
-  body,
-  includeOrgId = true,
-}) {
+async function request({ baseUrl, token, orgId, method, path, body, includeOrgId = true }) {
   const url = new URL(`${baseUrl}${path}`);
-  if (includeOrgId && !url.searchParams.has("org_id")) {
-    url.searchParams.set("org_id", orgId);
+  if (includeOrgId && !url.searchParams.has('org_id')) {
+    url.searchParams.set('org_id', orgId);
   }
 
   const res = await fetch(url, {
     method,
     headers: {
       Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
@@ -117,9 +112,9 @@ async function request({
 
   if (!res.ok || json?.ok === false) {
     const reason =
-      typeof json?.error === "string"
+      typeof json?.error === 'string'
         ? json.error
-        : typeof json === "string" && json
+        : typeof json === 'string' && json
           ? json
           : `${res.status} ${res.statusText}`;
     throw new Error(`${method} ${url.pathname} failed: ${reason}`);
@@ -133,8 +128,8 @@ async function signInWithPassword({ env, args }) {
   const password = args.password || env.SUPABASE_PASSWORD || env.PASSWORD;
   if (!email || !password) return null;
 
-  const supabaseUrl = requireValue("VITE_SUPABASE_URL", env.VITE_SUPABASE_URL);
-  const anonKey = requireValue("VITE_SUPABASE_ANON_KEY", env.VITE_SUPABASE_ANON_KEY);
+  const supabaseUrl = requireValue('VITE_SUPABASE_URL', env.VITE_SUPABASE_URL);
+  const anonKey = requireValue('VITE_SUPABASE_ANON_KEY', env.VITE_SUPABASE_ANON_KEY);
   const supabase = createClient(supabaseUrl, anonKey);
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
@@ -145,7 +140,7 @@ async function signInWithPassword({ env, args }) {
     throw new Error(`Supabase sign-in failed: ${error.message}`);
   }
   if (!data.session?.access_token || !data.user?.id) {
-    throw new Error("Supabase sign-in did not return a usable session.");
+    throw new Error('Supabase sign-in did not return a usable session.');
   }
 
   return {
@@ -159,8 +154,8 @@ async function getDefaultOrgId({ baseUrl, token, userId }) {
     baseUrl,
     token,
     orgId: null,
-    method: "POST",
-    path: "/functions/v1/api/auth/login",
+    method: 'POST',
+    path: '/functions/v1/api/auth/login',
     body: { user_id: userId },
     includeOrgId: false,
   });
@@ -173,7 +168,7 @@ async function getDrill(ctx) {
   return unwrapDrill(
     await request({
       ...ctx,
-      method: "GET",
+      method: 'GET',
       path: `/functions/v1/api/drills/${ctx.drillId}`,
     }),
   );
@@ -183,7 +178,7 @@ async function patchDrillTags(ctx, payload) {
   return unwrapDrill(
     await request({
       ...ctx,
-      method: "PATCH",
+      method: 'PATCH',
       path: `/functions/v1/api/drills/${ctx.drillId}`,
       body: payload,
     }),
@@ -194,13 +189,13 @@ async function listDrillsForSkill(ctx) {
   const query = new URLSearchParams({
     org_id: ctx.orgId,
     skill_tags: ctx.skillId,
-    limit: "100",
-    offset: "0",
+    limit: '100',
+    offset: '0',
   });
 
   const json = await request({
     ...ctx,
-    method: "GET",
+    method: 'GET',
     path: `/functions/v1/api/drills/list?${query.toString()}`,
   });
 
@@ -229,40 +224,34 @@ async function main() {
   const env = { ...readDotEnv(), ...process.env };
   const args = parseArgs(process.argv.slice(2));
   const baseUrl = normalizeBaseUrl(
-    args["base-url"] || env.VITE_BACKEND_URL || "http://localhost:8000",
+    args['base-url'] || env.VITE_BACKEND_URL || 'http://localhost:8000',
   );
   const session =
     args.token || env.API_TOKEN || env.SUPABASE_ACCESS_TOKEN || env.ACCESS_TOKEN
       ? null
       : await signInWithPassword({ env, args });
   const token =
-    args.token ||
-    env.API_TOKEN ||
-    env.SUPABASE_ACCESS_TOKEN ||
-    env.ACCESS_TOKEN ||
-    session?.token;
+    args.token || env.API_TOKEN || env.SUPABASE_ACCESS_TOKEN || env.ACCESS_TOKEN || session?.token;
   const orgId =
-    args["org-id"] ||
+    args['org-id'] ||
     env.ORG_ID ||
-    (session?.userId
-      ? await getDefaultOrgId({ baseUrl, token, userId: session.userId })
-      : null);
+    (session?.userId ? await getDefaultOrgId({ baseUrl, token, userId: session.userId }) : null);
 
   const ctx = {
     baseUrl,
-    token: requireValue("token", token),
-    orgId: requireValue("org id", orgId),
-    skillId: requireValue("skill id", args["skill-id"] || env.SKILL_ID),
-    drillId: requireValue("drill id", args["drill-id"] || env.DRILL_ID),
+    token: requireValue('token', token),
+    orgId: requireValue('org id', orgId),
+    skillId: requireValue('skill id', args['skill-id'] || env.SKILL_ID),
+    drillId: requireValue('drill id', args['drill-id'] || env.DRILL_ID),
   };
 
-  const keepChanges = Boolean(args["keep-changes"]);
+  const keepChanges = Boolean(args['keep-changes']);
   const initial = await getDrill(ctx);
   const initiallyMapped = drillHasSkill(initial, ctx.skillId);
 
   console.log(
     `Initial mapping: drill ${ctx.drillId} ${
-      initiallyMapped ? "has" : "does not have"
+      initiallyMapped ? 'has' : 'does not have'
     } skill ${ctx.skillId}`,
   );
 
@@ -271,23 +260,23 @@ async function main() {
       add_tag_ids: [ctx.skillId],
       remove_tag_ids: [],
     });
-    await assertState(ctx, true, "after add_tag_ids");
-    console.log("PASS add_tag_ids maps the skill to the drill.");
+    await assertState(ctx, true, 'after add_tag_ids');
+    console.log('PASS add_tag_ids maps the skill to the drill.');
 
     await patchDrillTags(ctx, {
       add_tag_ids: [],
       remove_tag_ids: [ctx.skillId],
     });
-    await assertState(ctx, false, "after remove_tag_ids");
-    console.log("PASS remove_tag_ids unmaps the skill from the drill.");
+    await assertState(ctx, false, 'after remove_tag_ids');
+    console.log('PASS remove_tag_ids unmaps the skill from the drill.');
   } finally {
     if (!keepChanges) {
       await patchDrillTags(ctx, {
         add_tag_ids: initiallyMapped ? [ctx.skillId] : [],
         remove_tag_ids: initiallyMapped ? [] : [ctx.skillId],
       });
-      await assertState(ctx, initiallyMapped, "after restore");
-      console.log("PASS restored original mapping state.");
+      await assertState(ctx, initiallyMapped, 'after restore');
+      console.log('PASS restored original mapping state.');
     }
   }
 }

@@ -1,13 +1,9 @@
-import * as React from "react";
-import {
-  getSkillMediaPlay,
-  listSkillsPage,
-  type Skill,
-} from "../services/skillsService";
-import { DEBUG_SPORT_ID, PAGE_SIZE } from "../constants";
-import { getCategoryOptions } from "../utils/skillsList";
-import type { SkillListFilters } from "../types";
-import { useAuth } from "../../../app/providers/AuthProvider";
+import * as React from 'react';
+import { getSkillMediaPlay, listSkillsPage, type Skill } from '../services/skillsService';
+import { DEBUG_SPORT_ID, PAGE_SIZE } from '../constants';
+import { getCategoryOptions } from '../utils/skillsList';
+import type { SkillListFilters } from '../types';
+import { useAuth } from '../../../app/providers/AuthProvider';
 
 type PlayState = {
   open: boolean;
@@ -18,15 +14,13 @@ type PlayState = {
 };
 
 const createEmptyFilters = (): SkillListFilters => ({
-  category: "",
+  category: '',
 });
 
 export default function useSkillsListPage() {
   const { profile, loading: authLoading } = useAuth();
-  const [query, setQuery] = React.useState("");
-  const [filters, setFilters] = React.useState<SkillListFilters>(
-    createEmptyFilters(),
-  );
+  const [query, setQuery] = React.useState('');
+  const [filters, setFilters] = React.useState<SkillListFilters>(createEmptyFilters());
   const [skills, setSkills] = React.useState<Skill[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [loadError, setLoadError] = React.useState<string | null>(null);
@@ -41,10 +35,7 @@ export default function useSkillsListPage() {
   });
   const playRequestIdRef = React.useRef(0);
 
-  const categoryOptions = React.useMemo(
-    () => getCategoryOptions(skills),
-    [skills],
-  );
+  const categoryOptions = React.useMemo(() => getCategoryOptions(skills), [skills]);
 
   React.useEffect(() => {
     let active = true;
@@ -56,7 +47,7 @@ export default function useSkillsListPage() {
 
       const resolvedOrgId = profile?.default_org_id?.trim();
       if (!resolvedOrgId) {
-        setLoadError("Missing org_id for this account.");
+        setLoadError('Missing org_id for this account.');
         return;
       }
 
@@ -76,7 +67,7 @@ export default function useSkillsListPage() {
         setTotalCount(result.count ?? result.items.length);
       } catch (err) {
         if (!active) return;
-        setLoadError(err instanceof Error ? err.message : "Failed to load skills.");
+        setLoadError(err instanceof Error ? err.message : 'Failed to load skills.');
         setSkills([]);
         setTotalCount(0);
       } finally {
@@ -89,13 +80,7 @@ export default function useSkillsListPage() {
     return () => {
       active = false;
     };
-  }, [
-    authLoading,
-    profile,
-    query,
-    filters.category,
-    page,
-  ]);
+  }, [authLoading, profile, query, filters.category, page]);
 
   const openPlay = React.useCallback(
     (skill: Skill) => {
@@ -125,10 +110,7 @@ export default function useSkillsListPage() {
           if (playRequestIdRef.current !== requestId) return;
           setPlayState((prev) => ({
             ...prev,
-            error:
-              err instanceof Error
-                ? err.message
-                : "Failed to load skill video.",
+            error: err instanceof Error ? err.message : 'Failed to load skill video.',
             loading: false,
           }));
         }
@@ -153,16 +135,13 @@ export default function useSkillsListPage() {
     setPage(1);
   }, []);
 
-  const updateFilter = React.useCallback(
-    (field: keyof SkillListFilters, value: string) => {
-      setFilters((prev) => ({ ...prev, [field]: value }));
-      setPage(1);
-    },
-    [],
-  );
+  const updateFilter = React.useCallback((field: keyof SkillListFilters, value: string) => {
+    setFilters((prev) => ({ ...prev, [field]: value }));
+    setPage(1);
+  }, []);
 
   const clearAll = React.useCallback(() => {
-    setQuery("");
+    setQuery('');
     setFilters(createEmptyFilters());
     setPage(1);
   }, []);

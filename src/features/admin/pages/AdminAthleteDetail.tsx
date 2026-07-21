@@ -1,41 +1,32 @@
-import * as React from 'react'
-import {
-  Box,
-  Stack,
-  Paper,
-  Typography,
-  Button,
-  IconButton,
-  Avatar,
-  Grid,
-} from '@mui/material'
-import EmailIcon from '@mui/icons-material/Email'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
-import { useParams, useNavigate, useLocation } from 'react-router-dom'
+import * as React from 'react';
+import { Box, Stack, Paper, Typography, Button, IconButton, Avatar, Grid } from '@mui/material';
+import EmailIcon from '@mui/icons-material/Email';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 
 // ---------------- Types ----------------
 type AthleteRow = {
-  id: string
-  org_id: string
-  user_id: string
-  graduation_year: number
-  cell_number: string | null
-  market?: string | null
-  team?: string | null
-  position?: string | null
-  evaluations_count?: number
-  avatarUrl?: string | null
-}
+  id: string;
+  org_id: string;
+  user_id: string;
+  graduation_year: number;
+  cell_number: string | null;
+  market?: string | null;
+  team?: string | null;
+  position?: string | null;
+  evaluations_count?: number;
+  avatarUrl?: string | null;
+};
 
 type UserRow = {
-  id: string
-  first_name: string
-  last_name: string
-  email: string
-  parent_email?: string | null
-  phone?: string | null
-}
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  parent_email?: string | null;
+  phone?: string | null;
+};
 
 // ------------- Mock lookups (fallback if no state passed) -------------
 const ATHLETES: AthleteRow[] = [
@@ -63,7 +54,7 @@ const ATHLETES: AthleteRow[] = [
     evaluations_count: 2,
     avatarUrl: '/avatar-athlete.png',
   },
-]
+];
 
 const USERS: Record<string, UserRow> = {
   '103b536d-9499-49ed-b823-41911ee914ff': {
@@ -82,19 +73,18 @@ const USERS: Record<string, UserRow> = {
     parent_email: 'parent2@example.com',
     phone: '555-111-2222',
   },
-}
+};
 
 export default function AdminAthleteDetail() {
-  const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
-  const loc = useLocation()
-  const stateAthlete = (loc.state as { athlete?: AthleteRow } | undefined)?.athlete
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const loc = useLocation();
+  const stateAthlete = (loc.state as { athlete?: AthleteRow } | undefined)?.athlete;
 
   // Prefer row passed via navigation state; otherwise fallback to mock lookup
-  const athlete: AthleteRow | undefined =
-    stateAthlete ?? ATHLETES.find((a) => a.id === id)
+  const athlete: AthleteRow | undefined = stateAthlete ?? ATHLETES.find((a) => a.id === id);
 
-  const user: UserRow | undefined = athlete ? USERS[athlete.user_id] : undefined
+  const user: UserRow | undefined = athlete ? USERS[athlete.user_id] : undefined;
 
   if (!athlete || !user) {
     return (
@@ -106,11 +96,11 @@ export default function AdminAthleteDetail() {
           Athlete not found.
         </Typography>
       </Box>
-    )
+    );
   }
 
-  const fullName = `${user.first_name} ${user.last_name}`
-  const gradYear = athlete.graduation_year
+  const fullName = `${user.first_name} ${user.last_name}`;
+  const gradYear = athlete.graduation_year;
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -188,25 +178,19 @@ export default function AdminAthleteDetail() {
               <Typography variant="body2" color="text.secondary">
                 Market
               </Typography>
-              <Typography fontWeight={600}>
-                {athlete.market ?? '—'}
-              </Typography>
+              <Typography fontWeight={600}>{athlete.market ?? '—'}</Typography>
             </Grid>
             <Grid item xs={12} md={6}>
               <Typography variant="body2" color="text.secondary">
                 Team
               </Typography>
-              <Typography fontWeight={600}>
-                {athlete.team ?? '—'}
-              </Typography>
+              <Typography fontWeight={600}>{athlete.team ?? '—'}</Typography>
             </Grid>
             <Grid item xs={12} md={6}>
               <Typography variant="body2" color="text.secondary">
                 Position
               </Typography>
-              <Typography fontWeight={600}>
-                {athlete.position ?? '—'}
-              </Typography>
+              <Typography fontWeight={600}>{athlete.position ?? '—'}</Typography>
             </Grid>
             <Grid item xs={12} md={6}>
               <Typography variant="body2" color="text.secondary">
@@ -249,5 +233,5 @@ export default function AdminAthleteDetail() {
         </Stack>
       </Box>
     </Box>
-  )
+  );
 }

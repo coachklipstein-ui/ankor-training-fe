@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Box,
   Button,
@@ -10,18 +10,18 @@ import {
   Switch,
   TextField,
   Typography,
-} from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../app/providers/AuthProvider";
+} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
 import {
   createScorecardTemplate,
   type ScorecardCategory,
   type ScorecardSubskillRow,
-} from "../services/scorecardService";
-import { listSkills, type Skill } from "../../skills/services/skillsService";
+} from '../services/scorecardService';
+import { listSkills, type Skill } from '../../skills/services/skillsService';
 
 type TemplateState = {
   id: string;
@@ -31,8 +31,7 @@ type TemplateState = {
   sport_id: string | null;
 };
 
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const isUuid = (value?: string | null) => !!value && UUID_RE.test(value);
 
@@ -48,20 +47,18 @@ const coerceNumber = (value: unknown, fallback: number) => {
 export default function NewScorecardPage() {
   const navigate = useNavigate();
   const { orgId, loading: authLoading } = useAuth();
-  const templateId = "new-template";
+  const templateId = 'new-template';
 
   const [template, setTemplate] = React.useState<TemplateState>({
-    id: "",
-    name: "",
-    description: "",
+    id: '',
+    name: '',
+    description: '',
     isActive: true,
     sport_id: null,
   });
   const [categories, setCategories] = React.useState<ScorecardCategory[]>([]);
   const [subskills, setSubskills] = React.useState<ScorecardSubskillRow[]>([]);
-  const [activeCategoryId, setActiveCategoryId] = React.useState<string | null>(
-    null,
-  );
+  const [activeCategoryId, setActiveCategoryId] = React.useState<string | null>(null);
 
   const [isSaving, setIsSaving] = React.useState(false);
   const [saveError, setSaveError] = React.useState<string | null>(null);
@@ -91,7 +88,7 @@ export default function NewScorecardPage() {
       .catch((err: any) => {
         if (!active) return;
         setSkills([]);
-        setSkillsError(err?.message || "Failed to load skills.");
+        setSkillsError(err?.message || 'Failed to load skills.');
       })
       .finally(() => {
         if (active) setSkillsLoading(false);
@@ -105,7 +102,7 @@ export default function NewScorecardPage() {
   const skillLabelById = React.useMemo(() => {
     const map: Record<string, string> = {};
     skills.forEach((skill) => {
-      map[skill.id] = skill.title || skill.category || "Skill";
+      map[skill.id] = skill.title || skill.category || 'Skill';
     });
     return map;
   }, [skills]);
@@ -116,16 +113,12 @@ export default function NewScorecardPage() {
   );
 
   const visibleSubskills = React.useMemo(
-    () =>
-      activeCategoryId
-        ? subskills.filter((s) => s.category_id === activeCategoryId)
-        : [],
+    () => (activeCategoryId ? subskills.filter((s) => s.category_id === activeCategoryId) : []),
     [subskills, activeCategoryId],
   );
 
   const handleTemplateChange =
-    (field: keyof TemplateState) =>
-    (event: React.ChangeEvent<HTMLInputElement>) => {
+    (field: keyof TemplateState) => (event: React.ChangeEvent<HTMLInputElement>) => {
       const value = event.target.value;
       setTemplate((prev) => ({ ...prev, [field]: value }));
     };
@@ -140,7 +133,7 @@ export default function NewScorecardPage() {
       id: `new-cat-${Date.now()}`,
       template_id: templateId,
       name: formatCategoryName(categories.length),
-      description: "",
+      description: '',
       position: nextPosition,
     };
     setCategories((prev) => [...prev, newCategory]);
@@ -165,7 +158,7 @@ export default function NewScorecardPage() {
     setCategories((prev) =>
       prev.map((cat) => {
         if (cat.id !== categoryId) return cat;
-        if (field === "position") {
+        if (field === 'position') {
           return { ...cat, position: coerceNumber(value, cat.position) };
         }
         return { ...cat, [field]: value };
@@ -180,9 +173,9 @@ export default function NewScorecardPage() {
     const newSubskill: ScorecardSubskillRow = {
       id: `new-sub-${Date.now()}`,
       category_id: activeCategoryId,
-      skill_id: "",
-      name: "New subskill",
-      description: "",
+      skill_id: '',
+      name: 'New subskill',
+      description: '',
       position: nextPosition,
       rating_min: 1,
       rating_max: 5,
@@ -203,13 +196,13 @@ export default function NewScorecardPage() {
     setSubskills((prev) =>
       prev.map((sub) => {
         if (sub.id !== subskillId) return sub;
-        if (field === "position") {
+        if (field === 'position') {
           return { ...sub, position: coerceNumber(value, sub.position) };
         }
-        if (field === "rating_min") {
+        if (field === 'rating_min') {
           return { ...sub, rating_min: coerceNumber(value, sub.rating_min) };
         }
-        if (field === "rating_max") {
+        if (field === 'rating_max') {
           return { ...sub, rating_max: coerceNumber(value, sub.rating_max) };
         }
         return { ...sub, [field]: value };
@@ -219,25 +212,25 @@ export default function NewScorecardPage() {
 
   const validateBeforeSave = () => {
     if (!template.name.trim()) {
-      return "Template name is required.";
+      return 'Template name is required.';
     }
     if (!orgId?.trim()) {
-      return "Missing org_id.";
+      return 'Missing org_id.';
     }
     if (categories.length === 0) {
-      return "You must add at least one category.";
+      return 'You must add at least one category.';
     }
     const missing: string[] = [];
     categories.forEach((cat) => {
       const catSubskills = subskills.filter((s) => s.category_id === cat.id);
-      const valid = catSubskills.filter((s) => isUuid(s.skill_id ?? ""));
+      const valid = catSubskills.filter((s) => isUuid(s.skill_id ?? ''));
       if (valid.length === 0) {
-        missing.push(cat.name || "Untitled Category");
+        missing.push(cat.name || 'Untitled Category');
       }
     });
     if (missing.length > 0) {
       return `Each category must have at least one subskill with a valid Skill. Missing for: ${missing.join(
-        ", ",
+        ', ',
       )}`;
     }
     return null;
@@ -258,15 +251,13 @@ export default function NewScorecardPage() {
       const addCategoryPayload = categories.map((cat, idx) => {
         const catSubskills = subskills
           .filter((sub) => sub.category_id === cat.id)
-          .filter((sub) => isUuid(sub.skill_id ?? ""))
+          .filter((sub) => isUuid(sub.skill_id ?? ''))
           .sort((a, b) => a.position - b.position)
           .map((sub, subIdx) => ({
-            name: sanitizeText(sub.name) || "Subskill",
+            name: sanitizeText(sub.name) || 'Subskill',
             description: sub.description?.trim() || null,
-            position: Number.isFinite(Number(sub.position))
-              ? Number(sub.position)
-              : subIdx + 1,
-            skill_id: (sub.skill_id ?? "").trim(),
+            position: Number.isFinite(Number(sub.position)) ? Number(sub.position) : subIdx + 1,
+            skill_id: (sub.skill_id ?? '').trim(),
             rating_min: Number.isFinite(Number(sub.rating_min))
               ? Number(sub.rating_min)
               : undefined,
@@ -278,9 +269,7 @@ export default function NewScorecardPage() {
         return {
           name: sanitizeText(cat.name) || `Category ${idx + 1}`,
           description: cat.description?.trim() || null,
-          position: Number.isFinite(Number(cat.position))
-            ? Number(cat.position)
-            : idx + 1,
+          position: Number.isFinite(Number(cat.position)) ? Number(cat.position) : idx + 1,
           subskills: catSubskills,
         };
       });
@@ -294,14 +283,14 @@ export default function NewScorecardPage() {
         add_categories: addCategoryPayload,
       });
 
-      const newId = detail.template?.id ?? "";
+      const newId = detail.template?.id ?? '';
       if (newId) {
         navigate(`/scorecards/${newId}/edit`, { replace: true });
       } else {
-        navigate("/scorecards");
+        navigate('/scorecards');
       }
     } catch (err: any) {
-      setSaveError(err?.message || "Failed to create scorecard template.");
+      setSaveError(err?.message || 'Failed to create scorecard template.');
     } finally {
       setIsSaving(false);
     }
@@ -309,7 +298,7 @@ export default function NewScorecardPage() {
 
   return (
     <Box sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
-      <Stack spacing={2.5} sx={{ maxWidth: 1100, mx: "auto" }}>
+      <Stack spacing={2.5} sx={{ maxWidth: 1100, mx: 'auto' }}>
         <Stack direction="row" alignItems="center" spacing={1}>
           <IconButton onClick={() => navigate(-1)} size="small">
             <ArrowBackIcon fontSize="small" />
@@ -320,12 +309,12 @@ export default function NewScorecardPage() {
         </Stack>
 
         <Paper variant="outlined" sx={{ p: { xs: 2, md: 3 } }}>
-          <Stack spacing={2} direction={{ xs: "column", md: "row" }}>
+          <Stack spacing={2} direction={{ xs: 'column', md: 'row' }}>
             <Box sx={{ flex: 1 }}>
               <TextField
                 label="Template name"
                 value={template.name}
-                onChange={handleTemplateChange("name")}
+                onChange={handleTemplateChange('name')}
                 fullWidth
                 required
                 sx={{ mb: 2 }}
@@ -333,7 +322,7 @@ export default function NewScorecardPage() {
               <TextField
                 label="Description"
                 value={template.description}
-                onChange={handleTemplateChange("description")}
+                onChange={handleTemplateChange('description')}
                 fullWidth
                 multiline
                 minRows={3}
@@ -341,35 +330,28 @@ export default function NewScorecardPage() {
             </Box>
             <Box
               sx={{
-                minWidth: { xs: "auto", md: 240 },
-                display: "flex",
-                flexDirection: "column",
+                minWidth: { xs: 'auto', md: 240 },
+                display: 'flex',
+                flexDirection: 'column',
                 gap: 2,
-                justifyContent: "space-between",
+                justifyContent: 'space-between',
               }}
             >
               <Stack direction="row" alignItems="center" spacing={1}>
                 <Switch checked={template.isActive} onChange={handleToggleActive} />
-                <Typography variant="body2">
-                  {template.isActive ? "Active" : "Inactive"}
-                </Typography>
+                <Typography variant="body2">{template.isActive ? 'Active' : 'Inactive'}</Typography>
               </Stack>
-              <Stack spacing={1} direction={{ xs: "column", sm: "row" }}>
+              <Stack spacing={1} direction={{ xs: 'column', sm: 'row' }}>
                 <Button
                   variant="outlined"
-                  onClick={() => navigate("/scorecards")}
+                  onClick={() => navigate('/scorecards')}
                   disabled={isSaving}
                   fullWidth
                 >
                   Cancel
                 </Button>
-                <Button
-                  variant="contained"
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  fullWidth
-                >
-                  {isSaving ? "Saving..." : "Save"}
+                <Button variant="contained" onClick={handleSave} disabled={isSaving} fullWidth>
+                  {isSaving ? 'Saving...' : 'Save'}
                 </Button>
               </Stack>
             </Box>
@@ -385,8 +367,8 @@ export default function NewScorecardPage() {
 
         <Paper variant="outlined" sx={{ p: { xs: 2, md: 3 } }}>
           <Stack
-            direction={{ xs: "column", sm: "row" }}
-            alignItems={{ xs: "flex-start", sm: "center" }}
+            direction={{ xs: 'column', sm: 'row' }}
+            alignItems={{ xs: 'flex-start', sm: 'center' }}
             justifyContent="space-between"
             spacing={1}
             sx={{ mb: 2 }}
@@ -419,14 +401,14 @@ export default function NewScorecardPage() {
                   variant="outlined"
                   sx={{
                     p: 2,
-                    borderColor: isActive ? "primary.main" : "divider",
-                    bgcolor: isActive ? "action.selected" : "background.paper",
+                    borderColor: isActive ? 'primary.main' : 'divider',
+                    bgcolor: isActive ? 'action.selected' : 'background.paper',
                   }}
                 >
                   <Stack spacing={1.5}>
                     <Stack
-                      direction={{ xs: "column", sm: "row" }}
-                      alignItems={{ xs: "flex-start", sm: "center" }}
+                      direction={{ xs: 'column', sm: 'row' }}
+                      alignItems={{ xs: 'flex-start', sm: 'center' }}
                       justifyContent="space-between"
                       spacing={1}
                     >
@@ -436,10 +418,10 @@ export default function NewScorecardPage() {
                       <Stack direction="row" spacing={1} alignItems="center">
                         <Button
                           size="small"
-                          variant={isActive ? "contained" : "outlined"}
+                          variant={isActive ? 'contained' : 'outlined'}
                           onClick={() => setActiveCategoryId(cat.id)}
                         >
-                          {isActive ? "Selected" : "Select"}
+                          {isActive ? 'Selected' : 'Select'}
                         </Button>
                         <IconButton
                           size="small"
@@ -454,20 +436,14 @@ export default function NewScorecardPage() {
                     <TextField
                       label="Name"
                       value={cat.name}
-                      onChange={(event) =>
-                        handleCategoryUpdate(cat.id, "name", event.target.value)
-                      }
+                      onChange={(event) => handleCategoryUpdate(cat.id, 'name', event.target.value)}
                       fullWidth
                     />
                     <TextField
                       label="Description"
-                      value={cat.description ?? ""}
+                      value={cat.description ?? ''}
                       onChange={(event) =>
-                        handleCategoryUpdate(
-                          cat.id,
-                          "description",
-                          event.target.value,
-                        )
+                        handleCategoryUpdate(cat.id, 'description', event.target.value)
                       }
                       fullWidth
                       multiline
@@ -478,7 +454,7 @@ export default function NewScorecardPage() {
                       type="number"
                       value={cat.position}
                       onChange={(event) =>
-                        handleCategoryUpdate(cat.id, "position", event.target.value)
+                        handleCategoryUpdate(cat.id, 'position', event.target.value)
                       }
                       inputProps={{ min: 1 }}
                       fullWidth
@@ -492,8 +468,8 @@ export default function NewScorecardPage() {
 
         <Paper variant="outlined" sx={{ p: { xs: 2, md: 3 } }}>
           <Stack
-            direction={{ xs: "column", sm: "row" }}
-            alignItems={{ xs: "flex-start", sm: "center" }}
+            direction={{ xs: 'column', sm: 'row' }}
+            alignItems={{ xs: 'flex-start', sm: 'center' }}
             justifyContent="space-between"
             spacing={1}
             sx={{ mb: 2 }}
@@ -504,8 +480,8 @@ export default function NewScorecardPage() {
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 {activeCategory
-                  ? `Category: ${activeCategory.name || "Untitled Category"}`
-                  : "Select a category to manage its subskills."}
+                  ? `Category: ${activeCategory.name || 'Untitled Category'}`
+                  : 'Select a category to manage its subskills.'}
               </Typography>
             </Box>
             <Button
@@ -556,20 +532,14 @@ export default function NewScorecardPage() {
                   <TextField
                     label="Name"
                     value={sub.name}
-                    onChange={(event) =>
-                      handleSubskillUpdate(sub.id, "name", event.target.value)
-                    }
+                    onChange={(event) => handleSubskillUpdate(sub.id, 'name', event.target.value)}
                     fullWidth
                   />
                   <TextField
                     label="Description"
-                    value={sub.description ?? ""}
+                    value={sub.description ?? ''}
                     onChange={(event) =>
-                      handleSubskillUpdate(
-                        sub.id,
-                        "description",
-                        event.target.value,
-                      )
+                      handleSubskillUpdate(sub.id, 'description', event.target.value)
                     }
                     fullWidth
                     multiline
@@ -580,22 +550,18 @@ export default function NewScorecardPage() {
                     type="number"
                     value={sub.position}
                     onChange={(event) =>
-                      handleSubskillUpdate(sub.id, "position", event.target.value)
+                      handleSubskillUpdate(sub.id, 'position', event.target.value)
                     }
                     inputProps={{ min: 1 }}
                     fullWidth
                   />
-                  <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
                     <TextField
                       label="Rating min"
                       type="number"
                       value={sub.rating_min ?? 1}
                       onChange={(event) =>
-                        handleSubskillUpdate(
-                          sub.id,
-                          "rating_min",
-                          event.target.value,
-                        )
+                        handleSubskillUpdate(sub.id, 'rating_min', event.target.value)
                       }
                       inputProps={{ min: 1 }}
                       fullWidth
@@ -605,11 +571,7 @@ export default function NewScorecardPage() {
                       type="number"
                       value={sub.rating_max ?? 5}
                       onChange={(event) =>
-                        handleSubskillUpdate(
-                          sub.id,
-                          "rating_max",
-                          event.target.value,
-                        )
+                        handleSubskillUpdate(sub.id, 'rating_max', event.target.value)
                       }
                       inputProps={{ min: 1 }}
                       fullWidth
@@ -618,17 +580,17 @@ export default function NewScorecardPage() {
                   <TextField
                     label="Skill"
                     select
-                    value={sub.skill_id ?? ""}
+                    value={sub.skill_id ?? ''}
                     onChange={(event) =>
-                      handleSubskillUpdate(sub.id, "skill_id", event.target.value)
+                      handleSubskillUpdate(sub.id, 'skill_id', event.target.value)
                     }
                     fullWidth
                     disabled={skillsLoading || !!skillsError}
                     helperText={
                       skillsLoading
-                        ? "Loading skills..."
+                        ? 'Loading skills...'
                         : skillsError
-                          ? "Skills are unavailable."
+                          ? 'Skills are unavailable.'
                           : undefined
                     }
                   >

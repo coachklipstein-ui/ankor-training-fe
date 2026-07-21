@@ -1,4 +1,4 @@
-import type { DrillTag } from "../services/drillsService";
+import type { DrillTag } from '../services/drillsService';
 
 export type DrillFormState = {
   name: string;
@@ -13,13 +13,13 @@ export type DrillFormState = {
 };
 
 export const createInitialDrillForm = (): DrillFormState => ({
-  name: "",
-  description: "",
-  segmentId: "",
-  minPlayers: "",
-  maxPlayers: "",
-  minAge: "",
-  maxAge: "",
-  youtubeUrl: "",
+  name: '',
+  description: '',
+  segmentId: '',
+  minPlayers: '',
+  maxPlayers: '',
+  minAge: '',
+  maxAge: '',
+  youtubeUrl: '',
   skillTags: [],
 });

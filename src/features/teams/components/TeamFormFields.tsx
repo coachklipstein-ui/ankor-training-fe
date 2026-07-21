@@ -1,14 +1,6 @@
-import * as React from "react";
-import {
-  Chip,
-  FormControlLabel,
-  Paper,
-  Stack,
-  Switch,
-  TextField,
-  Typography,
-} from "@mui/material";
-import type { TeamFormState } from "../utils/teamForm";
+import * as React from 'react';
+import { Chip, FormControlLabel, Paper, Stack, Switch, TextField, Typography } from '@mui/material';
+import type { TeamFormState } from '../utils/teamForm';
 
 type SportOption = { id: string; label: string };
 
@@ -32,8 +24,7 @@ export default function TeamFormFields({
   readOnly = false,
 }: TeamFormFieldsProps) {
   const sportMatch = sportOptions.find((option) => option.id === form.sportId);
-  const sportHelper =
-    errors.sportId || (sportMatch ? `Sport: ${sportMatch.label}` : "Optional");
+  const sportHelper = errors.sportId || (sportMatch ? `Sport: ${sportMatch.label}` : 'Optional');
 
   return (
     <Paper variant="outlined" sx={{ p: { xs: 2, md: 3 } }}>
@@ -44,7 +35,7 @@ export default function TeamFormFields({
         <TextField
           label="Team name"
           value={form.name}
-          onChange={onFieldChange("name")}
+          onChange={onFieldChange('name')}
           required
           fullWidth
           error={Boolean(errors.name)}
@@ -54,7 +45,7 @@ export default function TeamFormFields({
         <TextField
           label="Sport id"
           value={form.sportId}
-          onChange={onFieldChange("sportId")}
+          onChange={onFieldChange('sportId')}
           fullWidth
           error={Boolean(errors.sportId)}
           helperText={sportHelper}
@@ -68,9 +59,9 @@ export default function TeamFormFields({
                 key={option.id}
                 label={option.label}
                 size="small"
-                variant={option.id === form.sportId ? "filled" : "outlined"}
+                variant={option.id === form.sportId ? 'filled' : 'outlined'}
                 onClick={() =>
-                  onFieldChange("sportId")({
+                  onFieldChange('sportId')({
                     target: { value: option.id },
                   } as React.ChangeEvent<HTMLInputElement>)
                 }
@@ -92,7 +83,7 @@ export default function TeamFormFields({
               disabled={readOnly}
             />
           }
-          label={form.isActive ? "Active team" : "Inactive team"}
+          label={form.isActive ? 'Active team' : 'Inactive team'}
         />
       </Stack>
     </Paper>

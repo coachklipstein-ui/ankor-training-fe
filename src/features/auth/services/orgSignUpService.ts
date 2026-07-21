@@ -8,7 +8,7 @@ export type OrgSignupPayload = {
   };
   organization: {
     name: string;
-    programGender: "girls" | "boys" | "coed";
+    programGender: 'girls' | 'boys' | 'coed';
   };
   sport_id: string | null;
   teams: { name: string }[];
@@ -21,12 +21,12 @@ export type OrgSignupResponse =
 const pickUrl = () => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   if (!backendUrl) {
-    throw new Error("Missing VITE_BACKEND_URL for org signup.");
+    throw new Error('Missing VITE_BACKEND_URL for org signup.');
   }
 
-  const normalized = backendUrl.replace(/\/$/, "");
-  if (normalized.includes("/functions/v1")) {
-    return `${normalized.replace(/\/$/, "")}/org-signup`;
+  const normalized = backendUrl.replace(/\/$/, '');
+  if (normalized.includes('/functions/v1')) {
+    return `${normalized.replace(/\/$/, '')}/org-signup`;
   }
 
   return `${normalized}/functions/v1/api/org/signup`;
@@ -36,27 +36,29 @@ export function buildOrgSignupPayload(form: HTMLFormElement): OrgSignupPayload {
   // We only READ from the form; we are NOT sending multipart.
   const fd = new FormData(form);
 
-  const firstName = String(fd.get("adminFirstName") ?? "").trim();
-  const lastName  = String(fd.get("adminLastName") ?? "").trim();
-  const email     = String(fd.get("adminEmail") ?? "").trim();
-  const phone     = String(fd.get("adminPhoneNumber") ?? "").trim() || null;
-  const password  = String(fd.get("adminPassword") ?? "").trim();
+  const firstName = String(fd.get('adminFirstName') ?? '').trim();
+  const lastName = String(fd.get('adminLastName') ?? '').trim();
+  const email = String(fd.get('adminEmail') ?? '').trim();
+  const phone = String(fd.get('adminPhoneNumber') ?? '').trim() || null;
+  const password = String(fd.get('adminPassword') ?? '').trim();
 
-  const orgName   = String(fd.get("organizationName") ?? "").trim();
-  const genderRaw = String(fd.get("gender") ?? "").toLowerCase();
-  const programGender = (["girls","boys","coed"].includes(genderRaw) ? genderRaw : "coed") as
-    "girls" | "boys" | "coed";
+  const orgName = String(fd.get('organizationName') ?? '').trim();
+  const genderRaw = String(fd.get('gender') ?? '').toLowerCase();
+  const programGender = (['girls', 'boys', 'coed'].includes(genderRaw) ? genderRaw : 'coed') as
+    'girls' | 'boys' | 'coed';
 
-  const selectedSportId = String(fd.get("teamsSport") ?? "").trim() || null;
+  const selectedSportId = String(fd.get('teamsSport') ?? '').trim() || null;
   let teams: { name: string }[] = [];
-  const teamsJsonStr = String(fd.get("teamsJson") ?? "");
+  const teamsJsonStr = String(fd.get('teamsJson') ?? '');
   if (teamsJsonStr) {
     try {
       const arr = JSON.parse(teamsJsonStr) as Array<{ name?: string }>;
       teams = (arr ?? [])
-        .map(r => ({ name: String(r?.name ?? "").trim() }))
-        .filter(t => t.name.length > 0);
-    } catch { /* ignore bad JSON */ }
+        .map((r) => ({ name: String(r?.name ?? '').trim() }))
+        .filter((t) => t.name.length > 0);
+    } catch {
+      /* ignore bad JSON */
+    }
   }
 
   return {
@@ -70,16 +72,16 @@ export function buildOrgSignupPayload(form: HTMLFormElement): OrgSignupPayload {
 export async function submitOrgSignupJson(payload: OrgSignupPayload): Promise<OrgSignupResponse> {
   const url = pickUrl();
 
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   // Only if your edge function requires a JWT:
   const anon = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
-  if (anon && !url.includes("localhost:8000")) {
-    headers["apikey"] = anon;
-    headers["Authorization"] = `Bearer ${anon}`;
+  if (anon && !url.includes('localhost:8000')) {
+    headers['apikey'] = anon;
+    headers['Authorization'] = `Bearer ${anon}`;
   }
 
   const res = await fetch(url, {
-    method: "POST",
+    method: 'POST',
     headers,
     body: JSON.stringify(payload),
   });

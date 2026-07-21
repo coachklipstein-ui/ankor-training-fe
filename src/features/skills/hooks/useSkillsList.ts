@@ -1,8 +1,8 @@
-import * as React from "react";
-import type { Skill } from "../services/skillsService";
-import { FILTER_ALL } from "../constants";
-import { SAMPLE_SKILLS } from "../data/sampleSkills";
-import { buildCategoryCounts, filterSkills, getCategoryOptions } from "../utils/skillsList";
+import * as React from 'react';
+import type { Skill } from '../services/skillsService';
+import { FILTER_ALL } from '../constants';
+import { SAMPLE_SKILLS } from '../data/sampleSkills';
+import { buildCategoryCounts, filterSkills, getCategoryOptions } from '../utils/skillsList';
 
 type UseSkillsListResult = {
   skills: Skill[];
@@ -18,7 +18,7 @@ type UseSkillsListResult = {
 
 export default function useSkillsList(data?: Skill[]): UseSkillsListResult {
   const skills = data ?? SAMPLE_SKILLS;
-  const [query, setQuery] = React.useState("");
+  const [query, setQuery] = React.useState('');
   const [category, setCategory] = React.useState(FILTER_ALL);
 
   const categories = React.useMemo(() => getCategoryOptions(skills), [skills]);
@@ -28,12 +28,9 @@ export default function useSkillsList(data?: Skill[]): UseSkillsListResult {
     [skills, query, category],
   );
 
-  const countsByCategory = React.useMemo(
-    () => buildCategoryCounts(filtered),
-    [filtered],
-  );
+  const countsByCategory = React.useMemo(() => buildCategoryCounts(filtered), [filtered]);
 
-  const clearQuery = React.useCallback(() => setQuery(""), []);
+  const clearQuery = React.useCallback(() => setQuery(''), []);
 
   return {
     skills,

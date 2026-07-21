@@ -5,12 +5,12 @@ import { StyledEngineProvider } from '@mui/material/styles';
 import App from './App.jsx';
 import { AuthProvider } from './providers/AuthProvider';
 
-ReactDOM.createRoot(document.querySelector("#root")).render(
+ReactDOM.createRoot(document.querySelector('#root')).render(
   <React.StrictMode>
     <StyledEngineProvider injectFirst>
       <AuthProvider>
         <App />
       </AuthProvider>
     </StyledEngineProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

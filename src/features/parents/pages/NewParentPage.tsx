@@ -1,46 +1,36 @@
-import * as React from "react";
-import {
-  Box,
-  Button,
-  Chip,
-  Paper,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
-import Autocomplete from "@mui/material/Autocomplete";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../app/providers/AuthProvider";
+import * as React from 'react';
+import { Box, Button, Chip, Paper, Stack, TextField, Typography } from '@mui/material';
+import Autocomplete from '@mui/material/Autocomplete';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
 import {
   athleteLabel,
   listAthletes,
   type AthleteListItem,
-} from "../../athletes/services/athleteService";
-import { createGuardian } from "../services/guardianService";
+} from '../../athletes/services/athleteService';
+import { createGuardian } from '../services/guardianService';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function NewParentPage() {
   const navigate = useNavigate();
   const { orgId, loading: authLoading } = useAuth();
-  const [fullName, setFullName] = React.useState("");
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [confirmPassword, setConfirmPassword] = React.useState("");
-  const [phone, setPhone] = React.useState("");
-  const [relationship, setRelationship] = React.useState("");
-  const [addressLine1, setAddressLine1] = React.useState("");
-  const [addressLine2, setAddressLine2] = React.useState("");
-  const [city, setCity] = React.useState("");
-  const [region, setRegion] = React.useState("");
-  const [postalCode, setPostalCode] = React.useState("");
-  const [country, setCountry] = React.useState("");
+  const [fullName, setFullName] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [confirmPassword, setConfirmPassword] = React.useState('');
+  const [phone, setPhone] = React.useState('');
+  const [relationship, setRelationship] = React.useState('');
+  const [addressLine1, setAddressLine1] = React.useState('');
+  const [addressLine2, setAddressLine2] = React.useState('');
+  const [city, setCity] = React.useState('');
+  const [region, setRegion] = React.useState('');
+  const [postalCode, setPostalCode] = React.useState('');
+  const [country, setCountry] = React.useState('');
   const [athletes, setAthletes] = React.useState<AthleteListItem[]>([]);
   const [athletesLoading, setAthletesLoading] = React.useState(false);
   const [athletesError, setAthletesError] = React.useState<string | null>(null);
-  const [selectedAthletes, setSelectedAthletes] = React.useState<
-    AthleteListItem[]
-  >([]);
+  const [selectedAthletes, setSelectedAthletes] = React.useState<AthleteListItem[]>([]);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [saving, setSaving] = React.useState(false);
   const [submitError, setSubmitError] = React.useState<string | null>(null);
@@ -53,10 +43,10 @@ export default function NewParentPage() {
     if (authLoading) return;
     let active = true;
 
-    const resolvedOrgId = orgId?.trim() || "";
+    const resolvedOrgId = orgId?.trim() || '';
     if (!resolvedOrgId) {
       setAthletes([]);
-      setAthletesError("Missing org_id. Please sign in again.");
+      setAthletesError('Missing org_id. Please sign in again.');
       setAthletesLoading(false);
       return () => {
         active = false;
@@ -74,7 +64,7 @@ export default function NewParentPage() {
       .catch((err: any) => {
         if (!active) return;
         setAthletes([]);
-        setAthletesError(err?.message || "Failed to load athletes.");
+        setAthletesError(err?.message || 'Failed to load athletes.');
       })
       .finally(() => {
         if (active) setAthletesLoading(false);
@@ -86,9 +76,7 @@ export default function NewParentPage() {
   }, [authLoading, orgId]);
 
   const athleteOptions = React.useMemo(() => {
-    return [...athletes].sort((a, b) =>
-      athleteLabel(a).localeCompare(athleteLabel(b)),
-    );
+    return [...athletes].sort((a, b) => athleteLabel(a).localeCompare(athleteLabel(b)));
   }, [athletes]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -97,30 +85,30 @@ export default function NewParentPage() {
 
     const nextErrors: Record<string, string> = {};
     if (!fullName.trim()) {
-      nextErrors.full_name = "Full name is required.";
+      nextErrors.full_name = 'Full name is required.';
     }
     if (!email.trim()) {
-      nextErrors.email = "Email is required.";
+      nextErrors.email = 'Email is required.';
     } else if (!emailRegex.test(email.trim())) {
-      nextErrors.email = "Enter a valid email address.";
+      nextErrors.email = 'Enter a valid email address.';
     }
     if (!password.trim()) {
-      nextErrors.password = "Password is required.";
+      nextErrors.password = 'Password is required.';
     }
     if (!confirmPassword.trim()) {
-      nextErrors.confirm_password = "Confirm your password.";
+      nextErrors.confirm_password = 'Confirm your password.';
     } else if (password.trim() !== confirmPassword.trim()) {
-      nextErrors.confirm_password = "Passwords do not match.";
+      nextErrors.confirm_password = 'Passwords do not match.';
     }
     if (selectedAthletes.length === 0) {
-      nextErrors.athlete_ids = "Select at least one athlete.";
+      nextErrors.athlete_ids = 'Select at least one athlete.';
     }
 
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
     if (!orgId) {
-      setSubmitError("Missing org_id. Please sign in again.");
+      setSubmitError('Missing org_id. Please sign in again.');
       return;
     }
 
@@ -142,10 +130,9 @@ export default function NewParentPage() {
         relationship: relationship.trim() || null,
       });
 
-      navigate("/parents");
+      navigate('/parents');
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to create parent.";
+      const message = err instanceof Error ? err.message : 'Failed to create parent.';
       setSubmitError(message);
     } finally {
       setSaving(false);
@@ -157,8 +144,8 @@ export default function NewParentPage() {
     : athletesError
       ? athletesError
       : athletesLoading
-        ? "Loading athletes..."
-        : "Select one or more athletes.";
+        ? 'Loading athletes...'
+        : 'Select one or more athletes.';
 
   return (
     <Box sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
@@ -166,12 +153,12 @@ export default function NewParentPage() {
         spacing={3}
         component="form"
         onSubmit={handleSubmit}
-        sx={{ maxWidth: 1200, width: "100%", mx: "auto" }}
+        sx={{ maxWidth: 1200, width: '100%', mx: 'auto' }}
       >
         <Stack
-          direction={{ xs: "column", sm: "row" }}
+          direction={{ xs: 'column', sm: 'row' }}
           spacing={2}
-          alignItems={{ sm: "center" }}
+          alignItems={{ sm: 'center' }}
           justifyContent="space-between"
         >
           <Box>
@@ -182,12 +169,12 @@ export default function NewParentPage() {
               Create a parent/guardian account and link it to athletes.
             </Typography>
           </Box>
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-            <Button variant="outlined" onClick={() => navigate("/parents")}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+            <Button variant="outlined" onClick={() => navigate('/parents')}>
               Cancel
             </Button>
             <Button type="submit" variant="contained" disabled={saving}>
-              {saving ? "Saving..." : "Save"}
+              {saving ? 'Saving...' : 'Save'}
             </Button>
           </Stack>
         </Stack>
@@ -205,8 +192,8 @@ export default function NewParentPage() {
             </Typography>
             <Box
               sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
                 gap: 2,
               }}
             >
@@ -254,8 +241,8 @@ export default function NewParentPage() {
             </Typography>
             <Box
               sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
                 gap: 2,
               }}
             >
@@ -327,8 +314,8 @@ export default function NewParentPage() {
             </Typography>
             <Box
               sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
                 gap: 2,
               }}
             >

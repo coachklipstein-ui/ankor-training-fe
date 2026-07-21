@@ -1,4 +1,4 @@
-import * as React from 'react'
+import * as React from 'react';
 import {
   Box,
   Button,
@@ -14,9 +14,9 @@ import {
   Tabs,
   Tooltip,
   Typography,
-} from '@mui/material'
-import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+} from '@mui/material';
+import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   listEvaluationImprovementSkills,
   listEvaluationSkillVideos,
@@ -28,19 +28,19 @@ import {
   type EvaluationWorkoutProgressRow,
   listLatestEvaluationsByEvaluation,
   type LatestEvaluationRow,
-} from '../../evaluations/api/evaluationsApi'
-import DrillsPlayDialog from '../../drills/components/list/DrillsPlayDialog'
-import { getDrillMediaPlay } from '../../drills/services/drillsService'
-import SkillsPlayDialog from '../../skills/components/list/SkillsPlayDialog'
-import { getSkillMediaPlay } from '../../skills/services/skillsService'
-import { useAuth } from '../../../app/providers/AuthProvider'
-import { type EvaluationReport, type ReportVideo } from '../data/mockEvaluationReports'
-import { formatEvaluationReportDate } from '../utils/formatEvaluationReportDate'
+} from '../../evaluations/api/evaluationsApi';
+import DrillsPlayDialog from '../../drills/components/list/DrillsPlayDialog';
+import { getDrillMediaPlay } from '../../drills/services/drillsService';
+import SkillsPlayDialog from '../../skills/components/list/SkillsPlayDialog';
+import { getSkillMediaPlay } from '../../skills/services/skillsService';
+import { useAuth } from '../../../app/providers/AuthProvider';
+import { type EvaluationReport, type ReportVideo } from '../data/mockEvaluationReports';
+import { formatEvaluationReportDate } from '../utils/formatEvaluationReportDate';
 
 const TOOLTIP_COPY =
-  'Click the counter above each time you complete this workout. At 10 completed you will unlock your Level2 workout.'
+  'Click the counter above each time you complete this workout. At 10 completed you will unlock your Level2 workout.';
 
-const MEDIA_HEIGHT = 160
+const MEDIA_HEIGHT = 160;
 
 function buildReportFromLatestRow(
   row: LatestEvaluationRow,
@@ -49,8 +49,7 @@ function buildReportFromLatestRow(
   return {
     id: row.evaluation_id || evaluationId,
     evaluationId: row.evaluation_id || evaluationId,
-    athleteName:
-      row.athlete_full_name || row.athletes_name || 'Unknown athlete',
+    athleteName: row.athlete_full_name || row.athletes_name || 'Unknown athlete',
     evaluatorName: row.coach_name || 'Unknown coach',
     scorecardTemplate: row.scorecard_name || 'Scorecard',
     evaluatedAt: row.date,
@@ -59,46 +58,46 @@ function buildReportFromLatestRow(
     skillVideos: [],
     workouts: [],
     dataByCategory: [],
-  }
+  };
 }
 
 function mapWorkoutDrills(rows: EvaluationWorkoutDrillLevel[]) {
   return rows
     .map((levelItem, index) => {
-      const levelRaw = levelItem.level
+      const levelRaw = levelItem.level;
       const levelValue =
         typeof levelRaw === 'number'
           ? levelRaw
           : typeof levelRaw === 'string'
-          ? Number(levelRaw)
-          : Number.NaN
-      const level = Number.isFinite(levelValue) ? levelValue : index + 1
-      const targetRepsRaw = levelItem.targetReps
+            ? Number(levelRaw)
+            : Number.NaN;
+      const level = Number.isFinite(levelValue) ? levelValue : index + 1;
+      const targetRepsRaw = levelItem.targetReps;
       const targetRepsValue =
         typeof targetRepsRaw === 'number'
           ? targetRepsRaw
           : typeof targetRepsRaw === 'string'
-          ? Number(targetRepsRaw)
-          : Number.NaN
-      const targetReps = Number.isFinite(targetRepsValue) ? targetRepsValue : 0
+            ? Number(targetRepsRaw)
+            : Number.NaN;
+      const targetReps = Number.isFinite(targetRepsValue) ? targetRepsValue : 0;
       const drills = Array.isArray(levelItem.drills)
         ? levelItem.drills.map((drill, drillIndex) => {
-            const durationRaw = drill.duration
+            const durationRaw = drill.duration;
             const duration =
               typeof durationRaw === 'string'
                 ? durationRaw
                 : typeof durationRaw === 'number'
-                ? String(durationRaw)
-                : ''
+                  ? String(durationRaw)
+                  : '';
             return {
               id: drill.id || `drill-${level}-${drillIndex}`,
               title: drill.title || 'Drill',
               duration,
               thumbnailUrl: drill.thumbnailUrl ?? null,
               tag: null,
-            }
+            };
           })
-        : []
+        : [];
 
       return {
         id: `workout-${level}`,
@@ -106,88 +105,87 @@ function mapWorkoutDrills(rows: EvaluationWorkoutDrillLevel[]) {
         title: levelItem.title || `Level ${level}`,
         targetReps,
         drills,
-      }
+      };
     })
-    .sort((a, b) => a.level - b.level)
+    .sort((a, b) => a.level - b.level);
 }
 
 export default function EvaluationReportDetailPage() {
-  const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const { orgId, athleteId, loading: authLoading } = useAuth()
-  const athleteIdParam = searchParams.get('athleteId')
-  const returnTo = searchParams.get('returnTo') ?? ''
-  const resolvedAthleteId = athleteId ?? athleteIdParam
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { orgId, athleteId, loading: authLoading } = useAuth();
+  const athleteIdParam = searchParams.get('athleteId');
+  const returnTo = searchParams.get('returnTo') ?? '';
+  const resolvedAthleteId = athleteId ?? athleteIdParam;
   const backPath =
-    returnTo === 'coach'
-      ? '/reports/coach-evaluation-reports'
-      : '/reports/evaluation-reports'
-  const [tabIndex, setTabIndex] = React.useState(0)
-  const [activeLevelIndex, setActiveLevelIndex] = React.useState(0)
-  const [repCount, setRepCount] = React.useState(0)
-  const [workoutProgress, setWorkoutProgress] =
-    React.useState<EvaluationWorkoutProgressRow | null>(null)
-  const [report, setReport] = React.useState<EvaluationReport | null>(null)
-  const [loading, setLoading] = React.useState(false)
-  const [error, setError] = React.useState<string | null>(null)
+    returnTo === 'coach' ? '/reports/coach-evaluation-reports' : '/reports/evaluation-reports';
+  const [tabIndex, setTabIndex] = React.useState(0);
+  const [activeLevelIndex, setActiveLevelIndex] = React.useState(0);
+  const [repCount, setRepCount] = React.useState(0);
+  const [workoutProgress, setWorkoutProgress] = React.useState<EvaluationWorkoutProgressRow | null>(
+    null,
+  );
+  const [report, setReport] = React.useState<EvaluationReport | null>(null);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
   const [drillPlayState, setDrillPlayState] = React.useState<{
-    open: boolean
-    drill: ReportVideo | null
-    url: string | null
-    loading: boolean
-    error: string | null
+    open: boolean;
+    drill: ReportVideo | null;
+    url: string | null;
+    loading: boolean;
+    error: string | null;
   }>({
     open: false,
     drill: null,
     url: null,
     loading: false,
     error: null,
-  })
+  });
   const [skillPlayState, setSkillPlayState] = React.useState<{
-    open: boolean
-    video: ReportVideo | null
-    url: string | null
-    loading: boolean
-    error: string | null
+    open: boolean;
+    video: ReportVideo | null;
+    url: string | null;
+    loading: boolean;
+    error: string | null;
   }>({
     open: false,
     video: null,
     url: null,
     loading: false,
     error: null,
-  })
-  const drillPlayRequestIdRef = React.useRef(0)
-  const skillPlayRequestIdRef = React.useRef(0)
+  });
+  const drillPlayRequestIdRef = React.useRef(0);
+  const skillPlayRequestIdRef = React.useRef(0);
 
   const loadReport = React.useCallback(async () => {
     if (!id) {
-      setReport(null)
-      setWorkoutProgress(null)
-      setError('Missing evaluation id.')
-      setLoading(false)
-      return
+      setReport(null);
+      setWorkoutProgress(null);
+      setError('Missing evaluation id.');
+      setLoading(false);
+      return;
     }
 
     if (!orgId) {
-      setReport(null)
-      setWorkoutProgress(null)
-      setError('Missing org_id for this account.')
-      setLoading(false)
-      return
+      setReport(null);
+      setWorkoutProgress(null);
+      setError('Missing org_id for this account.');
+      setLoading(false);
+      return;
     }
 
     if (!resolvedAthleteId) {
-      setReport(null)
-      setWorkoutProgress(null)
-      setError('Missing athlete id for this report.')
-      setLoading(false)
-      return
+      setReport(null);
+      setWorkoutProgress(null);
+      setError('Missing athlete id for this report.');
+      setLoading(false);
+      return;
     }
 
     try {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
       const [
         { rows },
         { rows: improvementRows },
@@ -196,135 +194,111 @@ export default function EvaluationReportDetailPage() {
         { rows: workoutProgressRows },
         { rows: workoutDrillsRows },
       ] = await Promise.all([
-          listLatestEvaluationsByEvaluation({
-            orgId,
-            athleteId: resolvedAthleteId,
-            evaluationId: id,
-            limit: 200,
-            offset: 0,
-          }),
-          listEvaluationImprovementSkills({
-            orgId,
-            athleteId: resolvedAthleteId,
-            evaluationId: id,
-            limit: 200,
-            offset: 0,
-          }),
-          listEvaluationSkillVideos({
-            orgId,
-            athleteId: resolvedAthleteId,
-            evaluationId: id,
-            limit: 200,
-            offset: 0,
-          }),
-          listEvaluationSubskillRatings({
-            orgId,
-            athleteId: resolvedAthleteId,
-            evaluationId: id,
-            limit: 200,
-            offset: 0,
-          }),
-          listEvaluationWorkoutProgress({
-            orgId,
-            athleteId: resolvedAthleteId,
-            evaluationId: id,
-            limit: 200,
-            offset: 0,
-          }),
-          listEvaluationWorkoutDrills({
-            orgId,
-            athleteId: resolvedAthleteId,
-            evaluationId: id,
-            limit: 200,
-            offset: 0,
-          }),
-        ])
-      const row = rows[0]
+        listLatestEvaluationsByEvaluation({
+          orgId,
+          athleteId: resolvedAthleteId,
+          evaluationId: id,
+          limit: 200,
+          offset: 0,
+        }),
+        listEvaluationImprovementSkills({
+          orgId,
+          athleteId: resolvedAthleteId,
+          evaluationId: id,
+          limit: 200,
+          offset: 0,
+        }),
+        listEvaluationSkillVideos({
+          orgId,
+          athleteId: resolvedAthleteId,
+          evaluationId: id,
+          limit: 200,
+          offset: 0,
+        }),
+        listEvaluationSubskillRatings({
+          orgId,
+          athleteId: resolvedAthleteId,
+          evaluationId: id,
+          limit: 200,
+          offset: 0,
+        }),
+        listEvaluationWorkoutProgress({
+          orgId,
+          athleteId: resolvedAthleteId,
+          evaluationId: id,
+          limit: 200,
+          offset: 0,
+        }),
+        listEvaluationWorkoutDrills({
+          orgId,
+          athleteId: resolvedAthleteId,
+          evaluationId: id,
+          limit: 200,
+          offset: 0,
+        }),
+      ]);
+      const row = rows[0];
 
       if (!row) {
-        setReport(null)
-        setWorkoutProgress(null)
-        setError('Report not found')
-        return
+        setReport(null);
+        setWorkoutProgress(null);
+        setError('Report not found');
+        return;
       }
 
-      const workoutProgressRow = workoutProgressRows[0] ?? null
+      const workoutProgressRow = workoutProgressRows[0] ?? null;
 
       const focusAreas = improvementRows.map((item, index) => {
-        const rating =
-          typeof item.rating === 'number' ? item.rating : Number(item.rating)
-        const score = Number.isFinite(rating) ? rating : 0
+        const rating = typeof item.rating === 'number' ? item.rating : Number(item.rating);
+        const score = Number.isFinite(rating) ? rating : 0;
 
         return {
-          id:
-            item.skill_id ||
-            item.skill_name ||
-            item.evaluation_id ||
-            `focus-${index}`,
+          id: item.skill_id || item.skill_name || item.evaluation_id || `focus-${index}`,
           name: item.skill_name || 'Unknown skill',
           score,
-        }
-      })
+        };
+      });
 
       const skillVideos = skillVideoRows.map((item, index) => {
         const skillId =
-          typeof item.skill_id === 'string' && item.skill_id.trim()
-            ? item.skill_id.trim()
-            : null
+          typeof item.skill_id === 'string' && item.skill_id.trim() ? item.skill_id.trim() : null;
         const title =
-          typeof item.title === 'string' && item.title.trim()
-            ? item.title.trim()
-            : 'Skill video'
-        const objectPath =
-          typeof item.object_path === 'string' ? item.object_path.trim() : ''
-        const playUrl =
-          typeof item.url === 'string' && item.url.trim()
-            ? item.url.trim()
-            : null
-        const thumbnailUrl = objectPath.startsWith('http')
-          ? objectPath
-          : null
-        const rating =
-          typeof item.rating === 'number' ? item.rating : Number(item.rating)
-        const tag = Number.isFinite(rating) ? `Rating ${rating}` : null
+          typeof item.title === 'string' && item.title.trim() ? item.title.trim() : 'Skill video';
+        const objectPath = typeof item.object_path === 'string' ? item.object_path.trim() : '';
+        const playUrl = typeof item.url === 'string' && item.url.trim() ? item.url.trim() : null;
+        const thumbnailUrl = objectPath.startsWith('http') ? objectPath : null;
+        const rating = typeof item.rating === 'number' ? item.rating : Number(item.rating);
+        const tag = Number.isFinite(rating) ? `Rating ${rating}` : null;
 
         return {
-          id:
-            skillId ||
-            item.object_path ||
-            item.evaluation_id ||
-            `skill-video-${index}`,
+          id: skillId || item.object_path || item.evaluation_id || `skill-video-${index}`,
           skillId,
           title,
           duration: '',
           thumbnailUrl,
           playUrl,
           tag,
-        }
-      })
+        };
+      });
 
       const dataByCategory = subskillRatingsRows.map((category, index) => {
-        const categoryId = category.id || `category-${index}`
-        const name = category.name || 'Category'
-        const rawSubskills = Array.isArray(category.subskills)
-          ? category.subskills
-          : []
+        const categoryId = category.id || `category-${index}`;
+        const name = category.name || 'Category';
+        const rawSubskills = Array.isArray(category.subskills) ? category.subskills : [];
         const subskills = rawSubskills.map((subskill, subIndex) => {
           const score =
-            typeof subskill.score === 'number'
-              ? subskill.score
-              : Number(subskill.score)
+            typeof subskill.score === 'number' ? subskill.score : Number(subskill.score);
           return {
             id: subskill.id || `${categoryId}-sub-${subIndex}`,
             name: subskill.name || 'Subskill',
             score: Number.isFinite(score) ? score : 0,
-          }
-        })
+          };
+        });
 
-        return { id: categoryId, name, subskills }
-      })
+        return { id: categoryId, name, subskills };
+      });
 
-      const workouts = mapWorkoutDrills(workoutDrillsRows)
+      const workouts = mapWorkoutDrills(workoutDrillsRows);
 
       setReport({
         ...buildReportFromLatestRow(row, id),
@@ -332,102 +306,92 @@ export default function EvaluationReportDetailPage() {
         skillVideos,
         workouts,
         dataByCategory,
-      })
-      setWorkoutProgress(workoutProgressRow)
+      });
+      setWorkoutProgress(workoutProgressRow);
     } catch (err) {
-      console.error('Failed to load evaluation report', err)
-      setReport(null)
-      setWorkoutProgress(null)
-      setError('Failed to load evaluation report')
+      console.error('Failed to load evaluation report', err);
+      setReport(null);
+      setWorkoutProgress(null);
+      setError('Failed to load evaluation report');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [id, orgId, resolvedAthleteId])
+  }, [id, orgId, resolvedAthleteId]);
 
   React.useEffect(() => {
-    if (authLoading) return
-    void loadReport()
-  }, [authLoading, loadReport])
+    if (authLoading) return;
+    void loadReport();
+  }, [authLoading, loadReport]);
 
   React.useEffect(() => {
-    if (!report?.id) return
+    if (!report?.id) return;
 
-    const workoutsLength = report?.workouts?.length ?? 0
-    const levelRaw = workoutProgress?.level
-    const progressRaw = workoutProgress?.progress
+    const workoutsLength = report?.workouts?.length ?? 0;
+    const levelRaw = workoutProgress?.level;
+    const progressRaw = workoutProgress?.progress;
     const levelValue =
       typeof levelRaw === 'number'
         ? levelRaw
         : typeof levelRaw === 'string'
-        ? Number(levelRaw)
-        : Number.NaN
+          ? Number(levelRaw)
+          : Number.NaN;
     const progressValue =
       typeof progressRaw === 'number'
         ? progressRaw
         : typeof progressRaw === 'string'
-        ? Number(progressRaw)
-        : Number.NaN
-    const hasLevel = Number.isFinite(levelValue)
-    const hasProgress = Number.isFinite(progressValue)
+          ? Number(progressRaw)
+          : Number.NaN;
+    const hasLevel = Number.isFinite(levelValue);
+    const hasProgress = Number.isFinite(progressValue);
 
     if (hasLevel || hasProgress) {
-      const nextLevel = hasLevel ? Math.max(0, levelValue - 1) : 0
-      const nextProgress = hasProgress ? Math.max(0, progressValue) : 0
-      const clampedLevel = Math.min(
-        Math.max(nextLevel, 0),
-        Math.max(workoutsLength - 1, 0),
-      )
-      setActiveLevelIndex(clampedLevel)
-      setRepCount(nextProgress)
-      return
+      const nextLevel = hasLevel ? Math.max(0, levelValue - 1) : 0;
+      const nextProgress = hasProgress ? Math.max(0, progressValue) : 0;
+      const clampedLevel = Math.min(Math.max(nextLevel, 0), Math.max(workoutsLength - 1, 0));
+      setActiveLevelIndex(clampedLevel);
+      setRepCount(nextProgress);
+      return;
     }
 
-    setActiveLevelIndex(0)
-    setRepCount(0)
-  }, [
-    report?.id,
-    report?.workouts?.length,
-    workoutProgress?.level,
-    workoutProgress?.progress,
-  ])
+    setActiveLevelIndex(0);
+    setRepCount(0);
+  }, [report?.id, report?.workouts?.length, workoutProgress?.level, workoutProgress?.progress]);
 
-  const workouts = report?.workouts ?? []
-  const activeWorkout = workouts[activeLevelIndex] ?? null
-  const isLastLevel =
-    !activeWorkout || activeLevelIndex >= workouts.length - 1
-  const maxRepsRaw = workoutProgress?.maxWorkoutReps
+  const workouts = report?.workouts ?? [];
+  const activeWorkout = workouts[activeLevelIndex] ?? null;
+  const isLastLevel = !activeWorkout || activeLevelIndex >= workouts.length - 1;
+  const maxRepsRaw = workoutProgress?.maxWorkoutReps;
   const maxRepsValue =
     typeof maxRepsRaw === 'number'
       ? maxRepsRaw
       : typeof maxRepsRaw === 'string'
-      ? Number(maxRepsRaw)
-      : Number.NaN
+        ? Number(maxRepsRaw)
+        : Number.NaN;
   const workoutTargetReps = Number.isFinite(maxRepsValue)
     ? maxRepsValue
-    : activeWorkout?.targetReps ?? 0
-  const isLoading = loading || authLoading
+    : (activeWorkout?.targetReps ?? 0);
+  const isLoading = loading || authLoading;
 
   const handleRepCount = () => {
-    if (!activeWorkout) return
-    if (!Number.isFinite(workoutTargetReps) || workoutTargetReps <= 0) return
+    if (!activeWorkout) return;
+    if (!Number.isFinite(workoutTargetReps) || workoutTargetReps <= 0) return;
 
-    const nextCount = Math.min(repCount + 1, workoutTargetReps)
-    let nextLevelIndex = activeLevelIndex
-    let nextProgress = nextCount
-    const shouldRefreshWorkouts =
-      nextCount >= workoutTargetReps && repCount < workoutTargetReps
+    const nextCount = Math.min(repCount + 1, workoutTargetReps);
+    let nextLevelIndex = activeLevelIndex;
+    let nextProgress = nextCount;
+    const shouldRefreshWorkouts = nextCount >= workoutTargetReps && repCount < workoutTargetReps;
 
     if (nextCount >= workoutTargetReps && !isLastLevel) {
-      nextLevelIndex = activeLevelIndex + 1
-      nextProgress = 0
+      nextLevelIndex = activeLevelIndex + 1;
+      nextProgress = 0;
     }
 
-    setRepCount(nextProgress)
+    setRepCount(nextProgress);
     if (nextLevelIndex !== activeLevelIndex) {
-      setActiveLevelIndex(nextLevelIndex)
+      setActiveLevelIndex(nextLevelIndex);
     }
 
-    const nextLevel = nextLevelIndex + 1
+    const nextLevel = nextLevelIndex + 1;
     setWorkoutProgress((prev) =>
       prev
         ? {
@@ -437,7 +401,7 @@ export default function EvaluationReportDetailPage() {
             maxWorkoutReps: workoutTargetReps,
           }
         : prev,
-    )
+    );
 
     if (orgId && resolvedAthleteId && id) {
       void updateEvaluationWorkoutProgress({
@@ -449,9 +413,9 @@ export default function EvaluationReportDetailPage() {
       })
         .then((updated) => {
           if (updated) {
-            setWorkoutProgress(updated)
+            setWorkoutProgress(updated);
           }
-          if (!shouldRefreshWorkouts) return
+          if (!shouldRefreshWorkouts) return;
           return listEvaluationWorkoutDrills({
             orgId,
             athleteId: resolvedAthleteId,
@@ -460,24 +424,22 @@ export default function EvaluationReportDetailPage() {
             offset: 0,
           })
             .then(({ rows: workoutRows }) => {
-              const nextWorkouts = mapWorkoutDrills(workoutRows)
-              setReport((prev) =>
-                prev ? { ...prev, workouts: nextWorkouts } : prev,
-              )
+              const nextWorkouts = mapWorkoutDrills(workoutRows);
+              setReport((prev) => (prev ? { ...prev, workouts: nextWorkouts } : prev));
             })
             .catch((err) => {
-              console.error('Failed to refresh workout drills', err)
-            })
+              console.error('Failed to refresh workout drills', err);
+            });
         })
         .catch((err) => {
-          console.error('Failed to update workout progress', err)
-        })
+          console.error('Failed to update workout progress', err);
+        });
     }
-  }
+  };
 
   const openDrillPlay = React.useCallback(
     (drill: ReportVideo) => {
-      const resolvedOrgId = orgId?.trim()
+      const resolvedOrgId = orgId?.trim();
       if (!resolvedOrgId) {
         setDrillPlayState({
           open: true,
@@ -485,8 +447,8 @@ export default function EvaluationReportDetailPage() {
           url: null,
           loading: false,
           error: 'Missing org_id for this account.',
-        })
-        return
+        });
+        return;
       }
       if (!drill.id) {
         setDrillPlayState({
@@ -495,8 +457,8 @@ export default function EvaluationReportDetailPage() {
           url: null,
           loading: false,
           error: 'Missing drill id.',
-        })
-        return
+        });
+        return;
       }
 
       setDrillPlayState({
@@ -505,50 +467,47 @@ export default function EvaluationReportDetailPage() {
         url: null,
         loading: true,
         error: null,
-      })
+      });
 
-      const requestId = ++drillPlayRequestIdRef.current
+      const requestId = ++drillPlayRequestIdRef.current;
       void (async () => {
         try {
-          const response = await getDrillMediaPlay(drill.id, { orgId: resolvedOrgId })
-          if (drillPlayRequestIdRef.current !== requestId) return
+          const response = await getDrillMediaPlay(drill.id, { orgId: resolvedOrgId });
+          if (drillPlayRequestIdRef.current !== requestId) return;
           setDrillPlayState((prev) => ({
             ...prev,
             url: response.play_url,
             loading: false,
-          }))
+          }));
         } catch (err) {
-          if (drillPlayRequestIdRef.current !== requestId) return
+          if (drillPlayRequestIdRef.current !== requestId) return;
           setDrillPlayState((prev) => ({
             ...prev,
-            error:
-              err instanceof Error
-                ? err.message
-                : 'Failed to load drill video.',
+            error: err instanceof Error ? err.message : 'Failed to load drill video.',
             loading: false,
-          }))
+          }));
         }
-      })()
+      })();
     },
     [orgId],
-  )
+  );
 
   const closeDrillPlay = React.useCallback(() => {
-    drillPlayRequestIdRef.current += 1
+    drillPlayRequestIdRef.current += 1;
     setDrillPlayState({
       open: false,
       drill: null,
       url: null,
       loading: false,
       error: null,
-    })
-  }, [])
+    });
+  }, []);
 
   const openSkillPlay = React.useCallback(
     (video: ReportVideo) => {
-      const directPlayUrl = video.playUrl?.trim() || null
-      const skillId = video.skillId?.trim() || null
-      const resolvedOrgId = orgId?.trim()
+      const directPlayUrl = video.playUrl?.trim() || null;
+      const skillId = video.skillId?.trim() || null;
+      const resolvedOrgId = orgId?.trim();
 
       if (!resolvedOrgId) {
         setSkillPlayState({
@@ -556,11 +515,9 @@ export default function EvaluationReportDetailPage() {
           video,
           url: directPlayUrl,
           loading: false,
-          error: directPlayUrl
-            ? null
-            : 'Missing org_id for this account.',
-        })
-        return
+          error: directPlayUrl ? null : 'Missing org_id for this account.',
+        });
+        return;
       }
 
       if (!skillId) {
@@ -569,11 +526,9 @@ export default function EvaluationReportDetailPage() {
           video,
           url: directPlayUrl,
           loading: false,
-          error: directPlayUrl
-            ? null
-            : 'Missing skill id for this video.',
-        })
-        return
+          error: directPlayUrl ? null : 'Missing skill id for this video.',
+        });
+        return;
       }
 
       setSkillPlayState({
@@ -582,48 +537,48 @@ export default function EvaluationReportDetailPage() {
         url: null,
         loading: true,
         error: null,
-      })
+      });
 
-      const requestId = ++skillPlayRequestIdRef.current
+      const requestId = ++skillPlayRequestIdRef.current;
       void (async () => {
         try {
           const response = await getSkillMediaPlay(skillId, {
             orgId: resolvedOrgId,
-          })
-          if (skillPlayRequestIdRef.current !== requestId) return
+          });
+          if (skillPlayRequestIdRef.current !== requestId) return;
           setSkillPlayState((prev) => ({
             ...prev,
             url: response.play_url,
             loading: false,
-          }))
+          }));
         } catch (err) {
-          if (skillPlayRequestIdRef.current !== requestId) return
+          if (skillPlayRequestIdRef.current !== requestId) return;
           setSkillPlayState((prev) => ({
             ...prev,
             url: directPlayUrl,
             error: directPlayUrl
               ? null
               : err instanceof Error
-              ? err.message
-              : 'Failed to load skill video.',
+                ? err.message
+                : 'Failed to load skill video.',
             loading: false,
-          }))
+          }));
         }
-      })()
+      })();
     },
     [orgId],
-  )
+  );
 
   const closeSkillPlay = React.useCallback(() => {
-    skillPlayRequestIdRef.current += 1
+    skillPlayRequestIdRef.current += 1;
     setSkillPlayState({
       open: false,
       video: null,
       url: null,
       loading: false,
       error: null,
-    })
-  }, [])
+    });
+  }, []);
 
   if (isLoading) {
     return (
@@ -632,15 +587,12 @@ export default function EvaluationReportDetailPage() {
           <Typography variant="body2" color="text.secondary">
             Loading evaluation report...
           </Typography>
-          <Button
-            variant="outlined"
-            onClick={() => navigate(backPath)}
-          >
+          <Button variant="outlined" onClick={() => navigate(backPath)}>
             Back to reports
           </Button>
         </Stack>
       </Box>
-    )
+    );
   }
 
   if (!report) {
@@ -656,16 +608,13 @@ export default function EvaluationReportDetailPage() {
                 Retry
               </Button>
             ) : null}
-            <Button
-              variant="text"
-              onClick={() => navigate(backPath)}
-            >
+            <Button variant="text" onClick={() => navigate(backPath)}>
               Back to reports
             </Button>
           </Stack>
         </Stack>
       </Box>
-    )
+    );
   }
 
   return (
@@ -689,16 +638,11 @@ export default function EvaluationReportDetailPage() {
           <Stack direction="row" spacing={1} flexWrap="wrap">
             <Button
               variant="outlined"
-              onClick={() =>
-                navigate(`/evaluations/${report.evaluationId}`)
-              }
+              onClick={() => navigate(`/evaluations/${report.evaluationId}`)}
             >
               See full evaluation
             </Button>
-            <Button
-              variant="text"
-              onClick={() => navigate(backPath)}
-            >
+            <Button variant="text" onClick={() => navigate(backPath)}>
               Back to reports
             </Button>
           </Stack>
@@ -710,19 +654,13 @@ export default function EvaluationReportDetailPage() {
               <LabelValue label="Name" value={report.athleteName} />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <LabelValue
-                label="Date"
-                value={formatEvaluationReportDate(report.evaluatedAt)}
-              />
+              <LabelValue label="Date" value={formatEvaluationReportDate(report.evaluatedAt)} />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <LabelValue label="Evaluator" value={report.evaluatorName} />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <LabelValue
-                label="Evaluation ID"
-                value={String(report.evaluationId)}
-              />
+              <LabelValue label="Evaluation ID" value={String(report.evaluationId)} />
             </Grid>
           </Grid>
         </Paper>
@@ -739,9 +677,7 @@ export default function EvaluationReportDetailPage() {
           </Tabs>
           <Divider />
           <Box sx={{ p: { xs: 2, md: 3 } }}>
-            {tabIndex === 0 && (
-              <SkillsTab report={report} onPlaySkillVideo={openSkillPlay} />
-            )}
+            {tabIndex === 0 && <SkillsTab report={report} onPlaySkillVideo={openSkillPlay} />}
             {tabIndex === 1 && <DataTab report={report} />}
           </Box>
         </Paper>
@@ -764,7 +700,7 @@ export default function EvaluationReportDetailPage() {
         onClose={closeSkillPlay}
       />
     </Box>
-  )
+  );
 }
 
 function LabelValue({ label, value }: { label: string; value: string }) {
@@ -777,15 +713,15 @@ function LabelValue({ label, value }: { label: string; value: string }) {
         {value}
       </Typography>
     </Stack>
-  )
+  );
 }
 
 function SkillsTab({
   report,
   onPlaySkillVideo,
 }: {
-  report: EvaluationReport
-  onPlaySkillVideo: (video: ReportVideo) => void
+  report: EvaluationReport;
+  onPlaySkillVideo: (video: ReportVideo) => void;
 }) {
   return (
     <Stack spacing={3}>
@@ -827,11 +763,7 @@ function SkillsTab({
                 <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Stack direction="row" spacing={1} alignItems="center">
                     <Chip size="small" label={skill.category} />
-                    <Chip
-                      size="small"
-                      color="primary"
-                      label={`Score ${skill.score.toFixed(1)}`}
-                    />
+                    <Chip size="small" color="primary" label={`Score ${skill.score.toFixed(1)}`} />
                   </Stack>
                   <Typography variant="subtitle1" fontWeight={700}>
                     {skill.name}
@@ -859,7 +791,7 @@ function SkillsTab({
         />
       </Box>
     </Stack>
-  )
+  );
 }
 
 function WorkoutsTab({
@@ -872,27 +804,25 @@ function WorkoutsTab({
   isLastLevel,
   onPlayDrill,
 }: {
-  report: EvaluationReport
-  activeWorkout: EvaluationReport['workouts'][number] | null
-  activeLevelIndex: number
-  repCount: number
-  targetReps: number
-  onRepCount: () => void
-  isLastLevel: boolean
-  onPlayDrill: (drill: ReportVideo) => void
+  report: EvaluationReport;
+  activeWorkout: EvaluationReport['workouts'][number] | null;
+  activeLevelIndex: number;
+  repCount: number;
+  targetReps: number;
+  onRepCount: () => void;
+  isLastLevel: boolean;
+  onPlayDrill: (drill: ReportVideo) => void;
 }) {
   if (!activeWorkout) {
     return (
       <Typography variant="body2" color="text.secondary">
         No workouts available for this report.
       </Typography>
-    )
+    );
   }
 
-  const progressLabel = targetReps
-    ? `${repCount}/${targetReps} reps`
-    : `${repCount} reps`
-  const progressValue = targetReps ? (repCount / targetReps) * 100 : 0
+  const progressLabel = targetReps ? `${repCount}/${targetReps} reps` : `${repCount} reps`;
+  const progressValue = targetReps ? (repCount / targetReps) * 100 : 0;
 
   return (
     <Stack spacing={3}>
@@ -938,7 +868,7 @@ function WorkoutsTab({
         />
       </Box>
     </Stack>
-  )
+  );
 }
 
 function DataTab({ report }: { report: EvaluationReport }) {
@@ -971,7 +901,7 @@ function DataTab({ report }: { report: EvaluationReport }) {
         </Paper>
       ))}
     </Stack>
-  )
+  );
 }
 
 function ReportVideoGallery({
@@ -979,16 +909,16 @@ function ReportVideoGallery({
   emptyLabel,
   onVideoClick,
 }: {
-  videos: ReportVideo[]
-  emptyLabel: string
-  onVideoClick?: (video: ReportVideo) => void
+  videos: ReportVideo[];
+  emptyLabel: string;
+  onVideoClick?: (video: ReportVideo) => void;
 }) {
   if (videos.length === 0) {
     return (
       <Typography variant="body2" color="text.secondary">
         {emptyLabel}
       </Typography>
-    )
+    );
   }
 
   return (
@@ -1012,8 +942,8 @@ function ReportVideoGallery({
             onVideoClick
               ? (event) => {
                   if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault()
-                    onVideoClick(video)
+                    event.preventDefault();
+                    onVideoClick(video);
                   }
                 }
               : undefined
@@ -1122,5 +1052,5 @@ function ReportVideoGallery({
         </Card>
       ))}
     </Box>
-  )
+  );
 }

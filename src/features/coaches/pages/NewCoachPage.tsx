@@ -1,26 +1,19 @@
-import * as React from "react";
-import {
-  Box,
-  Button,
-  Paper,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../app/providers/AuthProvider";
-import { createCoach } from "../services/coachService";
+import * as React from 'react';
+import { Box, Button, Paper, Stack, TextField, Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
+import { createCoach } from '../services/coachService';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function NewCoachPage() {
   const navigate = useNavigate();
   const { orgId } = useAuth();
-  const [fullName, setFullName] = React.useState("");
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [confirmPassword, setConfirmPassword] = React.useState("");
-  const [phone, setPhone] = React.useState("");
+  const [fullName, setFullName] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [confirmPassword, setConfirmPassword] = React.useState('');
+  const [phone, setPhone] = React.useState('');
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [saving, setSaving] = React.useState(false);
   const [submitError, setSubmitError] = React.useState<string | null>(null);
@@ -31,27 +24,27 @@ export default function NewCoachPage() {
 
     const nextErrors: Record<string, string> = {};
     if (!fullName.trim()) {
-      nextErrors.full_name = "Full name is required.";
+      nextErrors.full_name = 'Full name is required.';
     }
     if (!email.trim()) {
-      nextErrors.email = "Email is required.";
+      nextErrors.email = 'Email is required.';
     } else if (!emailRegex.test(email.trim())) {
-      nextErrors.email = "Enter a valid email address.";
+      nextErrors.email = 'Enter a valid email address.';
     }
     if (!password.trim()) {
-      nextErrors.password = "Password is required.";
+      nextErrors.password = 'Password is required.';
     }
     if (!confirmPassword.trim()) {
-      nextErrors.confirm_password = "Confirm your password.";
+      nextErrors.confirm_password = 'Confirm your password.';
     } else if (password.trim() !== confirmPassword.trim()) {
-      nextErrors.confirm_password = "Passwords do not match.";
+      nextErrors.confirm_password = 'Passwords do not match.';
     }
 
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
     if (!orgId) {
-      setSubmitError("Missing org_id. Please sign in again.");
+      setSubmitError('Missing org_id. Please sign in again.');
       return;
     }
 
@@ -65,10 +58,9 @@ export default function NewCoachPage() {
         phone: phone.trim() || null,
       });
 
-      navigate("/coaches");
+      navigate('/coaches');
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to create coach.";
+      const message = err instanceof Error ? err.message : 'Failed to create coach.';
       setSubmitError(message);
     } finally {
       setSaving(false);
@@ -81,12 +73,12 @@ export default function NewCoachPage() {
         spacing={3}
         component="form"
         onSubmit={handleSubmit}
-        sx={{ maxWidth: 960, width: "100%", mx: "auto" }}
+        sx={{ maxWidth: 960, width: '100%', mx: 'auto' }}
       >
         <Stack
-          direction={{ xs: "column", sm: "row" }}
+          direction={{ xs: 'column', sm: 'row' }}
           spacing={2}
-          alignItems={{ sm: "center" }}
+          alignItems={{ sm: 'center' }}
           justifyContent="space-between"
         >
           <Box>
@@ -97,12 +89,12 @@ export default function NewCoachPage() {
               Create a coach account for your organization.
             </Typography>
           </Box>
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-            <Button variant="outlined" onClick={() => navigate("/coaches")}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+            <Button variant="outlined" onClick={() => navigate('/coaches')}>
               Cancel
             </Button>
             <Button type="submit" variant="contained" disabled={saving}>
-              {saving ? "Saving..." : "Save"}
+              {saving ? 'Saving...' : 'Save'}
             </Button>
           </Stack>
         </Stack>
@@ -120,8 +112,8 @@ export default function NewCoachPage() {
             </Typography>
             <Box
               sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
                 gap: 2,
               }}
             >
@@ -162,8 +154,8 @@ export default function NewCoachPage() {
             </Typography>
             <Box
               sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
                 gap: 2,
               }}
             >

@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Box,
   Chip,
@@ -13,18 +13,18 @@ import {
   Typography,
   Button,
   useMediaQuery,
-} from "@mui/material";
-import { useTheme } from "@mui/material/styles";
-import { useNavigate, useParams } from "react-router-dom";
+} from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { useNavigate, useParams } from 'react-router-dom';
 
-import AnchorIcon from "@mui/icons-material/Anchor";
-import SearchIcon from "@mui/icons-material/Search";
-import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
+import AnchorIcon from '@mui/icons-material/Anchor';
+import SearchIcon from '@mui/icons-material/Search';
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 
-import { getPlanById } from "../services/practicePlanService";
-import { useAuth } from "../../../app/providers/AuthProvider";
-import { getDrillMediaPlay } from "../../drills/services/drillsService";
-import DrillsPlayDialog from "../../drills/components/list/DrillsPlayDialog";
+import { getPlanById } from '../services/practicePlanService';
+import { useAuth } from '../../../app/providers/AuthProvider';
+import { getDrillMediaPlay } from '../../drills/services/drillsService';
+import DrillsPlayDialog from '../../drills/components/list/DrillsPlayDialog';
 
 type PlanSegment = {
   id: string;
@@ -48,22 +48,22 @@ function formatHeaderTimestamp(iso: string) {
   // Similar to: DECEMBER 18, 2025 AT 11:19 AM
   const d = new Date(iso);
   const date = new Intl.DateTimeFormat(undefined, {
-    month: "long",
-    day: "2-digit",
-    year: "numeric",
+    month: 'long',
+    day: '2-digit',
+    year: 'numeric',
   }).format(d);
   const time = new Intl.DateTimeFormat(undefined, {
-    hour: "numeric",
-    minute: "2-digit",
+    hour: 'numeric',
+    minute: '2-digit',
   }).format(d);
   return `${date} at ${time}`.toUpperCase();
 }
 
 function toFiniteNumber(value: unknown): number | null {
-  if (typeof value === "number") {
+  if (typeof value === 'number') {
     return Number.isFinite(value) ? value : null;
   }
-  if (typeof value === "string") {
+  if (typeof value === 'string') {
     const trimmed = value.trim();
     if (!trimmed) return null;
     const parsed = Number(trimmed);
@@ -74,12 +74,12 @@ function toFiniteNumber(value: unknown): number | null {
 
 function resolvePlanItemId(item: Record<string, unknown>): string | undefined {
   const raw = (item as any).id ?? (item as any).item_id ?? (item as any).plan_item_id;
-  return typeof raw === "string" ? raw : undefined;
+  return typeof raw === 'string' ? raw : undefined;
 }
 
 function resolvePlanItemDrillId(item: Record<string, unknown>): string {
   const raw = (item as any).drill_id ?? (item as any).drillId;
-  return typeof raw === "string" ? raw : "";
+  return typeof raw === 'string' ? raw : '';
 }
 
 function resolvePlanItemDrillName(item: Record<string, unknown>): string {
@@ -88,13 +88,13 @@ function resolvePlanItemDrillName(item: Record<string, unknown>): string {
     (item as any).drillName ??
     (item as any).title ??
     (item as any).name;
-  if (typeof raw === "string" && raw.trim()) return raw.trim();
-  return "Unknown drill";
+  if (typeof raw === 'string' && raw.trim()) return raw.trim();
+  return 'Unknown drill';
 }
 
 function resolvePlanItemNotes(item: Record<string, unknown>): string {
   const raw = (item as any).notes ?? (item as any).instructions ?? (item as any).title;
-  return typeof raw === "string" ? raw : "";
+  return typeof raw === 'string' ? raw : '';
 }
 
 function resolvePlanItemDurationMin(item: Record<string, unknown>): number {
@@ -117,7 +117,7 @@ function resolvePlanItemDurationMin(item: Record<string, unknown>): number {
 function normalizePlanSegments(items: unknown[]): PlanSegment[] {
   const normalized = items
     .map((item, index) => {
-      if (!item || typeof item !== "object") return null;
+      if (!item || typeof item !== 'object') return null;
       const typed = item as Record<string, unknown>;
       const position = toFiniteNumber(
         (typed as any).position ?? (typed as any).order ?? (typed as any).section_order,
@@ -163,18 +163,18 @@ function SegmentRow({
         disableRipple
         sx={{
           py: 1.25,
-          cursor: "default",
-          "&:hover": { bgcolor: "transparent" },
+          cursor: 'default',
+          '&:hover': { bgcolor: 'transparent' },
         }}
       >
         <ListItemIcon sx={{ minWidth: 40, mt: 0.4 }}>
           <Box
             sx={{
-              display: "flex",
-              alignItems: "center",
+              display: 'flex',
+              alignItems: 'center',
               gap: 0.5,
-              color: "text.disabled",
-              userSelect: "none",
+              color: 'text.disabled',
+              userSelect: 'none',
             }}
           >
             <DragIndicatorIcon fontSize="small" />
@@ -192,17 +192,17 @@ function SegmentRow({
             {drillName}
           </Typography>
           {notes ? (
-            <Typography variant="caption" color="text.secondary" noWrap sx={{ display: "block" }}>
+            <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>
               {notes}
             </Typography>
           ) : (
-            <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
               No notes
             </Typography>
           )}
         </Box>
 
-        <Box sx={{ width: 92, textAlign: "right", pt: 0.2 }}>
+        <Box sx={{ width: 92, textAlign: 'right', pt: 0.2 }}>
           <Typography variant="body2" fontWeight={800}>
             {durationMin}m
           </Typography>
@@ -220,21 +220,21 @@ function SegmentRow({
 
 export default function ViewPracticePlanPage() {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
   const { id: planId } = useParams();
   const { profile } = useAuth();
   const orgId = profile?.default_org_id?.trim() || null;
 
   // plan header
-  const [planName, setPlanName] = React.useState("");
+  const [planName, setPlanName] = React.useState('');
   const [updatedAt, setUpdatedAt] = React.useState(() => new Date().toISOString());
   const [planLoading, setPlanLoading] = React.useState(true);
   const [planError, setPlanError] = React.useState<string | null>(null);
 
   // segments
   const [segments, setSegments] = React.useState<PlanSegment[]>([]);
-  const [segmentSearch, setSegmentSearch] = React.useState("");
+  const [segmentSearch, setSegmentSearch] = React.useState('');
 
   const [playState, setPlayState] = React.useState<{
     open: boolean;
@@ -253,12 +253,12 @@ export default function ViewPracticePlanPage() {
 
   React.useEffect(() => {
     if (!planId) {
-      setPlanError("Missing plan id.");
+      setPlanError('Missing plan id.');
       setPlanLoading(false);
       return;
     }
     if (!orgId) {
-      setPlanError("Missing org_id. Please sign in again.");
+      setPlanError('Missing org_id. Please sign in again.');
       setPlanLoading(false);
       return;
     }
@@ -270,14 +270,14 @@ export default function ViewPracticePlanPage() {
     getPlanById(planId, { orgId })
       .then((plan) => {
         if (!active) return;
-        setPlanName(plan.name?.trim() || "Untitled plan");
+        setPlanName(plan.name?.trim() || 'Untitled plan');
         setUpdatedAt(plan.updated_at || plan.created_at || new Date().toISOString());
         const nextSegments = normalizePlanSegments(plan.items ?? []);
         setSegments(nextSegments);
       })
       .catch((err: any) => {
         if (!active) return;
-        setPlanError(err?.message || "Failed to load plan.");
+        setPlanError(err?.message || 'Failed to load plan.');
         setSegments([]);
       })
       .finally(() => {
@@ -290,8 +290,9 @@ export default function ViewPracticePlanPage() {
   }, [planId, orgId]);
 
   const totalDuration = React.useMemo(
-    () => segments.reduce((sum, s) => sum + (Number.isFinite(s.durationMin) ? s.durationMin : 0), 0),
-    [segments]
+    () =>
+      segments.reduce((sum, s) => sum + (Number.isFinite(s.durationMin) ? s.durationMin : 0), 0),
+    [segments],
   );
 
   const filteredSegments = React.useMemo(() => {
@@ -299,35 +300,35 @@ export default function ViewPracticePlanPage() {
     if (!q) return segments;
 
     return segments.filter((s) => {
-      const label = s.drillName ?? "";
+      const label = s.drillName ?? '';
       return label.toLowerCase().includes(q) || s.notes.toLowerCase().includes(q);
     });
   }, [segments, segmentSearch]);
 
-  const headerChip = segments.length === 0 ? "Draft" : "In progress";
+  const headerChip = segments.length === 0 ? 'Draft' : 'In progress';
   const emptyMessage = segmentSearch.trim()
-    ? "No drills match your search."
-    : "No drills added yet.";
+    ? 'No drills match your search.'
+    : 'No drills added yet.';
 
   function openPlay(seg: PlanSegment) {
     if (!seg.drillId?.trim()) {
       setPlayState({
         open: true,
-        drillName: seg.drillName ?? "Drill video",
+        drillName: seg.drillName ?? 'Drill video',
         loading: false,
-        error: "Missing drill id.",
+        error: 'Missing drill id.',
         playUrl: null,
       });
       return;
     }
 
-    const resolvedOrgId = orgId?.trim() || "";
+    const resolvedOrgId = orgId?.trim() || '';
     if (!resolvedOrgId) {
       setPlayState({
         open: true,
-        drillName: seg.drillName ?? "Drill video",
+        drillName: seg.drillName ?? 'Drill video',
         loading: false,
-        error: "Missing org_id.",
+        error: 'Missing org_id.',
         playUrl: null,
       });
       return;
@@ -335,7 +336,7 @@ export default function ViewPracticePlanPage() {
 
     setPlayState({
       open: true,
-      drillName: seg.drillName ?? "Drill video",
+      drillName: seg.drillName ?? 'Drill video',
       loading: true,
       error: null,
       playUrl: null,
@@ -355,7 +356,7 @@ export default function ViewPracticePlanPage() {
         if (playRequestIdRef.current !== requestId) return;
         setPlayState((prev) => ({
           ...prev,
-          error: err?.message || "Failed to load drill video.",
+          error: err?.message || 'Failed to load drill video.',
           loading: false,
         }));
       });
@@ -385,9 +386,9 @@ export default function ViewPracticePlanPage() {
             </Typography>
 
             <Stack
-              direction={isMobile ? "column" : "row"}
+              direction={isMobile ? 'column' : 'row'}
               spacing={1}
-              alignItems={isMobile ? "flex-start" : "center"}
+              alignItems={isMobile ? 'flex-start' : 'center'}
               sx={{ mt: 0.25 }}
             >
               <TextField
@@ -397,27 +398,31 @@ export default function ViewPracticePlanPage() {
                 inputProps={{ style: { fontWeight: 900, fontSize: 20 }, readOnly: true }}
                 sx={{ minWidth: 220, maxWidth: 420 }}
               />
-              <Chip size="small" label={headerChip} sx={{ textTransform: "capitalize" }} />
+              <Chip size="small" label={headerChip} sx={{ textTransform: 'capitalize' }} />
             </Stack>
 
-            <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
               Read-only view
             </Typography>
 
             {planLoading && (
-              <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: 'block', mt: 0.5 }}
+              >
                 Loading plan...
               </Typography>
             )}
             {planError && (
-              <Typography variant="caption" color="error" sx={{ display: "block", mt: 0.5 }}>
+              <Typography variant="caption" color="error" sx={{ display: 'block', mt: 0.5 }}>
                 {planError}
               </Typography>
             )}
           </Box>
 
           {/* (Optional) Back */}
-          <Button variant="text" onClick={() => navigate(-1)} sx={{ alignSelf: "flex-start" }}>
+          <Button variant="text" onClick={() => navigate(-1)} sx={{ alignSelf: 'flex-start' }}>
             Back
           </Button>
         </Stack>
@@ -449,7 +454,7 @@ export default function ViewPracticePlanPage() {
         />
 
         {/* Table header (like screenshot) */}
-        <Box sx={{ display: "flex", gap: 1, px: 1.5, pb: 0.75, color: "text.secondary" }}>
+        <Box sx={{ display: 'flex', gap: 1, px: 1.5, pb: 0.75, color: 'text.secondary' }}>
           <Box sx={{ width: 40 }} />
           <Box sx={{ width: 64 }}>
             <Typography variant="caption" fontWeight={900}>
@@ -461,14 +466,14 @@ export default function ViewPracticePlanPage() {
               DRILL NAME
             </Typography>
           </Box>
-          <Box sx={{ width: 92, textAlign: "right" }}>
+          <Box sx={{ width: 92, textAlign: 'right' }}>
             <Typography variant="caption" fontWeight={900}>
               DURATION
             </Typography>
           </Box>
         </Box>
 
-        <Paper variant="outlined" sx={{ overflow: "hidden" }}>
+        <Paper variant="outlined" sx={{ overflow: 'hidden' }}>
           {planLoading ? (
             <Box sx={{ p: 2 }}>
               <Typography variant="body2" color="text.secondary">
@@ -491,7 +496,7 @@ export default function ViewPracticePlanPage() {
             <List disablePadding>
               {filteredSegments.map((seg) => {
                 const idx = segments.findIndex((x) => x.id === seg.id);
-                const drillLabel = seg.drillName ?? "Unknown drill";
+                const drillLabel = seg.drillName ?? 'Unknown drill';
                 return (
                   <SegmentRow
                     key={seg.id}

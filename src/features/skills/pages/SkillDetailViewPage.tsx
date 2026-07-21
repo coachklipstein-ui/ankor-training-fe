@@ -1,35 +1,26 @@
-import * as React from "react";
-import {
-  Box,
-  Stack,
-  Typography,
-  Button,
-  Paper,
-  Chip,
-  Grid,
-  CircularProgress,
-} from "@mui/material";
-import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
-import { useNavigate, useParams } from "react-router-dom";
+import * as React from 'react';
+import { Box, Stack, Typography, Button, Paper, Chip, Grid, CircularProgress } from '@mui/material';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   getSkillById,
   getSkillDrillMap,
   getSkillMediaPlay,
   type Skill,
   type SkillDrillMapItem,
-} from "../services/skillsService";
-import { formatDate } from "../utils/formatters";
-import { pickPrimarySkillMedia } from "../utils/media";
-import { toYouTubeEmbedUrl } from "../../drills/utils/youtube";
-import { useAuth } from "../../../app/providers/AuthProvider";
+} from '../services/skillsService';
+import { formatDate } from '../utils/formatters';
+import { pickPrimarySkillMedia } from '../utils/media';
+import { toYouTubeEmbedUrl } from '../../drills/utils/youtube';
+import { useAuth } from '../../../app/providers/AuthProvider';
 
 const drillLabel = (item: SkillDrillMapItem) => {
-  return item.drill?.name?.trim() || item.drill_id || "Untitled drill";
+  return item.drill?.name?.trim() || item.drill_id || 'Untitled drill';
 };
 
 export default function SkillDetailViewPage() {
   const { id } = useParams<{ id: string }>();
-  const skillId = id ?? "";
+  const skillId = id ?? '';
   const [skill, setSkill] = React.useState<Skill | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -51,11 +42,11 @@ export default function SkillDetailViewPage() {
         return;
       }
       if (!skillId) {
-        setError("Missing skill id in route.");
+        setError('Missing skill id in route.');
         return;
       }
       if (!orgId) {
-        setError("Missing org_id. Please sign in again.");
+        setError('Missing org_id. Please sign in again.');
         return;
       }
 
@@ -67,7 +58,7 @@ export default function SkillDetailViewPage() {
         setSkill(response);
       } catch (err) {
         if (!active) return;
-        setError(err instanceof Error ? err.message : "Failed to load skill.");
+        setError(err instanceof Error ? err.message : 'Failed to load skill.');
         setSkill(null);
       } finally {
         if (active) setLoading(false);
@@ -88,7 +79,7 @@ export default function SkillDetailViewPage() {
       if (authLoading) return;
       if (!skillId) return;
       if (!orgId) {
-        setDrillsError("Missing org_id. Please sign in again.");
+        setDrillsError('Missing org_id. Please sign in again.');
         setMappedDrills([]);
         return;
       }
@@ -102,9 +93,7 @@ export default function SkillDetailViewPage() {
       } catch (err) {
         if (!active) return;
         setMappedDrills([]);
-        setDrillsError(
-          err instanceof Error ? err.message : "Failed to load drill map.",
-        );
+        setDrillsError(err instanceof Error ? err.message : 'Failed to load drill map.');
       } finally {
         if (active) setDrillsLoading(false);
       }
@@ -121,15 +110,15 @@ export default function SkillDetailViewPage() {
     () => pickPrimarySkillMedia(skill?.media ?? []),
     [skill?.media],
   );
-  const primaryUrl = primaryMedia?.url ?? "";
+  const primaryUrl = primaryMedia?.url ?? '';
   const embedUrl = React.useMemo(() => {
-    if (!primaryMedia || primaryMedia.type !== "video") return null;
+    if (!primaryMedia || primaryMedia.type !== 'video') return null;
     return toYouTubeEmbedUrl(primaryUrl);
   }, [primaryMedia, primaryUrl]);
 
   React.useEffect(() => {
     let active = true;
-    const isVideo = primaryMedia?.type === "video";
+    const isVideo = primaryMedia?.type === 'video';
 
     if (authLoading) {
       return () => {
@@ -146,7 +135,7 @@ export default function SkillDetailViewPage() {
     }
     if (!orgId) {
       setPlayUrl(null);
-      setPlayError("Missing org_id. Please sign in again.");
+      setPlayError('Missing org_id. Please sign in again.');
       setPlayLoading(false);
       return () => {
         active = false;
@@ -163,9 +152,7 @@ export default function SkillDetailViewPage() {
         setPlayUrl(response.play_url);
       } catch (err) {
         if (!active) return;
-        setPlayError(
-          err instanceof Error ? err.message : "Failed to load skill video.",
-        );
+        setPlayError(err instanceof Error ? err.message : 'Failed to load skill video.');
         setPlayUrl(null);
       } finally {
         if (active) setPlayLoading(false);
@@ -179,11 +166,11 @@ export default function SkillDetailViewPage() {
 
   return (
     <Box sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
-      <Stack spacing={2.5} sx={{ maxWidth: 1100, mx: "auto" }}>
+      <Stack spacing={2.5} sx={{ maxWidth: 1100, mx: 'auto' }}>
         <Button
           startIcon={<ArrowBackIosNewIcon fontSize="small" />}
-          onClick={() => navigate("/skills")}
-          sx={{ alignSelf: "flex-start" }}
+          onClick={() => navigate('/skills')}
+          sx={{ alignSelf: 'flex-start' }}
         >
           Back to skills
         </Button>
@@ -212,13 +199,13 @@ export default function SkillDetailViewPage() {
             <Stack spacing={1}>
               <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
                 <Typography variant="h4" fontWeight={700}>
-                  {skill.title?.trim() || "Untitled skill"}
+                  {skill.title?.trim() || 'Untitled skill'}
                 </Typography>
-                <Chip size="small" label={skill.status || "unknown"} variant="outlined" />
+                <Chip size="small" label={skill.status || 'unknown'} variant="outlined" />
               </Stack>
               <Typography variant="body2" color="text.secondary">
-                {skill.category || "General"}
-                {skill.level ? ` | ${skill.level}` : ""}
+                {skill.category || 'General'}
+                {skill.level ? ` | ${skill.level}` : ''}
               </Typography>
             </Stack>
 
@@ -227,18 +214,18 @@ export default function SkillDetailViewPage() {
                 Details
               </Typography>
               <Grid container spacing={2}>
-                <DetailItem label="Category" value={skill.category || "-"} />
-                <DetailItem label="Level" value={skill.level || "-"} />
-                <DetailItem label="Visibility" value={skill.visibility || "-"} />
-                <DetailItem label="Status" value={skill.status || "-"} />
-                <DetailItem label="Sport id" value={skill.sport_id || "-"} />
+                <DetailItem label="Category" value={skill.category || '-'} />
+                <DetailItem label="Level" value={skill.level || '-'} />
+                <DetailItem label="Visibility" value={skill.visibility || '-'} />
+                <DetailItem label="Status" value={skill.status || '-'} />
+                <DetailItem label="Sport id" value={skill.sport_id || '-'} />
                 <DetailItem
                   label="Created"
-                  value={skill.created_at ? formatDate(skill.created_at) : "-"}
+                  value={skill.created_at ? formatDate(skill.created_at) : '-'}
                 />
                 <DetailItem
                   label="Updated"
-                  value={skill.updated_at ? formatDate(skill.updated_at) : "-"}
+                  value={skill.updated_at ? formatDate(skill.updated_at) : '-'}
                 />
               </Grid>
             </Paper>
@@ -248,7 +235,7 @@ export default function SkillDetailViewPage() {
                 Description
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {skill.description?.trim() || "No description available."}
+                {skill.description?.trim() || 'No description available.'}
               </Typography>
             </Paper>
 
@@ -311,29 +298,29 @@ export default function SkillDetailViewPage() {
                   No media available.
                 </Typography>
               )}
-              {primaryMedia && primaryMedia.type === "image" && (
+              {primaryMedia && primaryMedia.type === 'image' && (
                 <Box
                   component="img"
                   src={primaryMedia.url}
                   alt={primaryMedia.title ?? skill.title}
                   sx={{
-                    width: "100%",
+                    width: '100%',
                     maxHeight: 480,
-                    objectFit: "cover",
+                    objectFit: 'cover',
                     borderRadius: 2,
                   }}
                 />
               )}
-              {primaryMedia && primaryMedia.type === "video" && (
+              {primaryMedia && primaryMedia.type === 'video' && (
                 <>
                   {embedUrl ? (
                     <Box
                       sx={{
-                        position: "relative",
-                        width: "100%",
-                        paddingTop: "56.25%",
+                        position: 'relative',
+                        width: '100%',
+                        paddingTop: '56.25%',
                         borderRadius: 2,
-                        overflow: "hidden",
+                        overflow: 'hidden',
                       }}
                     >
                       <Box
@@ -343,20 +330,16 @@ export default function SkillDetailViewPage() {
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                         allowFullScreen
                         sx={{
-                          position: "absolute",
+                          position: 'absolute',
                           inset: 0,
-                          width: "100%",
-                          height: "100%",
+                          width: '100%',
+                          height: '100%',
                           border: 0,
                         }}
                       />
                     </Box>
                   ) : playLoading && !playUrl && !primaryUrl ? (
-                    <Stack
-                      alignItems="center"
-                      justifyContent="center"
-                      sx={{ minHeight: 240 }}
-                    >
+                    <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 240 }}>
                       <CircularProgress />
                     </Stack>
                   ) : playUrl || primaryUrl ? (
@@ -366,11 +349,11 @@ export default function SkillDetailViewPage() {
                       controls
                       playsInline
                       sx={{
-                        width: "100%",
-                        maxHeight: "70vh",
-                        display: "block",
+                        width: '100%',
+                        maxHeight: '70vh',
+                        display: 'block',
                         borderRadius: 2,
-                        bgcolor: "grey.900",
+                        bgcolor: 'grey.900',
                       }}
                     />
                   ) : (
@@ -386,15 +369,14 @@ export default function SkillDetailViewPage() {
                 </Typography>
               )}
               {primaryMedia &&
-                (primaryMedia.type === "document" ||
-                  primaryMedia.type === "link") && (
+                (primaryMedia.type === 'document' || primaryMedia.type === 'link') && (
                   <Button
                     variant="outlined"
                     href={primaryMedia.url}
                     target="_blank"
                     rel="noreferrer"
                   >
-                    Open {primaryMedia.type === "document" ? "document" : "link"}
+                    Open {primaryMedia.type === 'document' ? 'document' : 'link'}
                   </Button>
                 )}
             </Paper>

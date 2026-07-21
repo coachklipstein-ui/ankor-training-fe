@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Box,
   Button,
@@ -9,23 +9,15 @@ import {
   TextField,
   Typography,
   useMediaQuery,
-} from "@mui/material";
-import { useTheme } from "@mui/material/styles";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "../../../app/providers/AuthProvider";
-import {
-  getEvaluationById,
-  type EvaluationDetailRow,
-} from "../api/evaluationsApi";
-import { listScorecardSubskillsByCategory } from "../../scorecards/services/scorecardService";
-import type {
-  Athlete,
-  EvaluationsState,
-  ScorecardCategory,
-  ScorecardSubskill,
-} from "../types";
-import { formatDateTime } from "../utils/formatDateTime";
+} from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
+import { getEvaluationById, type EvaluationDetailRow } from '../api/evaluationsApi';
+import { listScorecardSubskillsByCategory } from '../../scorecards/services/scorecardService';
+import type { Athlete, EvaluationsState, ScorecardCategory, ScorecardSubskill } from '../types';
+import { formatDateTime } from '../utils/formatDateTime';
 
 type EvaluationMeta = {
   templateName: string;
@@ -37,17 +29,15 @@ export default function ViewEvaluationPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { profile, loading: authLoading } = useAuth();
   const orgId = profile?.default_org_id?.trim() || null;
-  const isAthlete = profile?.role === "athlete";
+  const isAthlete = profile?.role === 'athlete';
 
   const [meta, setMeta] = React.useState<EvaluationMeta | null>(null);
   const [categories, setCategories] = React.useState<ScorecardCategory[]>([]);
   const [athletes, setAthletes] = React.useState<Athlete[]>([]);
-  const [activeAthleteId, setActiveAthleteId] = React.useState<string | null>(
-    null,
-  );
+  const [activeAthleteId, setActiveAthleteId] = React.useState<string | null>(null);
   const [evaluations, setEvaluations] = React.useState<EvaluationsState>({});
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -55,11 +45,11 @@ export default function ViewEvaluationPage() {
   React.useEffect(() => {
     if (authLoading) return;
     if (!id) {
-      setError("Missing evaluation id in route.");
+      setError('Missing evaluation id in route.');
       return;
     }
     if (!orgId) {
-      setError("Missing org_id. Please sign in again.");
+      setError('Missing org_id. Please sign in again.');
       return;
     }
 
@@ -73,9 +63,9 @@ export default function ViewEvaluationPage() {
         if (!active) return;
 
         setMeta({
-          templateName: detail.template_name ?? "Scorecard",
-          teamName: detail.team_name ?? "Unassigned team",
-          createdAt: detail.created_at ?? "",
+          templateName: detail.template_name ?? 'Scorecard',
+          teamName: detail.team_name ?? 'Unassigned team',
+          createdAt: detail.created_at ?? '',
         });
 
         const nextCategories = (detail.categories ?? []) as ScorecardCategory[];
@@ -83,12 +73,11 @@ export default function ViewEvaluationPage() {
 
         const mappedAthletes: Athlete[] = (detail.athletes ?? []).map((ath) => {
           const fullName =
-            [ath.first_name, ath.last_name].filter(Boolean).join(" ") ||
-            "Unnamed athlete";
+            [ath.first_name, ath.last_name].filter(Boolean).join(' ') || 'Unnamed athlete';
           return {
             id: ath.id,
             full_name: fullName,
-            team_id: detail.teams_id ?? "",
+            team_id: detail.teams_id ?? '',
           };
         });
 
@@ -116,7 +105,7 @@ export default function ViewEvaluationPage() {
         const subskillToCategory = new Map<string, string>();
 
         for (const result of subskillResults) {
-          if (result.status !== "fulfilled") continue;
+          if (result.status !== 'fulfilled') continue;
           const { categoryId, subskills } = result.value;
           const casted = subskills as ScorecardSubskill[];
           casted.forEach((sub) => {
@@ -138,18 +127,14 @@ export default function ViewEvaluationPage() {
           if (prev == null) {
             evalState[item.athlete_id][categoryId] = item.rating ?? null;
           } else if (item.rating != null) {
-            evalState[item.athlete_id][categoryId] =
-              (Number(prev) + Number(item.rating)) / 2;
+            evalState[item.athlete_id][categoryId] = (Number(prev) + Number(item.rating)) / 2;
           }
-
         });
 
         setEvaluations(evalState);
       } catch (err) {
         if (!active) return;
-        setError(
-          err instanceof Error ? err.message : "Failed to load evaluation.",
-        );
+        setError(err instanceof Error ? err.message : 'Failed to load evaluation.');
       } finally {
         if (active) setLoading(false);
       }
@@ -176,8 +161,8 @@ export default function ViewEvaluationPage() {
   const columns = React.useMemo<GridColDef[]>(() => {
     const baseColumns: GridColDef[] = [
       {
-        field: "categoryName",
-        headerName: "Category",
+        field: 'categoryName',
+        headerName: 'Category',
         flex: 1.4,
         sortable: false,
       },
@@ -188,8 +173,7 @@ export default function ViewEvaluationPage() {
       headerName: athlete.full_name,
       flex: 1,
       sortable: false,
-      valueFormatter: (value) =>
-        value === null || value === undefined ? "-" : String(value),
+      valueFormatter: (value) => (value === null || value === undefined ? '-' : String(value)),
     }));
 
     return [...baseColumns, ...athleteColumns];
@@ -198,14 +182,11 @@ export default function ViewEvaluationPage() {
   const rows = React.useMemo(
     () =>
       categories.map((cat) => {
-        const scoresByAthlete = athletes.reduce<Record<string, number | null>>(
-          (acc, athlete) => {
-            const evalForAthlete = evaluations[athlete.id] ?? {};
-            acc[athlete.id] = evalForAthlete[cat.id] ?? null;
-            return acc;
-          },
-          {},
-        );
+        const scoresByAthlete = athletes.reduce<Record<string, number | null>>((acc, athlete) => {
+          const evalForAthlete = evaluations[athlete.id] ?? {};
+          acc[athlete.id] = evalForAthlete[cat.id] ?? null;
+          return acc;
+        }, {});
 
         return {
           id: cat.id,
@@ -216,16 +197,16 @@ export default function ViewEvaluationPage() {
     [categories, athletes, evaluations],
   );
 
-  const summaryLabel = meta?.createdAt ? formatDateTime(meta.createdAt) : "";
+  const summaryLabel = meta?.createdAt ? formatDateTime(meta.createdAt) : '';
 
   const getRatingChip = (value: number | null | undefined) => {
     if (value === null || value === undefined) {
-      return { label: "Not rated", color: "default" as const };
+      return { label: 'Not rated', color: 'default' as const };
     }
     if (value < 3) {
-      return { label: value.toFixed(1), color: "warning" as const };
+      return { label: value.toFixed(1), color: 'warning' as const };
     }
-    return { label: value.toFixed(1), color: "success" as const };
+    return { label: value.toFixed(1), color: 'success' as const };
   };
 
   if (loading || authLoading) {
@@ -235,7 +216,7 @@ export default function ViewEvaluationPage() {
           <Typography variant="body2" color="text.secondary">
             Loading evaluation...
           </Typography>
-          <Button variant="outlined" onClick={() => navigate("/evaluations")}>
+          <Button variant="outlined" onClick={() => navigate('/evaluations')}>
             Back
           </Button>
         </Stack>
@@ -250,7 +231,7 @@ export default function ViewEvaluationPage() {
           <Typography variant="h6" color="error">
             {error}
           </Typography>
-          <Button variant="outlined" onClick={() => navigate("/evaluations")}>
+          <Button variant="outlined" onClick={() => navigate('/evaluations')}>
             Back
           </Button>
         </Stack>
@@ -262,9 +243,9 @@ export default function ViewEvaluationPage() {
     <Box sx={{ p: { xs: 2, md: 3 } }}>
       <Stack spacing={3}>
         <Stack
-          direction={{ xs: "column", sm: "row" }}
+          direction={{ xs: 'column', sm: 'row' }}
           spacing={2}
-          alignItems={{ sm: "center" }}
+          alignItems={{ sm: 'center' }}
           justifyContent="space-between"
         >
           <Box>
@@ -272,19 +253,16 @@ export default function ViewEvaluationPage() {
               Evaluation Detail
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {meta?.templateName ?? "Scorecard"}
-              {summaryLabel ? ` • ${summaryLabel}` : ""}
+              {meta?.templateName ?? 'Scorecard'}
+              {summaryLabel ? ` • ${summaryLabel}` : ''}
             </Typography>
           </Box>
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-            <Button variant="outlined" onClick={() => navigate("/evaluations")}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+            <Button variant="outlined" onClick={() => navigate('/evaluations')}>
               Back
             </Button>
             {!isAthlete ? (
-              <Button
-                variant="contained"
-                onClick={() => navigate(`/evaluations/${id}/edit`)}
-              >
+              <Button variant="contained" onClick={() => navigate(`/evaluations/${id}/edit`)}>
                 Edit evaluation
               </Button>
             ) : null}
@@ -292,17 +270,13 @@ export default function ViewEvaluationPage() {
         </Stack>
 
         <Paper variant="outlined" sx={{ p: 2 }}>
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={2}
-            justifyContent="space-between"
-          >
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="space-between">
             <Box>
               <Typography variant="caption" color="text.secondary">
                 Scorecard
               </Typography>
               <Typography variant="subtitle1" fontWeight={600}>
-                {meta?.templateName ?? "-"}
+                {meta?.templateName ?? '-'}
               </Typography>
             </Box>
             <Box>
@@ -310,7 +284,7 @@ export default function ViewEvaluationPage() {
                 Team
               </Typography>
               <Typography variant="subtitle1" fontWeight={600}>
-                {meta?.teamName ?? "-"}
+                {meta?.teamName ?? '-'}
               </Typography>
             </Box>
             <Box>
@@ -332,10 +306,8 @@ export default function ViewEvaluationPage() {
                   select
                   size="small"
                   label="Athlete"
-                  value={activeAthleteId ?? ""}
-                  onChange={(event) =>
-                    setActiveAthleteId(event.target.value || null)
-                  }
+                  value={activeAthleteId ?? ''}
+                  onChange={(event) => setActiveAthleteId(event.target.value || null)}
                   fullWidth
                 >
                   {athletes.map((athlete) => (
@@ -350,7 +322,7 @@ export default function ViewEvaluationPage() {
                     Athlete
                   </Typography>
                   <Typography variant="subtitle1" fontWeight={600}>
-                    {athletes[0]?.full_name ?? "-"}
+                    {athletes[0]?.full_name ?? '-'}
                   </Typography>
                 </Stack>
               )}
@@ -377,7 +349,7 @@ export default function ViewEvaluationPage() {
                             label={chip.label}
                             color={chip.color}
                             size="small"
-                            variant={chip.color === "default" ? "outlined" : "filled"}
+                            variant={chip.color === 'default' ? 'outlined' : 'filled'}
                           />
                         </Stack>
                         {cat.description ? (
@@ -415,11 +387,11 @@ export default function ViewEvaluationPage() {
             ) : (
               <Box
                 sx={{
-                  height: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  textAlign: "center",
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  textAlign: 'center',
                   px: 2,
                 }}
               >

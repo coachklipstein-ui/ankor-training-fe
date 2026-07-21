@@ -23,7 +23,7 @@ type AthleteOnly = {
 };
 
 export type AthleteSignUp = CommonFields & { role: 'athlete' } & AthleteOnly;
-export type CoachSignUp   = CommonFields & { role: 'coach' };
+export type CoachSignUp = CommonFields & { role: 'coach' };
 
 export type SignUpInput = AthleteSignUp | CoachSignUp;
 
@@ -80,8 +80,9 @@ function toBackendPayload(input: SignUpInput) {
 export async function signUp(
   input: SignUpInput,
   baseUrl = (typeof import.meta !== 'undefined' &&
-             (import.meta as any).env &&
-             (import.meta as any).env.VITE_BACKEND_URL) || 'https://<project>.supabase.co'
+    (import.meta as any).env &&
+    (import.meta as any).env.VITE_BACKEND_URL) ||
+    'https://<project>.supabase.co',
 ): Promise<SignUpResponse> {
   // Basic client-side validation to avoid obvious round-trips
   assertCommonFields(input);
@@ -103,9 +104,7 @@ export async function signUp(
   });
 
   // Try to parse JSON either way to surface backend error messages
-  const data = (await res
-    .json()
-    .catch(() => undefined)) as SignUpResponse | undefined;
+  const data = (await res.json().catch(() => undefined)) as SignUpResponse | undefined;
 
   if (!res.ok) {
     // HTTP-level failure

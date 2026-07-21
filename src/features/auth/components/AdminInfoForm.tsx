@@ -149,9 +149,7 @@ export default function AdminInfoForm() {
             </InputAdornment>
           }
         />
-        {mismatch && (
-          <FormHelperText error>Passwords do not match.</FormHelperText>
-        )}
+        {mismatch && <FormHelperText error>Passwords do not match.</FormHelperText>}
       </FormGrid>
 
       <FormGrid size={{ xs: 12 }}>
@@ -159,12 +157,7 @@ export default function AdminInfoForm() {
           <FormLabel id="gender-label" required>
             Gender
           </FormLabel>
-          <RadioGroup
-            row
-            aria-labelledby="gender-label"
-            name="gender"
-            defaultValue="coed"
-          >
+          <RadioGroup row aria-labelledby="gender-label" name="gender" defaultValue="coed">
             <FormControlLabel value="girls" control={<Radio />} label="Girls" />
             <FormControlLabel value="boys" control={<Radio />} label="Boys" />
             <FormControlLabel value="coed" control={<Radio />} label="Coed" />

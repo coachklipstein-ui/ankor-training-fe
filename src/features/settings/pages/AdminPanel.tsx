@@ -1,5 +1,5 @@
 // src/pages/AdminPanel.tsx
-import * as React from 'react'
+import * as React from 'react';
 import {
   Box,
   Stack,
@@ -18,61 +18,61 @@ import {
   Divider,
   Chip,
   IconButton,
-} from '@mui/material'
-import SearchIcon from '@mui/icons-material/Search'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import { useNavigate } from 'react-router-dom' // navigation
+} from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import { useNavigate } from 'react-router-dom'; // navigation
 
 // ---------- Types ----------
 type UserRow = {
-  id: string
-  full_name: string
-  first_name: string
-  last_name: string
-  email: string
-  phone: string | null
-  created_at: string
-  updated_at: string
-  role: 'coach' | 'athlete' | string
-  default_org_id: string | null
-  terms_accepted: boolean
-  terms_accepted_at: string | null
-  org_id: string | null
-}
+  id: string;
+  full_name: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string | null;
+  created_at: string;
+  updated_at: string;
+  role: 'coach' | 'athlete' | string;
+  default_org_id: string | null;
+  terms_accepted: boolean;
+  terms_accepted_at: string | null;
+  org_id: string | null;
+};
 
 type Athlete = {
-  id: string
-  org_id: string
-  user_id: string
-  sport_id: string | null
-  primary_position_id: string | null
-  jersey_number: string | null
-  dominant_hand: string | null
-  height_cm: number | null
-  weight_kg: number | null
-  graduation_year: number | null
-  school: string | null
-  birthdate: string | null
-  notes: string | null
-  status: 'active' | 'inactive' | string
-  created_at: string
-  updated_at: string
-  cell_number: string | null
-}
+  id: string;
+  org_id: string;
+  user_id: string;
+  sport_id: string | null;
+  primary_position_id: string | null;
+  jersey_number: string | null;
+  dominant_hand: string | null;
+  height_cm: number | null;
+  weight_kg: number | null;
+  graduation_year: number | null;
+  school: string | null;
+  birthdate: string | null;
+  notes: string | null;
+  status: 'active' | 'inactive' | string;
+  created_at: string;
+  updated_at: string;
+  cell_number: string | null;
+};
 
 type Coach = {
-  id: string
-  org_id: string
-  user_id: string
-  sport_id: string | null
-  full_name: string | null
-  email: string | null
-  phone: string | null
-  title: string | null
-  created_at: string
-  updated_at: string
-  cell_number: string | null
-}
+  id: string;
+  org_id: string;
+  user_id: string;
+  sport_id: string | null;
+  full_name: string | null;
+  email: string | null;
+  phone: string | null;
+  title: string | null;
+  created_at: string;
+  updated_at: string;
+  cell_number: string | null;
+};
 
 // ---------- Mock data ----------
 const USERS: UserRow[] = [
@@ -121,7 +121,7 @@ const USERS: UserRow[] = [
     terms_accepted_at: '2025-11-04 01:25:48.480322+00',
     org_id: null,
   },
-]
+];
 
 const ATHLETES: Athlete[] = [
   {
@@ -162,7 +162,7 @@ const ATHLETES: Athlete[] = [
     updated_at: '2025-11-04 01:25:48.480322+00',
     cell_number: '555-111-2222',
   },
-]
+];
 
 const COACHES: Coach[] = [
   {
@@ -178,96 +178,96 @@ const COACHES: Coach[] = [
     updated_at: '2025-10-30 13:47:44.493608+00',
     cell_number: '908-328-3240',
   },
-]
+];
 
 // ---------- Helpers ----------
-const findUser = (id: string) => USERS.find((u) => u.id === id)
-const fmtName = (u?: UserRow | null) => (u ? `${u.first_name} ${u.last_name}` : '—')
+const findUser = (id: string) => USERS.find((u) => u.id === id);
+const fmtName = (u?: UserRow | null) => (u ? `${u.first_name} ${u.last_name}` : '—');
 
 // ---------- Component ----------
 export default function AdminPanel() {
-  const [tab, setTab] = React.useState<'athletes' | 'coaches'>('athletes')
-  const [search, setSearch] = React.useState('')
+  const [tab, setTab] = React.useState<'athletes' | 'coaches'>('athletes');
+  const [search, setSearch] = React.useState('');
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   // Navigate to Athlete detail
   const openAthlete = React.useCallback(
     (athleteId: string) => {
-      const athlete = ATHLETES.find((a) => a.id === athleteId)
-      const user = athlete ? findUser(athlete.user_id) : undefined
+      const athlete = ATHLETES.find((a) => a.id === athleteId);
+      const user = athlete ? findUser(athlete.user_id) : undefined;
       navigate(`/admin/athletes/${athleteId}`, {
         state: athlete && user ? { athlete, user } : undefined,
-      })
+      });
     },
     [navigate],
-  )
+  );
 
   // NEW: Navigate to Coach detail
   const openCoach = React.useCallback(
     (coachId: string) => {
-      const coach = COACHES.find((c) => c.id === coachId)
-      const user = coach ? findUser(coach.user_id) : undefined
+      const coach = COACHES.find((c) => c.id === coachId);
+      const user = coach ? findUser(coach.user_id) : undefined;
       navigate(`/admin/coaches/${coachId}`, {
         state: coach && user ? { coach, user } : undefined,
-      })
+      });
     },
     [navigate],
-  )
+  );
 
   // join lists
   const athleteList = React.useMemo(() => {
     return ATHLETES.map((a) => {
-      const u = findUser(a.user_id)
+      const u = findUser(a.user_id);
       return {
         id: a.id,
         name: fmtName(u),
         subtitle: u?.last_name ?? '',
         phone: a.cell_number ?? u?.phone ?? '',
         graduation_year: a.graduation_year ?? undefined,
-      }
-    })
-  }, [])
+      };
+    });
+  }, []);
 
   const coachList = React.useMemo(() => {
     return COACHES.map((c) => {
-      const u = findUser(c.user_id)
+      const u = findUser(c.user_id);
       return {
         id: c.id,
         name: c.full_name ?? fmtName(u),
         subtitle: u?.last_name ?? '',
         phone: c.cell_number ?? u?.phone ?? '',
         email: c.email ?? u?.email ?? '',
-      }
-    })
-  }, [])
+      };
+    });
+  }, []);
 
   const filteredAthletes = React.useMemo(() => {
-    const q = search.trim().toLowerCase()
-    if (!q) return athleteList
+    const q = search.trim().toLowerCase();
+    if (!q) return athleteList;
     return athleteList.filter(
       (r) =>
         r.name.toLowerCase().includes(q) ||
         (r.subtitle ?? '').toLowerCase().includes(q) ||
         (r.phone ?? '').toLowerCase().includes(q) ||
         String(r.graduation_year ?? '').includes(q),
-    )
-  }, [athleteList, search])
+    );
+  }, [athleteList, search]);
 
   const filteredCoaches = React.useMemo(() => {
-    const q = search.trim().toLowerCase()
-    if (!q) return coachList
+    const q = search.trim().toLowerCase();
+    if (!q) return coachList;
     return coachList.filter(
       (r) =>
         r.name.toLowerCase().includes(q) ||
         (r.subtitle ?? '').toLowerCase().includes(q) ||
         (r.phone ?? '').toLowerCase().includes(q) ||
         (r.email ?? '').toLowerCase().includes(q),
-    )
-  }, [coachList, search])
+    );
+  }, [coachList, search]);
 
-  const totalAthletes = ATHLETES.length
-  const totalCoaches = COACHES.length
+  const totalAthletes = ATHLETES.length;
+  const totalCoaches = COACHES.length;
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -311,8 +311,8 @@ export default function AdminPanel() {
           <Tabs
             value={tab}
             onChange={(_, v) => {
-              setTab(v)
-              setSearch('')
+              setTab(v);
+              setSearch('');
             }}
             aria-label="admin tabs"
             sx={{ mb: 2 }}
@@ -364,7 +364,11 @@ export default function AdminPanel() {
                     </ListItemAvatar>
                     <ListItemText
                       primary={a.name}
-                      secondary={[a.subtitle, a.phone, a.graduation_year ? `Grad ${a.graduation_year}` : '']
+                      secondary={[
+                        a.subtitle,
+                        a.phone,
+                        a.graduation_year ? `Grad ${a.graduation_year}` : '',
+                      ]
                         .filter(Boolean)
                         .join(' · ')}
                     />
@@ -406,5 +410,5 @@ export default function AdminPanel() {
         </Box>
       </Card>
     </Box>
-  )
+  );
 }

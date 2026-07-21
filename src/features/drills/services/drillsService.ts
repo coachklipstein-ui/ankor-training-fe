@@ -1,9 +1,9 @@
 // src/services/drillsService.ts
 // Pure fetch wrappers to call your Deno edge functions under /functions/v1/api/drills/*
 
-import { apiFetch } from '../../../shared/api/apiClient'
+import { apiFetch } from '../../../shared/api/apiClient';
 
-export type DrillMediaType = "image" | "video" | "document" | "link";
+export type DrillMediaType = 'image' | 'video' | 'document' | 'link';
 
 export type DrillMediaInput = {
   type?: DrillMediaType;
@@ -32,9 +32,7 @@ export type CreateDrillInput = {
   skill_tags?: Array<string | { skill_id: string }>;
 };
 
-export type CreateDrillResponse =
-  | { ok: true; drill?: any }
-  | { ok: false; error: string };
+export type CreateDrillResponse = { ok: true; drill?: any } | { ok: false; error: string };
 
 export type UpdateDrillInput = {
   name?: string;
@@ -112,8 +110,7 @@ export type CreateDrillMediaInput = DrillMediaInput & {
 } & Record<string, unknown>;
 
 export type CreateDrillMediaResponse =
-  | { ok: true; media?: DrillMedia; data?: DrillMedia }
-  | { ok: false; error: string };
+  { ok: true; media?: DrillMedia; data?: DrillMedia } | { ok: false; error: string };
 
 export type DrillMediaPlayResponse =
   | {
@@ -150,15 +147,19 @@ export type DrillsListResponse =
   | { ok: false; error: string };
 
 export type DrillDetailResponse =
-  | { ok: true; drill?: DrillItem; data?: DrillItem }
-  | { ok: false; error: string };
+  { ok: true; drill?: DrillItem; data?: DrillItem } | { ok: false; error: string };
 
 export type UpdateDrillResponse =
-  | { ok: true; drill?: DrillItem; data?: DrillItem }
-  | { ok: false; error: string };
+  { ok: true; drill?: DrillItem; data?: DrillItem } | { ok: false; error: string };
 
 export type DrillSegmentsResponse =
-  | { ok: true; count?: number; items?: DrillSegment[]; data?: DrillSegment[]; segments?: DrillSegment[] }
+  | {
+      ok: true;
+      count?: number;
+      items?: DrillSegment[];
+      data?: DrillSegment[];
+      segments?: DrillSegment[];
+    }
   | { ok: false; error: string };
 
 export type DrillTagsResponse =
@@ -180,22 +181,20 @@ export type ListDrillsParams = {
 };
 
 const DEFAULT_BASE_URL =
-  ((typeof import.meta !== "undefined" &&
+  ((typeof import.meta !== 'undefined' &&
     (import.meta as any).env &&
-    (import.meta as any).env.VITE_BACKEND_URL) as string) ||
-  "http://localhost:8000";
+    (import.meta as any).env.VITE_BACKEND_URL) as string) || 'http://localhost:8000';
 
-const RE_UUID =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const RE_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function drillsApiUrl(path: string, baseUrl = DEFAULT_BASE_URL) {
-  const normalizedBase = baseUrl.replace(/\/$/, "");
-  const normalizedPath = path ? (path.startsWith("/") ? path : `/${path}`) : "";
+  const normalizedBase = baseUrl.replace(/\/$/, '');
+  const normalizedPath = path ? (path.startsWith('/') ? path : `/${path}`) : '';
 
-  if (normalizedBase.endsWith("/functions/v1")) {
+  if (normalizedBase.endsWith('/functions/v1')) {
     return `${normalizedBase}/api/drills${normalizedPath}`;
   }
-  if (normalizedBase.includes(".supabase.co")) {
+  if (normalizedBase.includes('.supabase.co')) {
     return `${normalizedBase}/functions/v1/api/drills${normalizedPath}`;
   }
 
@@ -203,24 +202,22 @@ function drillsApiUrl(path: string, baseUrl = DEFAULT_BASE_URL) {
 }
 
 function normalizeCreatePayload(input: CreateDrillInput) {
-  if (!input.org_id?.trim()) throw new Error("org_id is required.");
-  if (!input.segment_id?.trim()) throw new Error("segment_id is required.");
-  if (!input.name?.trim()) throw new Error("name is required.");
+  if (!input.org_id?.trim()) throw new Error('org_id is required.');
+  if (!input.segment_id?.trim()) throw new Error('segment_id is required.');
+  if (!input.name?.trim()) throw new Error('name is required.');
 
   const media = (input.media ?? []).map((item, index) => ({
-    type: item.type ?? "video",
+    type: item.type ?? 'video',
     url: item.url,
     title: item.title ?? null,
     description: item.description ?? null,
     thumbnail_url: item.thumbnail_url ?? null,
-    position: Number.isFinite(item.position as number)
-      ? Number(item.position)
-      : index + 1,
+    position: Number.isFinite(item.position as number) ? Number(item.position) : index + 1,
   }));
 
   const skill_tags = (input.skill_tags ?? [])
-    .map((tag) => (typeof tag === "string" ? tag : tag.skill_id))
-    .filter((tag) => typeof tag === "string" && tag.trim().length > 0);
+    .map((tag) => (typeof tag === 'string' ? tag : tag.skill_id))
+    .filter((tag) => typeof tag === 'string' && tag.trim().length > 0);
 
   return {
     org_id: input.org_id.trim(),
@@ -246,11 +243,11 @@ function normalizeUpdatePayload(input: UpdateDrillInput) {
 
   if (input.name !== undefined) {
     if (input.name === null) {
-      throw new Error("name cannot be null.");
+      throw new Error('name cannot be null.');
     }
     const trimmed = String(input.name).trim();
     if (!trimmed) {
-      throw new Error("name is required.");
+      throw new Error('name is required.');
     }
     payload.name = trimmed;
   }
@@ -291,19 +288,16 @@ function normalizeUpdatePayload(input: UpdateDrillInput) {
     }
   }
 
-  const normalizeNumber = (
-    value: number | string | null | undefined,
-    field: string,
-  ) => {
+  const normalizeNumber = (value: number | string | null | undefined, field: string) => {
     if (value === undefined) return undefined;
     if (value === null) return null;
-    if (typeof value === "number") {
+    if (typeof value === 'number') {
       if (!Number.isFinite(value)) {
         throw new Error(`${field} must be a number.`);
       }
       return value;
     }
-    if (typeof value === "string") {
+    if (typeof value === 'string') {
       const trimmed = value.trim();
       if (!trimmed) return null;
       const parsed = Number(trimmed);
@@ -315,25 +309,22 @@ function normalizeUpdatePayload(input: UpdateDrillInput) {
     throw new Error(`${field} must be a number.`);
   };
 
-  const minAge = normalizeNumber(input.min_age, "min_age");
+  const minAge = normalizeNumber(input.min_age, 'min_age');
   if (minAge !== undefined) payload.min_age = minAge;
 
-  const maxAge = normalizeNumber(input.max_age, "max_age");
+  const maxAge = normalizeNumber(input.max_age, 'max_age');
   if (maxAge !== undefined) payload.max_age = maxAge;
 
-  const minPlayers = normalizeNumber(input.min_players, "min_players");
+  const minPlayers = normalizeNumber(input.min_players, 'min_players');
   if (minPlayers !== undefined) payload.min_players = minPlayers;
 
-  const maxPlayers = normalizeNumber(input.max_players, "max_players");
+  const maxPlayers = normalizeNumber(input.max_players, 'max_players');
   if (maxPlayers !== undefined) payload.max_players = maxPlayers;
 
-  const durationSeconds = normalizeNumber(
-    input.duration_seconds,
-    "duration_seconds",
-  );
+  const durationSeconds = normalizeNumber(input.duration_seconds, 'duration_seconds');
   if (durationSeconds !== undefined) payload.duration_seconds = durationSeconds;
 
-  const durationMin = normalizeNumber(input.duration_min, "duration_min");
+  const durationMin = normalizeNumber(input.duration_min, 'duration_min');
   if (durationMin !== undefined) payload.duration_min = durationMin;
 
   if (input.visibility !== undefined) {
@@ -346,8 +337,8 @@ function normalizeUpdatePayload(input: UpdateDrillInput) {
   }
 
   if (input.is_archived !== undefined) {
-    if (typeof input.is_archived !== "boolean") {
-      throw new Error("is_archived must be a boolean.");
+    if (typeof input.is_archived !== 'boolean') {
+      throw new Error('is_archived must be a boolean.');
     }
     payload.is_archived = input.is_archived;
   }
@@ -355,7 +346,7 @@ function normalizeUpdatePayload(input: UpdateDrillInput) {
   const normalizeTagIds = (value: unknown) => {
     if (!Array.isArray(value)) return [];
     const normalized = value
-      .map((entry) => (typeof entry === "string" ? entry.trim() : ""))
+      .map((entry) => (typeof entry === 'string' ? entry.trim() : ''))
       .filter((entry) => entry.length > 0);
     return Array.from(new Set(normalized));
   };
@@ -371,20 +362,20 @@ function normalizeUpdatePayload(input: UpdateDrillInput) {
 function buildListQuery(params: ListDrillsParams) {
   const u = new URLSearchParams();
 
-  u.set("org_id", params.orgId);
-  if (params.name?.trim()) u.set("name", params.name.trim());
-  if (params.segmentIds?.length) u.set("segment_ids", params.segmentIds.join(","));
+  u.set('org_id', params.orgId);
+  if (params.name?.trim()) u.set('name', params.name.trim());
+  if (params.segmentIds?.length) u.set('segment_ids', params.segmentIds.join(','));
   if (params.levels?.length) {
     const normalized = params.levels.map((level) => level.trim()).filter(Boolean);
-    if (normalized.length) u.set("levels", normalized.join(","));
+    if (normalized.length) u.set('levels', normalized.join(','));
   }
-  if (Number.isFinite(params.minAge)) u.set("min_age", String(params.minAge));
-  if (Number.isFinite(params.maxAge)) u.set("max_age", String(params.maxAge));
-  if (Number.isFinite(params.minPlayers)) u.set("min_players", String(params.minPlayers));
-  if (Number.isFinite(params.maxPlayers)) u.set("max_players", String(params.maxPlayers));
-  if (params.skillTagIds?.length) u.set("skill_tags", params.skillTagIds.join(","));
-  if (Number.isFinite(params.limit)) u.set("limit", String(params.limit));
-  if (Number.isFinite(params.offset)) u.set("offset", String(params.offset));
+  if (Number.isFinite(params.minAge)) u.set('min_age', String(params.minAge));
+  if (Number.isFinite(params.maxAge)) u.set('max_age', String(params.maxAge));
+  if (Number.isFinite(params.minPlayers)) u.set('min_players', String(params.minPlayers));
+  if (Number.isFinite(params.maxPlayers)) u.set('max_players', String(params.maxPlayers));
+  if (params.skillTagIds?.length) u.set('skill_tags', params.skillTagIds.join(','));
+  if (Number.isFinite(params.limit)) u.set('limit', String(params.limit));
+  if (Number.isFinite(params.offset)) u.set('offset', String(params.offset));
 
   return u.toString();
 }
@@ -399,35 +390,35 @@ function normalizeDrillTags(raw: unknown): DrillTag[] {
     let id: string | null = null;
     let name: string | null = null;
 
-    if (typeof item === "string") {
+    if (typeof item === 'string') {
       const trimmed = item.trim();
       if (RE_UUID.test(trimmed)) {
         id = trimmed;
         name = trimmed;
       }
-    } else if (item && typeof item === "object") {
+    } else if (item && typeof item === 'object') {
       const typed = item as any;
       const nested =
         typed.drill_tags ??
         typed.drill_tag ??
-        (typeof typed.tag === "object" ? typed.tag : undefined);
+        (typeof typed.tag === 'object' ? typed.tag : undefined);
 
       const rawId =
         typed.id ??
         typed.skill_id ??
         typed.tag_id ??
-        (nested && typeof nested === "object" ? nested.id ?? nested.tag_id : undefined);
-      if (typeof rawId === "string") id = rawId.trim();
+        (nested && typeof nested === 'object' ? (nested.id ?? nested.tag_id) : undefined);
+      if (typeof rawId === 'string') id = rawId.trim();
 
       const rawName =
         typed.name ??
-        (typeof typed.tag === "string" ? typed.tag : undefined) ??
+        (typeof typed.tag === 'string' ? typed.tag : undefined) ??
         typed.title ??
         typed.label ??
-        (nested && typeof nested === "object"
-          ? nested.name ?? nested.label ?? nested.title
+        (nested && typeof nested === 'object'
+          ? (nested.name ?? nested.label ?? nested.title)
           : undefined);
-      if (typeof rawName === "string") name = rawName.trim();
+      if (typeof rawName === 'string') name = rawName.trim();
     }
 
     if (id && !name) name = id;
@@ -441,32 +432,32 @@ function normalizeDrillTags(raw: unknown): DrillTag[] {
 }
 
 function normalizeMediaType(rawType: unknown, url: string): DrillMediaType {
-  const normalized = typeof rawType === "string" ? rawType.toLowerCase() : "";
+  const normalized = typeof rawType === 'string' ? rawType.toLowerCase() : '';
   if (
-    normalized === "image" ||
-    normalized === "video" ||
-    normalized === "document" ||
-    normalized === "link"
+    normalized === 'image' ||
+    normalized === 'video' ||
+    normalized === 'document' ||
+    normalized === 'link'
   ) {
     return normalized as DrillMediaType;
   }
 
   const lowerUrl = url.toLowerCase();
   if (
-    lowerUrl.includes("youtu.be") ||
-    lowerUrl.includes("youtube.com") ||
+    lowerUrl.includes('youtu.be') ||
+    lowerUrl.includes('youtube.com') ||
     /\.(mp4|webm|mov|m4v|mkv)(\?|#|$)/.test(lowerUrl)
   ) {
-    return "video";
+    return 'video';
   }
   if (/\.(png|jpe?g|gif|webp|svg)(\?|#|$)/.test(lowerUrl)) {
-    return "image";
+    return 'image';
   }
   if (/\.(pdf|docx?|pptx?)(\?|#|$)/.test(lowerUrl)) {
-    return "document";
+    return 'document';
   }
 
-  return "link";
+  return 'link';
 }
 
 function normalizeDrillMedia(raw: unknown): DrillMedia[] {
@@ -474,9 +465,9 @@ function normalizeDrillMedia(raw: unknown): DrillMedia[] {
 
   return raw
     .map((item, index) => {
-      if (!item || typeof item !== "object") return null;
+      if (!item || typeof item !== 'object') return null;
       const typed = item as any;
-      const url = typeof typed.url === "string" ? typed.url : "";
+      const url = typeof typed.url === 'string' ? typed.url : '';
       if (!url) return null;
 
       const positionRaw = typed.position ?? typed.sort_order ?? typed.order;
@@ -484,10 +475,9 @@ function normalizeDrillMedia(raw: unknown): DrillMedia[] {
       return {
         type: normalizeMediaType(typed.type ?? typed.media_type, url),
         url,
-        title: typeof typed.title === "string" ? typed.title : null,
-        description: typeof typed.description === "string" ? typed.description : null,
-        thumbnail_url:
-          typeof typed.thumbnail_url === "string" ? typed.thumbnail_url : null,
+        title: typeof typed.title === 'string' ? typed.title : null,
+        description: typeof typed.description === 'string' ? typed.description : null,
+        thumbnail_url: typeof typed.thumbnail_url === 'string' ? typed.thumbnail_url : null,
         position: Number.isFinite(positionRaw) ? Number(positionRaw) : index + 1,
       } as DrillMedia;
     })
@@ -496,7 +486,7 @@ function normalizeDrillMedia(raw: unknown): DrillMedia[] {
 
 function normalizeDrillDetail(raw: any): DrillItem {
   const toNullableNumber = (value: unknown) => {
-    if (value === null || value === undefined || value === "") return null;
+    if (value === null || value === undefined || value === '') return null;
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : null;
   };
@@ -510,44 +500,40 @@ function normalizeDrillDetail(raw: any): DrillItem {
 
   const segmentRaw = raw?.segment;
   const segment =
-    segmentRaw && typeof segmentRaw === "object"
+    segmentRaw && typeof segmentRaw === 'object'
       ? {
           id:
-            typeof segmentRaw.id === "string"
+            typeof segmentRaw.id === 'string'
               ? segmentRaw.id
-              : typeof raw.segment_id === "string"
+              : typeof raw.segment_id === 'string'
                 ? raw.segment_id
-                : "",
-          name: typeof segmentRaw.name === "string" ? segmentRaw.name : null,
+                : '',
+          name: typeof segmentRaw.name === 'string' ? segmentRaw.name : null,
         }
       : null;
 
-  const skillTagsRaw =
-    ([] as unknown[]).concat(
-      Array.isArray(raw?.skill_tags) ? raw.skill_tags : [],
-      Array.isArray(raw?.skill_tag_ids) ? raw.skill_tag_ids : [],
-      Array.isArray(raw?.tags) ? raw.tags : [],
-      Array.isArray(raw?.tag_ids) ? raw.tag_ids : [],
-      Array.isArray(raw?.skillTagIds) ? raw.skillTagIds : [],
-      Array.isArray(raw?.drill_tag_map) ? raw.drill_tag_map : [],
-    );
+  const skillTagsRaw = ([] as unknown[]).concat(
+    Array.isArray(raw?.skill_tags) ? raw.skill_tags : [],
+    Array.isArray(raw?.skill_tag_ids) ? raw.skill_tag_ids : [],
+    Array.isArray(raw?.tags) ? raw.tags : [],
+    Array.isArray(raw?.tag_ids) ? raw.tag_ids : [],
+    Array.isArray(raw?.skillTagIds) ? raw.skillTagIds : [],
+    Array.isArray(raw?.drill_tag_map) ? raw.drill_tag_map : [],
+  );
 
   const skillTags = normalizeDrillTags(skillTagsRaw);
   const mediaRaw = raw?.media ?? raw?.drill_media ?? raw?.drillMedia ?? [];
 
   return {
     id: raw?.id,
-    org_id: typeof raw?.org_id === "string" ? raw.org_id : null,
-    segment_id:
-      typeof raw?.segment_id === "string"
-        ? raw.segment_id
-        : segment?.id ?? null,
-    name: typeof raw?.name === "string" ? raw.name : raw?.title ?? "",
-    description: typeof raw?.description === "string" ? raw.description : null,
+    org_id: typeof raw?.org_id === 'string' ? raw.org_id : null,
+    segment_id: typeof raw?.segment_id === 'string' ? raw.segment_id : (segment?.id ?? null),
+    name: typeof raw?.name === 'string' ? raw.name : (raw?.title ?? ''),
+    description: typeof raw?.description === 'string' ? raw.description : null,
     level:
-      typeof raw?.level === "string"
+      typeof raw?.level === 'string'
         ? raw.level
-        : typeof raw?.difficulty === "string"
+        : typeof raw?.difficulty === 'string'
           ? raw.difficulty
           : null,
     min_players: pickNullableNumber(raw?.min_players, raw?.minPlayers),
@@ -555,10 +541,10 @@ function normalizeDrillDetail(raw: any): DrillItem {
     min_age: pickNullableNumber(raw?.min_age, raw?.minAge),
     max_age: pickNullableNumber(raw?.max_age, raw?.maxAge),
     duration_min: pickNullableNumber(raw?.duration_min, raw?.durationMin),
-    visibility: typeof raw?.visibility === "string" ? raw.visibility : null,
+    visibility: typeof raw?.visibility === 'string' ? raw.visibility : null,
     is_archived: Boolean(raw?.is_archived),
-    created_at: raw?.created_at ?? "",
-    updated_at: raw?.updated_at ?? raw?.created_at ?? "",
+    created_at: raw?.created_at ?? '',
+    updated_at: raw?.updated_at ?? raw?.created_at ?? '',
     segment,
     skill_tags: skillTags,
     media: normalizeDrillMedia(mediaRaw),
@@ -573,25 +559,23 @@ export async function createDrill(
   baseUrl = DEFAULT_BASE_URL,
 ): Promise<CreateDrillResponse> {
   const payload = normalizeCreatePayload(input);
-  const url = drillsApiUrl("", baseUrl);
+  const url = drillsApiUrl('', baseUrl);
 
   const res = await apiFetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
     orgId: payload.org_id ?? null,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | CreateDrillResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as CreateDrillResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if (!data?.ok) {
-    throw new Error((data as any)?.error || "Failed to create drill.");
+    throw new Error((data as any)?.error || 'Failed to create drill.');
   }
 
   return data;
@@ -606,7 +590,7 @@ export async function updateDrill(
   options: { orgId?: string | null; baseUrl?: string } = {},
 ): Promise<DrillItem> {
   if (!drillId?.trim()) {
-    throw new Error("drillId is required.");
+    throw new Error('drillId is required.');
   }
 
   const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
@@ -614,27 +598,25 @@ export async function updateDrill(
   const url = drillsApiUrl(`/${drillId}`, baseUrl);
 
   const res = await apiFetch(url, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
     orgId,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | UpdateDrillResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as UpdateDrillResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if ((data as any)?.ok === false) {
-    throw new Error((data as any)?.error || "Failed to update drill.");
+    throw new Error((data as any)?.error || 'Failed to update drill.');
   }
 
   const raw = (data as any)?.drill ?? (data as any)?.data ?? data;
-  if (!raw || typeof raw !== "object") {
-    throw new Error("Invalid response from drill update endpoint.");
+  if (!raw || typeof raw !== 'object') {
+    throw new Error('Invalid response from drill update endpoint.');
   }
 
   return normalizeDrillDetail(raw);
@@ -647,28 +629,26 @@ export async function createDrillMediaUploadUrl(
   payload: DrillMediaUploadUrlInput,
   baseUrl = DEFAULT_BASE_URL,
 ): Promise<DrillMediaUploadUrlResponse> {
-  const url = drillsApiUrl("/media/upload-url", baseUrl);
+  const url = drillsApiUrl('/media/upload-url', baseUrl);
 
   const res = await apiFetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload ?? {}),
     orgId: payload?.org_id ?? null,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | DrillMediaUploadUrlResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as DrillMediaUploadUrlResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if ((data as any)?.ok === false) {
-    throw new Error((data as any)?.error || "Failed to get drill media upload URL.");
+    throw new Error((data as any)?.error || 'Failed to get drill media upload URL.');
   }
   if (!data) {
-    throw new Error("Invalid response from drill media upload URL endpoint.");
+    throw new Error('Invalid response from drill media upload URL endpoint.');
   }
 
   return data;
@@ -682,31 +662,29 @@ export async function createDrillMedia(
   baseUrl = DEFAULT_BASE_URL,
 ): Promise<CreateDrillMediaResponse> {
   if (!payload?.drill_id?.trim()) {
-    throw new Error("drill_id is required.");
+    throw new Error('drill_id is required.');
   }
 
-  const url = drillsApiUrl("/media", baseUrl);
+  const url = drillsApiUrl('/media', baseUrl);
 
   const res = await apiFetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
     orgId: payload?.org_id ?? null,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | CreateDrillMediaResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as CreateDrillMediaResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if ((data as any)?.ok === false) {
-    throw new Error((data as any)?.error || "Failed to create drill media.");
+    throw new Error((data as any)?.error || 'Failed to create drill media.');
   }
   if (!data) {
-    throw new Error("Invalid response from drill media endpoint.");
+    throw new Error('Invalid response from drill media endpoint.');
   }
 
   return data;
@@ -720,31 +698,29 @@ export async function getDrillMediaPlay(
   options: { orgId?: string | null; baseUrl?: string } = {},
 ): Promise<DrillMediaPlayResponse> {
   if (!drillId?.trim()) {
-    throw new Error("drillId is required.");
+    throw new Error('drillId is required.');
   }
 
   const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
   const url = drillsApiUrl(`/media/${drillId}/play`, baseUrl);
 
   const res = await apiFetch(url, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
     orgId,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | DrillMediaPlayResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as DrillMediaPlayResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if ((data as any)?.ok === false) {
-    throw new Error((data as any)?.error || "Failed to load drill media play URL.");
+    throw new Error((data as any)?.error || 'Failed to load drill media play URL.');
   }
   if (!data) {
-    throw new Error("Invalid response from drill media play endpoint.");
+    throw new Error('Invalid response from drill media play endpoint.');
   }
 
   return data;
@@ -758,35 +734,33 @@ export async function listDrills(
   baseUrl = DEFAULT_BASE_URL,
 ): Promise<{ items: DrillItem[]; count?: number }> {
   if (!params.orgId?.trim()) {
-    throw new Error("orgId is required.");
+    throw new Error('orgId is required.');
   }
 
   const qs = buildListQuery(params);
-  const url = `${drillsApiUrl("/list", baseUrl)}?${qs}`;
+  const url = `${drillsApiUrl('/list', baseUrl)}?${qs}`;
 
   const res = await apiFetch(url, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
     orgId: params.orgId ?? null,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | DrillsListResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as DrillsListResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if (!data?.ok) {
-    throw new Error((data as any)?.error || "Failed to load drills.");
+    throw new Error((data as any)?.error || 'Failed to load drills.');
   }
 
   const rawItems = (data.items ?? (data as any).data ?? []) as unknown[];
   const items = rawItems.map((item) => normalizeDrillDetail(item));
   const countRaw = (data as any)?.count;
   const count =
-    typeof countRaw === "number"
+    typeof countRaw === 'number'
       ? countRaw
       : Number.isFinite(Number(countRaw))
         ? Number(countRaw)
@@ -803,34 +777,32 @@ export async function getDrilById(
   options: { orgId?: string | null; baseUrl?: string } = {},
 ): Promise<DrillItem> {
   if (!drillId?.trim()) {
-    throw new Error("drillId is required.");
+    throw new Error('drillId is required.');
   }
 
   const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
   const url = drillsApiUrl(`/${drillId}`, baseUrl);
 
   const res = await apiFetch(url, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
     orgId,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | DrillDetailResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as DrillDetailResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if ((data as any)?.ok === false) {
-    throw new Error((data as any)?.error || "Failed to load drill.");
+    throw new Error((data as any)?.error || 'Failed to load drill.');
   }
 
   const raw = (data as any)?.drill ?? (data as any)?.data ?? data;
 
-  if (!raw || typeof raw !== "object") {
-    throw new Error("Invalid response from drill detail endpoint.");
+  if (!raw || typeof raw !== 'object') {
+    throw new Error('Invalid response from drill detail endpoint.');
   }
 
   return normalizeDrillDetail(raw);
@@ -843,24 +815,22 @@ export async function listDrillSegments(
   params: { orgId?: string | null; baseUrl?: string } = {},
 ): Promise<DrillSegment[]> {
   const { orgId = null, baseUrl = DEFAULT_BASE_URL } = params;
-  const url = drillsApiUrl("/segments", baseUrl);
+  const url = drillsApiUrl('/segments', baseUrl);
 
   const res = await apiFetch(url, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
     orgId,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | DrillSegmentsResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as DrillSegmentsResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if (!data?.ok) {
-    throw new Error((data as any)?.error || "Failed to load drill segments.");
+    throw new Error((data as any)?.error || 'Failed to load drill segments.');
   }
 
   return (data.items ?? (data as any).data ?? (data as any).segments ?? []) as DrillSegment[];
@@ -873,24 +843,22 @@ export async function listDrillTags(
   params: { orgId?: string | null; baseUrl?: string } = {},
 ): Promise<DrillTag[]> {
   const { orgId = null, baseUrl = DEFAULT_BASE_URL } = params;
-  const url = drillsApiUrl("/tags", baseUrl);
+  const url = drillsApiUrl('/tags', baseUrl);
 
   const res = await apiFetch(url, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
     orgId,
   });
 
-  const data = (await res.json().catch(() => undefined)) as
-    | DrillTagsResponse
-    | undefined;
+  const data = (await res.json().catch(() => undefined)) as DrillTagsResponse | undefined;
 
   if (!res.ok) {
     const reason = (data as any)?.error || `${res.status} ${res.statusText}`;
     throw new Error(reason);
   }
   if (!data?.ok) {
-    throw new Error((data as any)?.error || "Failed to load drill tags.");
+    throw new Error((data as any)?.error || 'Failed to load drill tags.');
   }
 
   const raw = (data.items ?? (data as any).data ?? (data as any).tags ?? []) as unknown;

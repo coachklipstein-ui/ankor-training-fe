@@ -1,11 +1,11 @@
-import { Box, Divider, Stack } from "@mui/material";
-import SkillsEmptyState from "../components/list/SkillsEmptyState";
-import SkillsFilters from "../components/list/SkillsFilters";
-import SkillsGrid from "../components/list/SkillsGrid";
-import SkillsListHeader from "../components/list/SkillsListHeader";
-import SkillsStats from "../components/list/SkillsStats";
-import useSkillsList from "../hooks/useSkillsList";
-import type { Skill } from "../services/skillsService";
+import { Box, Divider, Stack } from '@mui/material';
+import SkillsEmptyState from '../components/list/SkillsEmptyState';
+import SkillsFilters from '../components/list/SkillsFilters';
+import SkillsGrid from '../components/list/SkillsGrid';
+import SkillsListHeader from '../components/list/SkillsListHeader';
+import SkillsStats from '../components/list/SkillsStats';
+import useSkillsList from '../hooks/useSkillsList';
+import type { Skill } from '../services/skillsService';
 
 type SkillsPageProps = {
   data?: Skill[];
@@ -24,11 +24,11 @@ export default function SkillsPage({ data }: SkillsPageProps) {
   } = useSkillsList(data);
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1400, mx: "auto" }}>
+    <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1400, mx: 'auto' }}>
       <Stack
-        direction={{ xs: "column", md: "row" }}
+        direction={{ xs: 'column', md: 'row' }}
         spacing={2}
-        alignItems={{ xs: "stretch", md: "center" }}
+        alignItems={{ xs: 'stretch', md: 'center' }}
         justifyContent="space-between"
         sx={{ mb: 2 }}
       >
@@ -47,11 +47,7 @@ export default function SkillsPage({ data }: SkillsPageProps) {
 
       <Divider sx={{ mb: 2 }} />
 
-      {filtered.length === 0 ? (
-        <SkillsEmptyState />
-      ) : (
-        <SkillsGrid skills={filtered} />
-      )}
+      {filtered.length === 0 ? <SkillsEmptyState /> : <SkillsGrid skills={filtered} />}
     </Box>
   );
 }

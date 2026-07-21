@@ -1,4 +1,4 @@
-import * as React from 'react'
+import * as React from 'react';
 import {
   Box,
   Stack,
@@ -16,140 +16,131 @@ import {
   ListItemButton,
   useMediaQuery,
   Collapse,
-} from '@mui/material'
-import { DataGrid, GridColDef } from '@mui/x-data-grid'
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore' // Γ£à added
-import ExpandLessIcon from '@mui/icons-material/ExpandLess' // Γ£à added
-import { useTheme } from '@mui/material/styles'
-import { POSITION_OPTIONS } from '../constants'
-import { useAuth } from '../../../app/providers/AuthProvider'
-import EvaluationBulkActionsDialog from '../components/EvaluationBulkActionsDialog'
-import EvaluationColumnMenu from '../components/EvaluationColumnMenu'
-import EvaluationSubskillsDialog from '../components/EvaluationSubskillsDialog'
-import { useEvaluationLookups } from '../hooks/useEvaluationLookups'
-import { useSkillsDialog } from '../hooks/useSkillsDialog'
-import { buildEvaluationItems } from '../utils/buildEvaluationItems'
-import { getRatingScale } from '../utils/getRatingScale'
-import { mapTeamAthletesToAthletes } from '../utils/mapTeamAthletes'
+} from '@mui/material';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'; // Γ£à added
+import ExpandLessIcon from '@mui/icons-material/ExpandLess'; // Γ£à added
+import { useTheme } from '@mui/material/styles';
+import { POSITION_OPTIONS } from '../constants';
+import { useAuth } from '../../../app/providers/AuthProvider';
+import EvaluationBulkActionsDialog from '../components/EvaluationBulkActionsDialog';
+import EvaluationColumnMenu from '../components/EvaluationColumnMenu';
+import EvaluationSubskillsDialog from '../components/EvaluationSubskillsDialog';
+import { useEvaluationLookups } from '../hooks/useEvaluationLookups';
+import { useSkillsDialog } from '../hooks/useSkillsDialog';
+import { buildEvaluationItems } from '../utils/buildEvaluationItems';
+import { getRatingScale } from '../utils/getRatingScale';
+import { mapTeamAthletesToAthletes } from '../utils/mapTeamAthletes';
 import type {
   Athlete,
   EvaluationsState,
   ScorecardCategory,
   ScorecardSubskill,
   SubskillEvaluationsState,
-} from '../types'
-import { useParams } from 'react-router-dom'
+} from '../types';
+import { useParams } from 'react-router-dom';
 
 // ≡ƒö╣ Services
 import {
   listScorecardCategoriesByTemplate,
   listScorecardSubskillsByCategory,
-} from '../../scorecards/services/scorecardService'
-import { getAthletesByTeam } from '../../teams/services/teamsService'
-import {
-  rpcBulkCreateEvaluations,
-  getEvaluationById,
-} from '../api/evaluationsApi'
+} from '../../scorecards/services/scorecardService';
+import { getAthletesByTeam } from '../../teams/services/teamsService';
+import { rpcBulkCreateEvaluations, getEvaluationById } from '../api/evaluationsApi';
 
 // ---------- Component ----------
 
-
 export default function EvaluationsDetailPage() {
-  const { id } = useParams<{ id?: string }>() // evaluation id from route (if present)
-  const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
-  const { profile, user } = useAuth()
-  const orgId = profile?.default_org_id?.trim() || null
-  const userId = user?.id ?? null
+  const { id } = useParams<{ id?: string }>(); // evaluation id from route (if present)
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { profile, user } = useAuth();
+  const orgId = profile?.default_org_id?.trim() || null;
+  const userId = user?.id ?? null;
 
-  const { scorecards, teams } = useEvaluationLookups(orgId)
+  const { scorecards, teams } = useEvaluationLookups(orgId);
 
   // ≡ƒö╣ Data from backend
 
   // Γ£à CHANGED: use assertion instead of generic to avoid runtime `Record` reference
   const [categoriesByTemplate, setCategoriesByTemplate] = React.useState(
     {} as Record<string, ScorecardCategory[]>,
-  )
+  );
 
-  const [athletes, setAthletes] = React.useState<Athlete[]>([])
-  const [allTeamAthletes, setAllTeamAthletes] = React.useState<Athlete[]>([]) // ≡ƒæê NEW: base list for team
+  const [athletes, setAthletes] = React.useState<Athlete[]>([]);
+  const [allTeamAthletes, setAllTeamAthletes] = React.useState<Athlete[]>([]); // ≡ƒæê NEW: base list for team
 
   // Γ£à CHANGED: same here
   const [subskillsByCategory, setSubskillsByCategory] = React.useState(
     {} as Record<string, ScorecardSubskill[]>,
-  )
+  );
 
   // ≡ƒö╣ UI selections
-  const [selectedScorecardId, setSelectedScorecardId] =
-    React.useState<string>('')
-  const [selectedTeamId, setSelectedTeamId] = React.useState<string>('')
-  const [selectedAthletes, setSelectedAthletes] = React.useState<Athlete[]>([])
-  const [selectedPosition, setSelectedPosition] = React.useState<string>('') // ≡ƒæê NEW
+  const [selectedScorecardId, setSelectedScorecardId] = React.useState<string>('');
+  const [selectedTeamId, setSelectedTeamId] = React.useState<string>('');
+  const [selectedAthletes, setSelectedAthletes] = React.useState<Athlete[]>([]);
+  const [selectedPosition, setSelectedPosition] = React.useState<string>(''); // ≡ƒæê NEW
 
   // Active athlete for mobile/category navigation
-  const [activeAthleteId, setActiveAthleteId] = React.useState<string | null>(
-    null,
-  )
+  const [activeAthleteId, setActiveAthleteId] = React.useState<string | null>(null);
 
   // Active category index for mobile navigation
-  const [activeCategoryIndex, setActiveCategoryIndex] = React.useState(0)
+  const [activeCategoryIndex, setActiveCategoryIndex] = React.useState(0);
 
   // ≡ƒö╣ Evaluations
-  const [evaluations, setEvaluations] = React.useState<EvaluationsState>({})
-  const [subskillEvaluations, setSubskillEvaluations] =
-    React.useState<SubskillEvaluationsState>({})
+  const [evaluations, setEvaluations] = React.useState<EvaluationsState>({});
+  const [subskillEvaluations, setSubskillEvaluations] = React.useState<SubskillEvaluationsState>(
+    {},
+  );
 
   // Γ£à Mobile-only: expanded/collapsed subskills per category
-  const [expandedSubskillsByCategory, setExpandedSubskillsByCategory] =
-    React.useState<Record<string, boolean>>({})
+  const [expandedSubskillsByCategory, setExpandedSubskillsByCategory] = React.useState<
+    Record<string, boolean>
+  >({});
 
   // ≡ƒö╣ Save state
-  const [saving, setSaving] = React.useState(false)
+  const [saving, setSaving] = React.useState(false);
 
   // ≡ƒö╣ Detail loading state
-  const [loadingDetail, setLoadingDetail] = React.useState(false)
-  const [detailError, setDetailError] = React.useState<string | null>(null)
+  const [loadingDetail, setLoadingDetail] = React.useState(false);
+  const [detailError, setDetailError] = React.useState<string | null>(null);
 
   // ≡ƒö╣ Bulk actions dialog state
-  const [bulkDialogOpen, setBulkDialogOpen] = React.useState(false)
-  const [bulkValue, setBulkValue] = React.useState<number | ''>('')
-  const [bulkSelectedAthleteIds, setBulkSelectedAthleteIds] = React.useState<
-    string[]
-  >([])
-  const [bulkSourceAthleteId, setBulkSourceAthleteId] =
-    React.useState<string | null>(null)
+  const [bulkDialogOpen, setBulkDialogOpen] = React.useState(false);
+  const [bulkValue, setBulkValue] = React.useState<number | ''>('');
+  const [bulkSelectedAthleteIds, setBulkSelectedAthleteIds] = React.useState<string[]>([]);
+  const [bulkSourceAthleteId, setBulkSourceAthleteId] = React.useState<string | null>(null);
   // Categories to apply the bulk grade to (multi-select)
-  const [bulkCategoryIds, setBulkCategoryIds] = React.useState<string[]>([])
+  const [bulkCategoryIds, setBulkCategoryIds] = React.useState<string[]>([]);
 
   // Keep activeAthleteId in sync with selectedAthletes
   React.useEffect(() => {
     if (selectedAthletes.length === 0) {
-      setActiveAthleteId(null)
-      return
+      setActiveAthleteId(null);
+      return;
     }
 
     setActiveAthleteId((prev) => {
       if (prev && selectedAthletes.some((a) => a.id === prev)) {
-        return prev
+        return prev;
       }
-      return selectedAthletes[0].id
-    })
-  }, [selectedAthletes])
+      return selectedAthletes[0].id;
+    });
+  }, [selectedAthletes]);
 
   // ---------- Derived data ----------
 
   const activeScorecard = React.useMemo(
     () => scorecards.find((s) => s.id === selectedScorecardId) ?? null,
     [scorecards, selectedScorecardId],
-  )
+  );
 
   const activeCategories: ScorecardCategory[] = React.useMemo(
-    () =>
-      selectedScorecardId ? categoriesByTemplate[selectedScorecardId] ?? [] : [],
+    () => (selectedScorecardId ? (categoriesByTemplate[selectedScorecardId] ?? []) : []),
     [categoriesByTemplate, selectedScorecardId],
-  )
+  );
 
   const {
     skillDialogOpen,
@@ -169,46 +160,44 @@ export default function EvaluationsDetailPage() {
     subskillEvaluations,
     setSubskillEvaluations,
     orgId,
-  })
+  });
 
   React.useEffect(() => {
     if (activeCategories.length === 0) {
-      setActiveCategoryIndex(0)
-      return
+      setActiveCategoryIndex(0);
+      return;
     }
 
-    setActiveCategoryIndex((prev) =>
-      Math.min(prev, activeCategories.length - 1),
-    )
-  }, [activeCategories])
+    setActiveCategoryIndex((prev) => Math.min(prev, activeCategories.length - 1));
+  }, [activeCategories]);
 
   // Γ£à NEW: skip resetting category index when we auto-advance athletes after rating
-  const skipMobileCategoryResetRef = React.useRef(false)
+  const skipMobileCategoryResetRef = React.useRef(false);
 
   // Γ£à NEW: helper to move to next athlete (mobile flow)
   const moveToNextAthlete = React.useCallback(() => {
-    if (!activeAthleteId) return
-    const idx = selectedAthletes.findIndex((a) => a.id === activeAthleteId)
-    if (idx < 0) return
+    if (!activeAthleteId) return;
+    const idx = selectedAthletes.findIndex((a) => a.id === activeAthleteId);
+    if (idx < 0) return;
 
-    const next = selectedAthletes[idx + 1]
-    if (!next) return // last athlete -> no wrap
+    const next = selectedAthletes[idx + 1];
+    if (!next) return; // last athlete -> no wrap
 
-    skipMobileCategoryResetRef.current = true
-    setActiveAthleteId(next.id)
-  }, [activeAthleteId, selectedAthletes])
+    skipMobileCategoryResetRef.current = true;
+    setActiveAthleteId(next.id);
+  }, [activeAthleteId, selectedAthletes]);
 
   // Γ£à CHANGED: reset category index on athlete change ONLY on mobile, and not when auto-advancing
   React.useEffect(() => {
-    if (!isMobile) return
+    if (!isMobile) return;
 
     if (skipMobileCategoryResetRef.current) {
-      skipMobileCategoryResetRef.current = false
-      return
+      skipMobileCategoryResetRef.current = false;
+      return;
     }
 
-    setActiveCategoryIndex(0)
-  }, [activeAthleteId, isMobile])
+    setActiveCategoryIndex(0);
+  }, [activeAthleteId, isMobile]);
 
   // ---------- Columns: fixed category info + dynamic athlete columns ----------
 
@@ -220,7 +209,7 @@ export default function EvaluationsDetailPage() {
         flex: 1.4,
         sortable: false,
       },
-    ]
+    ];
 
     const athleteColumns: GridColDef[] = selectedAthletes.map((athlete) => ({
       field: athlete.id,
@@ -230,54 +219,53 @@ export default function EvaluationsDetailPage() {
       editable: true,
       type: 'number',
       valueParser: (value) => {
-        const num = Number(value)
-        return Number.isNaN(num) ? null : num
+        const num = Number(value);
+        return Number.isNaN(num) ? null : num;
       },
-    }))
+    }));
 
-    return [...baseColumns, ...athleteColumns]
-  }, [selectedAthletes])
+    return [...baseColumns, ...athleteColumns];
+  }, [selectedAthletes]);
 
   // ---------- Rows: one row per category, cells per athlete ----------
 
   const rows = React.useMemo(
     () =>
       activeCategories.map((cat) => {
-        const scoresByAthlete = selectedAthletes.reduce<
-          Record<string, number | null>
-        >((acc, athlete) => {
-          const evalForAthlete = evaluations[athlete.id] ?? {}
-          acc[athlete.id] = evalForAthlete[cat.id] ?? null
-          return acc
-        }, {})
+        const scoresByAthlete = selectedAthletes.reduce<Record<string, number | null>>(
+          (acc, athlete) => {
+            const evalForAthlete = evaluations[athlete.id] ?? {};
+            acc[athlete.id] = evalForAthlete[cat.id] ?? null;
+            return acc;
+          },
+          {},
+        );
 
         return {
           id: cat.id,
           categoryName: cat.name,
           ...scoresByAthlete,
-        }
+        };
       }),
     [activeCategories, selectedAthletes, evaluations],
-  )
+  );
 
   const currentCategory =
     activeCategories.length > 0
-      ? activeCategories[
-          Math.min(activeCategoryIndex, activeCategories.length - 1)
-        ]
-      : null
+      ? activeCategories[Math.min(activeCategoryIndex, activeCategories.length - 1)]
+      : null;
 
   const currentSubskills =
-    currentCategory != null ? subskillsByCategory[currentCategory.id] : undefined
+    currentCategory != null ? subskillsByCategory[currentCategory.id] : undefined;
 
-  const hasNextCategory = activeCategoryIndex < activeCategories.length - 1
-  const hasPreviousCategory = activeCategoryIndex > 0
+  const hasNextCategory = activeCategoryIndex < activeCategories.length - 1;
+  const hasPreviousCategory = activeCategoryIndex > 0;
 
   // Γ£à Mobile helper: lazy-load subskills only when needed (expand or set category rating)
   const ensureMobileSubskillsLoaded = React.useCallback(
     async (categoryId: string) => {
-      if (!isMobile) return
-      if (subskillsByCategory[categoryId] !== undefined) return
+      if (!isMobile) return;
+      if (subskillsByCategory[categoryId] !== undefined) return;
 
       try {
         const skills = await listScorecardSubskillsByCategory({
@@ -285,22 +273,22 @@ export default function EvaluationsDetailPage() {
           orgId,
           limit: 200,
           offset: 0,
-        })
+        });
 
         setSubskillsByCategory((prev) => ({
           ...prev,
           [categoryId]: (skills ?? []) as ScorecardSubskill[],
-        }))
+        }));
       } catch (err) {
-        console.error('Failed to lazy-load subskills (mobile)', err)
+        console.error('Failed to lazy-load subskills (mobile)', err);
         setSubskillsByCategory((prev) => ({
           ...prev,
           [categoryId]: [],
-        }))
+        }));
       }
     },
     [isMobile, subskillsByCategory, orgId],
-  )
+  );
 
   // Γ£à Mobile helper: set baseline category score and clear overrides (rollout behavior)
   const setMobileCategoryScoreAndRollout = React.useCallback(
@@ -311,92 +299,78 @@ export default function EvaluationsDetailPage() {
           ...(prev[athleteId] ?? {}),
           [categoryId]: score,
         },
-      }))
+      }));
 
       // Remove overrides for this category so baseline "rolls out"
       setSubskillEvaluations((prev) => {
-        const prevForAthlete = prev[athleteId] ?? {}
-        const { [categoryId]: _removed, ...restCats } = prevForAthlete
+        const prevForAthlete = prev[athleteId] ?? {};
+        const { [categoryId]: _removed, ...restCats } = prevForAthlete;
         return {
           ...prev,
           [athleteId]: restCats,
-        }
-      })
+        };
+      });
     },
     [],
-  )
+  );
 
   // Γ£à Mobile handler: store ONLY overrides (if equals baseline, remove override)
   const handleMobileSubskillRatingChange = React.useCallback(
-    (
-      athleteId: string,
-      categoryId: string,
-      subskillId: string,
-      rating: number,
-    ) => {
-      const baseline = evaluations[athleteId]?.[categoryId] ?? null
+    (athleteId: string, categoryId: string, subskillId: string, rating: number) => {
+      const baseline = evaluations[athleteId]?.[categoryId] ?? null;
 
       setSubskillEvaluations((prev) => {
-        const prevForAthlete = prev[athleteId] ?? {}
-        const prevForCat = prevForAthlete[categoryId] ?? {}
-        const nextForCat: Record<string, number | null> = { ...prevForCat }
+        const prevForAthlete = prev[athleteId] ?? {};
+        const prevForCat = prevForAthlete[categoryId] ?? {};
+        const nextForCat: Record<string, number | null> = { ...prevForCat };
 
         if (baseline != null && Number(rating) === Number(baseline)) {
-          delete nextForCat[subskillId]
+          delete nextForCat[subskillId];
         } else {
-          nextForCat[subskillId] = rating
+          nextForCat[subskillId] = rating;
         }
 
         const nextForAthlete: Record<string, Record<string, number | null>> = {
           ...prevForAthlete,
-        }
+        };
 
         if (Object.keys(nextForCat).length === 0) {
-          delete nextForAthlete[categoryId]
+          delete nextForAthlete[categoryId];
         } else {
-          nextForAthlete[categoryId] = nextForCat
+          nextForAthlete[categoryId] = nextForCat;
         }
 
         return {
           ...prev,
           [athleteId]: nextForAthlete,
-        }
-      })
+        };
+      });
     },
     [evaluations],
-  )
+  );
 
-  const mobileExpanded =
-    currentCategory ? !!expandedSubskillsByCategory[currentCategory.id] : false
+  const mobileExpanded = currentCategory
+    ? !!expandedSubskillsByCategory[currentCategory.id]
+    : false;
 
   const mobileCategoryScore =
     activeAthleteId && currentCategory
-      ? evaluations[activeAthleteId]?.[currentCategory.id] ?? null
-      : null
+      ? (evaluations[activeAthleteId]?.[currentCategory.id] ?? null)
+      : null;
 
   React.useEffect(() => {
-    if (!isMobile || !currentCategory) return
-    if (!expandedSubskillsByCategory[currentCategory.id]) return
-    void ensureMobileSubskillsLoaded(currentCategory.id)
-  }, [
-    isMobile,
-    currentCategory?.id,
-    expandedSubskillsByCategory,
-    ensureMobileSubskillsLoaded,
-  ])
+    if (!isMobile || !currentCategory) return;
+    if (!expandedSubskillsByCategory[currentCategory.id]) return;
+    void ensureMobileSubskillsLoaded(currentCategory.id);
+  }, [isMobile, currentCategory?.id, expandedSubskillsByCategory, ensureMobileSubskillsLoaded]);
 
   const handleSubskillRatingChange = React.useCallback(
-    (
-      athleteId: string,
-      categoryId: string,
-      subskillId: string,
-      rating: number,
-    ) => {
-      if (!athleteId) return
+    (athleteId: string, categoryId: string, subskillId: string, rating: number) => {
+      if (!athleteId) return;
 
-      const currentByAthlete = subskillEvaluations[athleteId] ?? {}
-      const currentByCategory = currentByAthlete[categoryId] ?? {}
-      const nextByCategory = { ...currentByCategory, [subskillId]: rating }
+      const currentByAthlete = subskillEvaluations[athleteId] ?? {};
+      const currentByCategory = currentByAthlete[categoryId] ?? {};
+      const nextByCategory = { ...currentByCategory, [subskillId]: rating };
 
       setSubskillEvaluations((prev) => ({
         ...prev,
@@ -404,22 +378,18 @@ export default function EvaluationsDetailPage() {
           ...(prev[athleteId] ?? {}),
           [categoryId]: nextByCategory,
         },
-      }))
+      }));
 
-      const subskills = subskillsByCategory[categoryId] ?? []
+      const subskills = subskillsByCategory[categoryId] ?? [];
       const numericRatings = subskills
         .map((sub) => nextByCategory[sub.skill_id ?? sub.id])
-        .filter(
-          (val) =>
-            val !== null && val !== undefined && !Number.isNaN(Number(val)),
-        )
-        .map((val) => Number(val))
+        .filter((val) => val !== null && val !== undefined && !Number.isNaN(Number(val)))
+        .map((val) => Number(val));
 
       const average =
         numericRatings.length > 0
-          ? numericRatings.reduce((sum, val) => sum + val, 0) /
-            numericRatings.length
-          : null
+          ? numericRatings.reduce((sum, val) => sum + val, 0) / numericRatings.length
+          : null;
 
       setEvaluations((prev) => ({
         ...prev,
@@ -427,42 +397,42 @@ export default function EvaluationsDetailPage() {
           ...(prev[athleteId] ?? {}),
           [categoryId]: average,
         },
-      }))
+      }));
     },
     [subskillEvaluations, subskillsByCategory],
-  )
+  );
 
   // ---------- Edit handler (uses processRowUpdate) ----------
 
   const processRowUpdate = React.useCallback(
     (newRow: any, oldRow: any) => {
       // Find the changed field (athleteId)
-      let changedField: string | null = null
-      let newValue: number | null = null
+      let changedField: string | null = null;
+      let newValue: number | null = null;
       for (const key in newRow) {
         if (newRow[key] !== oldRow[key]) {
-          changedField = key
-          newValue = newRow[key]
-          break // Assume single cell edit
+          changedField = key;
+          newValue = newRow[key];
+          break; // Assume single cell edit
         }
       }
 
       if (!changedField) {
-        return newRow
+        return newRow;
       }
 
       if (newValue !== null && (newValue < 1 || newValue > 5)) {
-        window.alert('Values should be from 1 to 5.')
-        return oldRow
+        window.alert('Values should be from 1 to 5.');
+        return oldRow;
       }
 
-      const athlete = selectedAthletes.find((a) => a.id === changedField)
+      const athlete = selectedAthletes.find((a) => a.id === changedField);
       if (!athlete) {
-        return newRow
+        return newRow;
       }
 
-      const categoryId = String(newRow.id)
-      const athleteId = athlete.id
+      const categoryId = String(newRow.id);
+      const athleteId = athlete.id;
 
       // Update evaluations state
       setEvaluations((prev) => ({
@@ -471,119 +441,113 @@ export default function EvaluationsDetailPage() {
           ...(prev[athleteId] ?? {}),
           [categoryId]: newValue,
         },
-      }))
+      }));
 
       // If the user edits the baseline score, drop any subskill overrides
       // so the new category score is authoritative.
       setSubskillEvaluations((prev) => {
-        const prevForAthlete = prev[athleteId]
+        const prevForAthlete = prev[athleteId];
         if (!prevForAthlete || prevForAthlete[categoryId] === undefined) {
-          return prev
+          return prev;
         }
 
-        const { [categoryId]: _removed, ...restCats } = prevForAthlete
+        const { [categoryId]: _removed, ...restCats } = prevForAthlete;
         if (Object.keys(restCats).length === 0) {
-          const next = { ...prev }
-          delete next[athleteId]
-          return next
+          const next = { ...prev };
+          delete next[athleteId];
+          return next;
         }
 
-        return { ...prev, [athleteId]: restCats }
-      })
+        return { ...prev, [athleteId]: restCats };
+      });
 
       // If score < 3, open skills modal for that category
       if (newValue !== null && newValue < 3) {
-        openSkillsDialog(athleteId, categoryId)
+        openSkillsDialog(athleteId, categoryId);
       }
 
-      return newRow
+      return newRow;
     },
     [selectedAthletes, openSkillsDialog],
-  )
+  );
 
   // ---------- Bulk actions handlers ----------
 
   const handleOpenBulkDialog = React.useCallback(
     (athleteField: string) => {
-      setBulkSourceAthleteId(athleteField)
-      setBulkDialogOpen(true)
-      setBulkValue('')
+      setBulkSourceAthleteId(athleteField);
+      setBulkDialogOpen(true);
+      setBulkValue('');
       // default: all visible athletes selected
-      setBulkSelectedAthleteIds(selectedAthletes.map((a) => a.id))
+      setBulkSelectedAthleteIds(selectedAthletes.map((a) => a.id));
       // default: all visible categories selected
-      setBulkCategoryIds(activeCategories.map((cat) => cat.id))
+      setBulkCategoryIds(activeCategories.map((cat) => cat.id));
     },
     [selectedAthletes, activeCategories],
-  )
+  );
 
   const handleToggleBulkAthlete = (athleteId: string) => {
     setBulkSelectedAthleteIds((prev) =>
-      prev.includes(athleteId)
-        ? prev.filter((id) => id !== athleteId)
-        : [...prev, athleteId],
-    )
-  }
+      prev.includes(athleteId) ? prev.filter((id) => id !== athleteId) : [...prev, athleteId],
+    );
+  };
 
   const handleBulkSelectAll = () => {
-    setBulkSelectedAthleteIds(selectedAthletes.map((a) => a.id))
-  }
+    setBulkSelectedAthleteIds(selectedAthletes.map((a) => a.id));
+  };
 
   const handleBulkClearAll = () => {
-    setBulkSelectedAthleteIds([])
-  }
+    setBulkSelectedAthleteIds([]);
+  };
 
   const handleApplyBulkEvaluation = () => {
-    if (
-      bulkValue === '' ||
-      bulkSelectedAthleteIds.length === 0 ||
-      bulkCategoryIds.length === 0
-    ) {
-      setBulkDialogOpen(false)
-      return
+    if (bulkValue === '' || bulkSelectedAthleteIds.length === 0 || bulkCategoryIds.length === 0) {
+      setBulkDialogOpen(false);
+      return;
     }
 
-    const numericValue = Number(bulkValue)
-    if (Number.isNaN(numericValue)) return
+    const numericValue = Number(bulkValue);
+    if (Number.isNaN(numericValue)) return;
 
     setEvaluations((prev) => {
-      const next: EvaluationsState = { ...prev }
+      const next: EvaluationsState = { ...prev };
 
       bulkSelectedAthleteIds.forEach((athleteId) => {
-        const prevForAthlete = next[athleteId] ?? {}
+        const prevForAthlete = next[athleteId] ?? {};
         const updatedForAthlete: Record<string, number | null> = {
           ...prevForAthlete,
-        }
+        };
 
         // Apply to all selected categories
         bulkCategoryIds.forEach((categoryId) => {
-          updatedForAthlete[categoryId] = numericValue
-        })
+          updatedForAthlete[categoryId] = numericValue;
+        });
 
-        next[athleteId] = updatedForAthlete
-      })
+        next[athleteId] = updatedForAthlete;
+      });
 
-      return next
-    })
+      return next;
+    });
 
-    setBulkDialogOpen(false)
-    setBulkCategoryIds([])
-  }
+    setBulkDialogOpen(false);
+    setBulkCategoryIds([]);
+  };
 
   // ---------- Other handlers ----------
 
   const handleScorecardChange = (newId: string) => {
-    setSelectedScorecardId(newId)
-    setEvaluations({})
-    setSubskillEvaluations({})
+    setSelectedScorecardId(newId);
+    setEvaluations({});
+    setSubskillEvaluations({});
     // optionally clear subskills cache when switching templates
     // setSubskillsByCategory({})
 
-    if (!newId) return
+    if (!newId) return;
 
-    ;(async () => {
+    (async () => {
       try {
         // 1) Get categories for this template (from cache or API)
-        let categories = categoriesByTemplate[newId]
+        let categories = categoriesByTemplate[newId];
 
         if (!categories) {
           const fetchedCategories = await listScorecardCategoriesByTemplate({
@@ -591,23 +555,23 @@ export default function EvaluationsDetailPage() {
             orgId,
             limit: 200,
             offset: 0,
-          })
+          });
 
-          categories = (fetchedCategories ?? []) as ScorecardCategory[]
+          categories = (fetchedCategories ?? []) as ScorecardCategory[];
 
           setCategoriesByTemplate((prev) => ({
             ...prev,
             [newId]: categories!,
-          }))
+          }));
         }
 
         if (!categories || categories.length === 0) {
-          return
+          return;
         }
 
         // 2) For each category, prefetch subskills if not already loaded
-        const toFetch = categories.filter((cat) => !subskillsByCategory[cat.id])
-        if (toFetch.length === 0) return
+        const toFetch = categories.filter((cat) => !subskillsByCategory[cat.id]);
+        if (toFetch.length === 0) return;
 
         const results = await Promise.allSettled(
           toFetch.map((cat) =>
@@ -621,98 +585,92 @@ export default function EvaluationsDetailPage() {
               subskills: subskills ?? [],
             })),
           ),
-        )
+        );
 
         setSubskillsByCategory((prev) => {
-          const next = { ...prev }
+          const next = { ...prev };
           for (const r of results) {
             if (r.status === 'fulfilled') {
-              const { categoryId, subskills } = r.value
-              next[categoryId] = subskills as ScorecardSubskill[]
+              const { categoryId, subskills } = r.value;
+              next[categoryId] = subskills as ScorecardSubskill[];
             }
           }
-          return next
-        })
+          return next;
+        });
       } catch (err) {
-        console.error('Failed to load scorecard categories/subskills', err)
+        console.error('Failed to load scorecard categories/subskills', err);
       }
-    })()
-  }
+    })();
+  };
 
   const handleTeamChange = (teamId: string) => {
-    setSelectedTeamId(teamId)
-    setEvaluations({})
-    setSubskillEvaluations({})
-    setSelectedPosition('') // ≡ƒæê reset position filter when changing team
-    setAllTeamAthletes([])
+    setSelectedTeamId(teamId);
+    setEvaluations({});
+    setSubskillEvaluations({});
+    setSelectedPosition(''); // ≡ƒæê reset position filter when changing team
+    setAllTeamAthletes([]);
 
     if (!teamId) {
-      setAthletes([])
-      setSelectedAthletes([])
-      return
+      setAthletes([]);
+      setSelectedAthletes([]);
+      return;
     }
 
-    ;(async () => {
+    (async () => {
       try {
-        const athletesResponse = await getAthletesByTeam(teamId, { orgId })
-        const mapped = mapTeamAthletesToAthletes(athletesResponse ?? [])
+        const athletesResponse = await getAthletesByTeam(teamId, { orgId });
+        const mapped = mapTeamAthletesToAthletes(athletesResponse ?? []);
 
-        setAllTeamAthletes(mapped) // ≡ƒæê base list
-        setAthletes(mapped)
-        setSelectedAthletes(mapped)
+        setAllTeamAthletes(mapped); // ≡ƒæê base list
+        setAthletes(mapped);
+        setSelectedAthletes(mapped);
       } catch (err) {
-        console.error('Failed to load athletes for team', err)
-        setAllTeamAthletes([])
-        setAthletes([])
-        setSelectedAthletes([])
+        console.error('Failed to load athletes for team', err);
+        setAllTeamAthletes([]);
+        setAthletes([]);
+        setSelectedAthletes([]);
       }
-    })()
-  }
+    })();
+  };
 
   const handlePositionChange = (positionValue: string) => {
-    setSelectedPosition(positionValue)
-    setEvaluations({})
-    setSubskillEvaluations({})
+    setSelectedPosition(positionValue);
+    setEvaluations({});
+    setSubskillEvaluations({});
 
     if (!positionValue) {
       // All positions
-      setAthletes(allTeamAthletes)
-      setSelectedAthletes(allTeamAthletes)
-      return
+      setAthletes(allTeamAthletes);
+      setSelectedAthletes(allTeamAthletes);
+      return;
     }
 
     const filtered = allTeamAthletes.filter(
-      (a) =>
-        a.position &&
-        a.position.toLowerCase() === positionValue.toLowerCase(),
-    )
+      (a) => a.position && a.position.toLowerCase() === positionValue.toLowerCase(),
+    );
 
-    setAthletes(filtered)
-    setSelectedAthletes(filtered)
-  }
+    setAthletes(filtered);
+    setSelectedAthletes(filtered);
+  };
 
   // ≡ƒö╣ Build payload using ONLY changed cells
   const handleSaveEvaluations = async () => {
-    if (
-      !selectedScorecardId ||
-      selectedAthletes.length === 0 ||
-      activeCategories.length === 0
-    ) {
-      console.warn('Nothing to save: missing scorecard, athletes, or categories')
-      return
+    if (!selectedScorecardId || selectedAthletes.length === 0 || activeCategories.length === 0) {
+      console.warn('Nothing to save: missing scorecard, athletes, or categories');
+      return;
     }
 
     if (!orgId) {
-      console.warn('Missing org_id from profile.')
-      return
+      console.warn('Missing org_id from profile.');
+      return;
     }
     if (!userId) {
-      console.warn('Missing user id from session.')
-      return
+      console.warn('Missing user id from session.');
+      return;
     }
 
     try {
-      setSaving(true)
+      setSaving(true);
 
       // ----- Build evaluation_items from matrix + subskills, only for changed cells -----
       const evaluationItems = buildEvaluationItems({
@@ -720,11 +678,11 @@ export default function EvaluationsDetailPage() {
         evaluations,
         subskillEvaluations,
         subskillsByCategory,
-      })
+      });
 
       if (evaluationItems.length === 0) {
-        console.warn('Nothing to save: no changed cells to persist')
-        return
+        console.warn('Nothing to save: no changed cells to persist');
+        return;
       }
 
       // ----- Final payload: one evaluation with many items -----
@@ -739,17 +697,15 @@ export default function EvaluationsDetailPage() {
             evaluation_items: evaluationItems,
           },
         ],
-      }
+      };
 
-      const result = await rpcBulkCreateEvaluations(payload as any, { orgId })
-
-     
+      const result = await rpcBulkCreateEvaluations(payload as any, { orgId });
     } catch (err) {
-      console.error('Failed to save evaluations', err)
+      console.error('Failed to save evaluations', err);
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   return (
     <Box sx={{ p: 3 }}>
@@ -831,29 +787,25 @@ export default function EvaluationsDetailPage() {
               getOptionLabel={(option) => option.full_name}
               value={selectedAthletes}
               onChange={(_, newValue) => {
-                setSelectedAthletes(newValue)
+                setSelectedAthletes(newValue);
                 setEvaluations((prev) => {
-                  const next: EvaluationsState = {}
+                  const next: EvaluationsState = {};
                   newValue.forEach((a) => {
-                    if (prev[a.id]) next[a.id] = prev[a.id]
-                  })
-                  return next
-                })
+                    if (prev[a.id]) next[a.id] = prev[a.id];
+                  });
+                  return next;
+                });
                 setSubskillEvaluations((prev) => {
-                  const next: SubskillEvaluationsState = {}
+                  const next: SubskillEvaluationsState = {};
                   newValue.forEach((a) => {
-                    if (prev[a.id]) next[a.id] = prev[a.id]
-                  })
-                  return next
-                })
+                    if (prev[a.id]) next[a.id] = prev[a.id];
+                  });
+                  return next;
+                });
               }}
               renderTags={(value, getTagProps) =>
                 value.map((option, index) => (
-                  <Chip
-                    {...getTagProps({ index })}
-                    key={option.id}
-                    label={option.full_name}
-                  />
+                  <Chip {...getTagProps({ index })} key={option.id} label={option.full_name} />
                 ))
               }
               renderInput={(params) => (
@@ -861,9 +813,7 @@ export default function EvaluationsDetailPage() {
                   {...params}
                   label="Athletes to evaluate"
                   placeholder={
-                    selectedTeamId
-                      ? 'All team athletes selected by default'
-                      : 'Select athletes'
+                    selectedTeamId ? 'All team athletes selected by default' : 'Select athletes'
                   }
                 />
               )}
@@ -872,11 +822,10 @@ export default function EvaluationsDetailPage() {
           </Stack>
 
           <Typography variant="body2" sx={{ mt: 1 }} color="text.secondary">
-            Flow: 1) Pick a scorecard ΓåÆ 2) Choose a team to auto-select its
-            athletes ΓåÆ (optional) filter by position ΓåÆ 3) Adjust athletes if
-            needed ΓåÆ 4) Fill scores in the matrix below. Rows are categories,
-            columns are athletes. If a score is less than 3, you&apos;ll see
-            the key subskills for that category.
+            Flow: 1) Pick a scorecard ΓåÆ 2) Choose a team to auto-select its athletes ΓåÆ
+            (optional) filter by position ΓåÆ 3) Adjust athletes if needed ΓåÆ 4) Fill scores in the
+            matrix below. Rows are categories, columns are athletes. If a score is less than 3,
+            you&apos;ll see the key subskills for that category.
           </Typography>
         </Paper>
 
@@ -915,8 +864,7 @@ export default function EvaluationsDetailPage() {
               selectedAthletes.length === 0 ||
               activeCategories.length === 0 ? (
                 <Typography variant="body2" color="text.secondary">
-                  Select a scorecard, team, and athletes to start rating
-                  subskills.
+                  Select a scorecard, team, and athletes to start rating subskills.
                 </Typography>
               ) : (
                 <Stack
@@ -986,18 +934,18 @@ export default function EvaluationsDetailPage() {
                             exclusive
                             value={mobileCategoryScore}
                             onChange={(_, newValue: number | null) => {
-                              if (!activeAthleteId || !currentCategory) return
-                              void ensureMobileSubskillsLoaded(currentCategory.id)
+                              if (!activeAthleteId || !currentCategory) return;
+                              void ensureMobileSubskillsLoaded(currentCategory.id);
 
                               setMobileCategoryScoreAndRollout(
                                 activeAthleteId,
                                 currentCategory.id,
                                 newValue,
-                              )
+                              );
 
                               // Γ£à NEW: if a rating is chosen, auto-advance to next athlete
                               if (newValue !== null) {
-                                moveToNextAthlete()
+                                moveToNextAthlete();
                               }
                             }}
                             aria-label="Category rating baseline"
@@ -1020,13 +968,13 @@ export default function EvaluationsDetailPage() {
                           size="small"
                           variant="outlined"
                           onClick={() => {
-                            if (!currentCategory) return
-                            const nextExpanded = !expandedSubskillsByCategory[currentCategory.id]
+                            if (!currentCategory) return;
+                            const nextExpanded = !expandedSubskillsByCategory[currentCategory.id];
                             setExpandedSubskillsByCategory((prev) => ({
                               ...prev,
                               [currentCategory.id]: nextExpanded,
-                            }))
-                            if (nextExpanded) void ensureMobileSubskillsLoaded(currentCategory.id)
+                            }));
+                            if (nextExpanded) void ensureMobileSubskillsLoaded(currentCategory.id);
                           }}
                           endIcon={mobileExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                           disabled={!currentCategory}
@@ -1052,26 +1000,27 @@ export default function EvaluationsDetailPage() {
                                 .map((skill) => {
                                   const overridesForAthlete =
                                     (activeAthleteId &&
-                                      subskillEvaluations[activeAthleteId]?.[
-                                        currentCategory.id
-                                      ]) ??
-                                    {}
+                                      subskillEvaluations[activeAthleteId]?.[currentCategory.id]) ??
+                                    {};
 
                                   const baseline =
                                     (activeAthleteId &&
                                       evaluations[activeAthleteId]?.[currentCategory.id]) ??
-                                    null
+                                    null;
 
                                   // Γ£à Display override if exists, else baseline
-                                  const subskillId = skill.skill_id ?? skill.id
+                                  const subskillId = skill.skill_id ?? skill.id;
                                   const ratingValue =
                                     (overridesForAthlete as Record<string, number | null>)[
                                       subskillId
                                     ] ??
                                     baseline ??
-                                    null
+                                    null;
 
-                                  const ratingScale = getRatingScale(skill.rating_min, skill.rating_max)
+                                  const ratingScale = getRatingScale(
+                                    skill.rating_min,
+                                    skill.rating_max,
+                                  );
 
                                   return (
                                     <Paper key={subskillId} variant="outlined" sx={{ p: 1.5 }}>
@@ -1098,7 +1047,7 @@ export default function EvaluationsDetailPage() {
                                               currentCategory.id,
                                               subskillId,
                                               Number(newValue),
-                                            )
+                                            );
                                           }
                                         }}
                                         aria-label={`${skill.name} rating`}
@@ -1120,7 +1069,7 @@ export default function EvaluationsDetailPage() {
                                         ))}
                                       </ToggleButtonGroup>
                                     </Paper>
-                                  )
+                                  );
                                 })}
                             </Stack>
                           )}
@@ -1181,16 +1130,11 @@ export default function EvaluationsDetailPage() {
                 </Stack>
               )}
             </Paper>
-
           </Stack>
         )}
 
         {!isMobile && (
-          <Stack
-            direction={{ xs: 'column', lg: 'row' }}
-            spacing={2}
-            alignItems="stretch"
-          >
+          <Stack direction={{ xs: 'column', lg: 'row' }} spacing={2} alignItems="stretch">
             {/* LEFT PANEL: Matrix Category ├ù Athletes */}
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <Paper sx={{ height: 520, p: 1 }}>
@@ -1213,23 +1157,23 @@ export default function EvaluationsDetailPage() {
                       } as any,
                     }}
                     onCellClick={(params) => {
-                      const field = params.field as string
+                      const field = params.field as string;
                       if (selectedAthletes.some((a) => a.id === field)) {
-                        setActiveAthleteId(field)
+                        setActiveAthleteId(field);
                       }
                     }}
                     onCellDoubleClick={(params) => {
-                      const field = params.field as string
+                      const field = params.field as string;
 
                       // Only react to athlete columns, not the Category column
                       if (!selectedAthletes.some((a) => a.id === field)) {
-                        return
+                        return;
                       }
 
-                      const athleteId = field
-                      const categoryId = String(params.id) // row.id is the category id
+                      const athleteId = field;
+                      const categoryId = String(params.id); // row.id is the category id
 
-                      openSkillsDialog(athleteId, categoryId)
+                      openSkillsDialog(athleteId, categoryId);
                     }}
                   />
                 ) : (
@@ -1244,8 +1188,8 @@ export default function EvaluationsDetailPage() {
                     }}
                   >
                     <Typography variant="body1" color="text.secondary">
-                      Select a scorecard and at least one athlete (via team filter
-                      or athlete picker) to render the evaluation matrix.
+                      Select a scorecard and at least one athlete (via team filter or athlete
+                      picker) to render the evaluation matrix.
                     </Typography>
                   </Box>
                 )}
@@ -1283,15 +1227,11 @@ export default function EvaluationsDetailPage() {
         onSelectAll={handleBulkSelectAll}
         onClearAll={handleBulkClearAll}
         onCancel={() => {
-          setBulkDialogOpen(false)
-          setBulkCategoryIds([])
+          setBulkDialogOpen(false);
+          setBulkCategoryIds([]);
         }}
         onApply={handleApplyBulkEvaluation}
       />
     </Box>
-  )
+  );
 }
-
-
-
-

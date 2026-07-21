@@ -9,11 +9,11 @@ export type SkillFormState = {
 };
 
 export const createInitialSkillForm = (sportId: string | null): SkillFormState => ({
-  title: "",
-  category: "",
-  description: "",
-  level: "",
-  visibility: "public",
-  status: "active",
-  sportId: sportId ?? "",
+  title: '',
+  category: '',
+  description: '',
+  level: '',
+  visibility: 'public',
+  status: 'active',
+  sportId: sportId ?? '',
 });

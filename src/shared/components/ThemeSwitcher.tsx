@@ -21,10 +21,7 @@ export default function ThemeSwitcher() {
   }, [setMode, paletteMode]);
 
   return (
-    <Tooltip
-      title={`${paletteMode === 'dark' ? 'Light' : 'Dark'} mode`}
-      enterDelay={1000}
-    >
+    <Tooltip title={`${paletteMode === 'dark' ? 'Light' : 'Dark'} mode`} enterDelay={1000}>
       <div>
         <IconButton
           size="small"

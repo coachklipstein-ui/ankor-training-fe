@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Box,
   Button,
@@ -12,39 +12,38 @@ import {
   Stack,
   TextField,
   Typography,
-} from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import SearchIcon from "@mui/icons-material/Search";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../app/providers/AuthProvider";
-import { deleteTeam, getAllTeams, type Team } from "../services/teamsService";
-import { SPORT_LOOKUP } from "../constants";
+} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import SearchIcon from '@mui/icons-material/Search';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
+import { deleteTeam, getAllTeams, type Team } from '../services/teamsService';
+import { SPORT_LOOKUP } from '../constants';
 
 const formatDateTime = (value?: string | null) => {
-  if (!value) return "";
+  if (!value) return '';
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return value;
   return d.toLocaleString();
 };
 
-const joinParts = (parts: Array<string | null | undefined>) =>
-  parts.filter(Boolean).join(" | ");
+const joinParts = (parts: Array<string | null | undefined>) => parts.filter(Boolean).join(' | ');
 
 const statusChip = (isActive: boolean) => (
   <Chip
     size="small"
-    label={isActive ? "Active" : "Inactive"}
-    color={isActive ? "success" : "default"}
-    variant={isActive ? "filled" : "outlined"}
+    label={isActive ? 'Active' : 'Inactive'}
+    color={isActive ? 'success' : 'default'}
+    variant={isActive ? 'filled' : 'outlined'}
   />
 );
 
 export default function TeamsPage() {
   const navigate = useNavigate();
   const { orgId, loading: authLoading } = useAuth();
-  const [searchText, setSearchText] = React.useState("");
-  const [searchQuery, setSearchQuery] = React.useState("");
+  const [searchText, setSearchText] = React.useState('');
+  const [searchQuery, setSearchQuery] = React.useState('');
   const [rows, setRows] = React.useState<Team[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [loadError, setLoadError] = React.useState<string | null>(null);
@@ -64,10 +63,10 @@ export default function TeamsPage() {
     if (authLoading) return;
     let active = true;
 
-    const resolvedOrgId = orgId?.trim() || "";
+    const resolvedOrgId = orgId?.trim() || '';
     if (!resolvedOrgId) {
       setIsLoading(false);
-      setLoadError("Missing org_id for this account.");
+      setLoadError('Missing org_id for this account.');
       setRows([]);
       return () => {
         active = false;
@@ -85,7 +84,7 @@ export default function TeamsPage() {
       .catch((err: any) => {
         if (!active) return;
         setRows([]);
-        setLoadError(err?.message || "Failed to load teams.");
+        setLoadError(err?.message || 'Failed to load teams.');
       })
       .finally(() => {
         if (active) setIsLoading(false);
@@ -101,12 +100,10 @@ export default function TeamsPage() {
     if (!q) return rows;
 
     return rows.filter((team) => {
-      const sport = team.sport_id
-        ? SPORT_LOOKUP[team.sport_id] ?? "Unknown sport"
-        : "";
+      const sport = team.sport_id ? (SPORT_LOOKUP[team.sport_id] ?? 'Unknown sport') : '';
       return (
         team.name.toLowerCase().includes(q) ||
-        (team.org_id ?? "").toLowerCase().includes(q) ||
+        (team.org_id ?? '').toLowerCase().includes(q) ||
         sport.toLowerCase().includes(q)
       );
     });
@@ -118,17 +115,16 @@ export default function TeamsPage() {
 
   const activeCount = displayRows.filter((team) => team.is_active).length;
   const countLabel = joinParts([
-    `${displayRows.length} team${displayRows.length === 1 ? "" : "s"}`,
+    `${displayRows.length} team${displayRows.length === 1 ? '' : 's'}`,
     `${activeCount} active`,
   ]);
 
-  const headerLabel =
-    isLoading && displayRows.length === 0 ? "Loading teams..." : countLabel;
+  const headerLabel = isLoading && displayRows.length === 0 ? 'Loading teams...' : countLabel;
 
   const handleDelete = async (team: Team) => {
-    const resolvedOrgId = orgId?.trim() || "";
+    const resolvedOrgId = orgId?.trim() || '';
     if (!resolvedOrgId) {
-      setLoadError("Missing org_id for this account.");
+      setLoadError('Missing org_id for this account.');
       return;
     }
 
@@ -141,17 +137,17 @@ export default function TeamsPage() {
       await deleteTeam(team.id, { orgId: resolvedOrgId });
       setRows((current) => current.filter((item) => item.id !== team.id));
     } catch (err: any) {
-      setLoadError(err?.message || "Failed to delete team.");
+      setLoadError(err?.message || 'Failed to delete team.');
     } finally {
       setDeletingId(null);
     }
   };
 
   return (
-    <Box sx={{ width: "100%" }}>
+    <Box sx={{ width: '100%' }}>
       <Stack
-        direction={{ xs: "column", sm: "row" }}
-        alignItems={{ xs: "flex-start", sm: "center" }}
+        direction={{ xs: 'column', sm: 'row' }}
+        alignItems={{ xs: 'flex-start', sm: 'center' }}
         justifyContent="space-between"
         spacing={1.5}
         sx={{ mb: 1 }}
@@ -164,11 +160,7 @@ export default function TeamsPage() {
             {headerLabel}
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => navigate("/teams/new")}
-        >
+        <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate('/teams/new')}>
           New team
         </Button>
       </Stack>
@@ -189,7 +181,7 @@ export default function TeamsPage() {
         sx={{ mb: 1.5, maxWidth: 520 }}
       />
 
-      <Paper variant="outlined" sx={{ overflow: "hidden" }}>
+      <Paper variant="outlined" sx={{ overflow: 'hidden' }}>
         {isLoading && displayRows.length === 0 ? (
           <Box sx={{ p: 2 }}>
             <Typography variant="body2" color="text.secondary">
@@ -205,18 +197,16 @@ export default function TeamsPage() {
         ) : displayRows.length === 0 ? (
           <Box sx={{ p: 2 }}>
             <Typography variant="body2" color="text.secondary">
-              {searchText.trim()
-                ? `No teams match "${searchText.trim()}".`
-                : "No teams found."}
+              {searchText.trim() ? `No teams match "${searchText.trim()}".` : 'No teams found.'}
             </Typography>
           </Box>
         ) : (
           <List disablePadding>
             {displayRows.map((team, idx) => {
               const sportLabel = team.sport_id
-                ? SPORT_LOOKUP[team.sport_id] ?? "Unknown sport"
-                : "";
-              const sportChipLabel = sportLabel || "No sport";
+                ? (SPORT_LOOKUP[team.sport_id] ?? 'Unknown sport')
+                : '';
+              const sportChipLabel = sportLabel || 'No sport';
               const created = formatDateTime(team.created_at ?? undefined);
               const updated = formatDateTime(team.updated_at ?? undefined);
               const timeLabel =
@@ -224,7 +214,7 @@ export default function TeamsPage() {
                   ? `Updated ${updated}`
                   : created
                     ? `Created ${created}`
-                    : "";
+                    : '';
 
               return (
                 <React.Fragment key={team.id}>
@@ -252,7 +242,7 @@ export default function TeamsPage() {
                           {statusChip(team.is_active)}
                         </Stack>
 
-                        <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
+                        <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
                           <Chip size="small" label={sportChipLabel} variant="outlined" />
                         </Stack>
 
@@ -266,7 +256,7 @@ export default function TeamsPage() {
                           <Typography
                             variant="caption"
                             color="text.secondary"
-                            sx={{ fontFamily: "monospace", wordBreak: "break-all" }}
+                            sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}
                           >
                             Org: {team.org_id}
                           </Typography>
@@ -275,16 +265,16 @@ export default function TeamsPage() {
                         <Typography
                           variant="caption"
                           color="text.secondary"
-                          sx={{ fontFamily: "monospace", wordBreak: "break-all" }}
+                          sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}
                         >
                           Team ID: {team.id}
                         </Typography>
                       </Stack>
 
                       <Stack
-                        direction={{ xs: "column", sm: "row" }}
+                        direction={{ xs: 'column', sm: 'row' }}
                         spacing={1}
-                        sx={{ alignSelf: "center", ml: 1 }}
+                        sx={{ alignSelf: 'center', ml: 1 }}
                       >
                         <Button
                           size="small"

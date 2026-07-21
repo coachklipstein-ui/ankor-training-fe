@@ -1,111 +1,92 @@
-import * as React from 'react'
-import {
-  Avatar,
-  Box,
-  Card,
-  CardContent,
-  Grid,
-  Paper,
-  Stack,
-  Typography,
-} from '@mui/material'
-import FitnessCenterIcon from '@mui/icons-material/FitnessCenter'
-import RepeatIcon from '@mui/icons-material/Repeat'
-import AssignmentIcon from '@mui/icons-material/Assignment'
-import ShareIcon from '@mui/icons-material/Share'
-import AccessTimeIcon from '@mui/icons-material/AccessTime'
-import { useAuth } from '../../../app/providers/AuthProvider'
+import * as React from 'react';
+import { Avatar, Box, Card, CardContent, Grid, Paper, Stack, Typography } from '@mui/material';
+import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
+import RepeatIcon from '@mui/icons-material/Repeat';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import ShareIcon from '@mui/icons-material/Share';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import { useAuth } from '../../../app/providers/AuthProvider';
 import {
   getLatestWorkoutDrills,
   getWorkoutSummary,
   type WorkoutDrillLevel,
-} from '../../evaluations/api/evaluationsApi'
+} from '../../evaluations/api/evaluationsApi';
 
 export default function HomeDashboardPage() {
-  const { orgId, athleteId } = useAuth()
-  const [summaryLoading, setSummaryLoading] = React.useState(false)
-  const [summaryError, setSummaryError] = React.useState<string | null>(null)
+  const { orgId, athleteId } = useAuth();
+  const [summaryLoading, setSummaryLoading] = React.useState(false);
+  const [summaryError, setSummaryError] = React.useState<string | null>(null);
   const [summary, setSummary] = React.useState({
     totalReps: 0,
     totalEvals: 0,
     totalSharedPlans: 0,
-  })
-  const [workoutLoading, setWorkoutLoading] = React.useState(false)
-  const [workoutError, setWorkoutError] = React.useState<string | null>(null)
-  const [workoutLevels, setWorkoutLevels] = React.useState<WorkoutDrillLevel[]>(
-    [],
-  )
+  });
+  const [workoutLoading, setWorkoutLoading] = React.useState(false);
+  const [workoutError, setWorkoutError] = React.useState<string | null>(null);
+  const [workoutLevels, setWorkoutLevels] = React.useState<WorkoutDrillLevel[]>([]);
 
   React.useEffect(() => {
-    if (!orgId || !athleteId) return
-    let active = true
+    if (!orgId || !athleteId) return;
+    let active = true;
 
-    setSummaryLoading(true)
-    setSummaryError(null)
+    setSummaryLoading(true);
+    setSummaryError(null);
 
     getWorkoutSummary({ orgId, athleteId, limit: 50, offset: 0 })
       .then((data) => {
-        if (!active) return
+        if (!active) return;
         setSummary({
           totalReps: data.total_reps ?? 0,
           totalEvals: data.total_evals ?? 0,
           totalSharedPlans: data.total_plans_shares ?? 0,
-        })
+        });
       })
       .catch((err: any) => {
-        if (!active) return
-        setSummaryError(err?.message || 'Failed to load session summary.')
+        if (!active) return;
+        setSummaryError(err?.message || 'Failed to load session summary.');
       })
       .finally(() => {
-        if (active) setSummaryLoading(false)
-      })
+        if (active) setSummaryLoading(false);
+      });
 
     return () => {
-      active = false
-    }
-  }, [orgId, athleteId])
+      active = false;
+    };
+  }, [orgId, athleteId]);
 
   React.useEffect(() => {
-    if (!orgId || !athleteId) return
-    let active = true
+    if (!orgId || !athleteId) return;
+    let active = true;
 
-    setWorkoutLoading(true)
-    setWorkoutError(null)
+    setWorkoutLoading(true);
+    setWorkoutError(null);
 
     getLatestWorkoutDrills({ orgId, athleteId, limit: 50, offset: 0 })
       .then(({ levels }) => {
-        if (!active) return
-        setWorkoutLevels(levels)
+        if (!active) return;
+        setWorkoutLevels(levels);
       })
       .catch((err: any) => {
-        if (!active) return
-        setWorkoutError(err?.message || 'Failed to load workout drills.')
-        setWorkoutLevels([])
+        if (!active) return;
+        setWorkoutError(err?.message || 'Failed to load workout drills.');
+        setWorkoutLevels([]);
       })
       .finally(() => {
-        if (active) setWorkoutLoading(false)
-      })
+        if (active) setWorkoutLoading(false);
+      });
 
     return () => {
-      active = false
-    }
-  }, [orgId, athleteId])
+      active = false;
+    };
+  }, [orgId, athleteId]);
 
-  const totalRepsValue = summaryError
-    ? '-'
-    : summaryLoading
-    ? '...'
-    : String(summary.totalReps)
-  const totalEvalsValue = summaryError
-    ? '-'
-    : summaryLoading
-    ? '...'
-    : String(summary.totalEvals)
+  const totalRepsValue = summaryError ? '-' : summaryLoading ? '...' : String(summary.totalReps);
+  const totalEvalsValue = summaryError ? '-' : summaryLoading ? '...' : String(summary.totalEvals);
   const totalSharedPlansValue = summaryError
     ? '-'
     : summaryLoading
-    ? '...'
-    : String(summary.totalSharedPlans)
+      ? '...'
+      : String(summary.totalSharedPlans);
 
   const summaryStats = React.useMemo(
     () => [
@@ -131,18 +112,18 @@ export default function HomeDashboardPage() {
       },
     ],
     [totalEvalsValue, totalRepsValue, totalSharedPlansValue],
-  )
+  );
 
   const todayLabel = React.useMemo(() => {
-    const now = new Date()
+    const now = new Date();
     return now.toLocaleDateString('en-US', {
       month: 'long',
       day: 'numeric',
       year: 'numeric',
-    })
-  }, [])
+    });
+  }, []);
 
-  const hasDrills = workoutLevels.some((level) => level.drills.length > 0)
+  const hasDrills = workoutLevels.some((level) => level.drills.length > 0);
 
   return (
     <Box
@@ -164,8 +145,7 @@ export default function HomeDashboardPage() {
       <Grid container spacing={3}>
         <Grid item xs={12} md={3}>
           <Stack spacing={2.5}>
-            <Stack spacing={1.5}>
-            </Stack>
+            <Stack spacing={1.5}></Stack>
           </Stack>
         </Grid>
 
@@ -214,7 +194,7 @@ export default function HomeDashboardPage() {
                     <Stack spacing={2.5}>
                       {workoutLevels.map((level) => {
                         const levelTitle =
-                          level.title || (level.level ? `Level ${level.level}` : 'Level')
+                          level.title || (level.level ? `Level ${level.level}` : 'Level');
                         return (
                           <Box key={`${level.level}-${level.title}`}>
                             <Stack
@@ -225,12 +205,8 @@ export default function HomeDashboardPage() {
                               <Typography variant="subtitle1" fontWeight={600}>
                                 {levelTitle}
                               </Typography>
-                              {level.targetReps !== null &&
-                              level.targetReps !== undefined ? (
-                                <Typography
-                                  variant="caption"
-                                  color="text.secondary"
-                                >
+                              {level.targetReps !== null && level.targetReps !== undefined ? (
+                                <Typography variant="caption" color="text.secondary">
                                   Target reps: {level.targetReps}
                                 </Typography>
                               ) : null}
@@ -255,12 +231,8 @@ export default function HomeDashboardPage() {
                                     <Typography variant="body2" fontWeight={600}>
                                       {drill.title || 'Untitled drill'}
                                     </Typography>
-                                    {drill.duration !== null &&
-                                    drill.duration !== undefined ? (
-                                      <Typography
-                                        variant="caption"
-                                        color="text.secondary"
-                                      >
+                                    {drill.duration !== null && drill.duration !== undefined ? (
+                                      <Typography variant="caption" color="text.secondary">
                                         Duration: {drill.duration}
                                       </Typography>
                                     ) : null}
@@ -270,7 +242,7 @@ export default function HomeDashboardPage() {
                               ))}
                             </Stack>
                           </Box>
-                        )
+                        );
                       })}
                     </Stack>
                   )}
@@ -304,15 +276,8 @@ export default function HomeDashboardPage() {
                             borderColor: 'grey.200',
                           }}
                         >
-                          <Stack
-                            direction="row"
-                            justifyContent="space-between"
-                            alignItems="center"
-                          >
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                            >
+                          <Stack direction="row" justifyContent="space-between" alignItems="center">
+                            <Typography variant="caption" color="text.secondary">
                               {stat.label}
                             </Typography>
                             {stat.icon}
@@ -331,5 +296,5 @@ export default function HomeDashboardPage() {
         </Grid>
       </Grid>
     </Box>
-  )
+  );
 }

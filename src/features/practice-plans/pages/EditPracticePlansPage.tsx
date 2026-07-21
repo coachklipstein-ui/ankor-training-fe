@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Box,
   Chip,
@@ -20,24 +20,24 @@ import {
   Typography,
   Button,
   useMediaQuery,
-} from "@mui/material";
-import { useTheme } from "@mui/material/styles";
-import { useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "../../../app/providers/AuthProvider";
+} from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
 
-import AnchorIcon from "@mui/icons-material/Anchor";
-import AddIcon from "@mui/icons-material/Add";
-import SearchIcon from "@mui/icons-material/Search";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
-import SaveIcon from "@mui/icons-material/Save";
-import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
+import AnchorIcon from '@mui/icons-material/Anchor';
+import AddIcon from '@mui/icons-material/Add';
+import SearchIcon from '@mui/icons-material/Search';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import SaveIcon from '@mui/icons-material/Save';
+import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 
-import { getPlanById, updatePlan } from "../services/practicePlanService";
-import DrillPickerDialog, { type DialogDrill } from "../components/DrillPickerDialog";
-import InviteUsersDialog from "../components/InviteUsersDialog";
-import { getDrillMediaPlay } from "../../drills/services/drillsService";
-import DrillsPlayDialog from "../../drills/components/list/DrillsPlayDialog";
+import { getPlanById, updatePlan } from '../services/practicePlanService';
+import DrillPickerDialog, { type DialogDrill } from '../components/DrillPickerDialog';
+import InviteUsersDialog from '../components/InviteUsersDialog';
+import { getDrillMediaPlay } from '../../drills/services/drillsService';
+import DrillsPlayDialog from '../../drills/components/list/DrillsPlayDialog';
 
 import {
   DndContext,
@@ -46,14 +46,14 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
-} from "@dnd-kit/core";
+} from '@dnd-kit/core';
 import {
   SortableContext,
   verticalListSortingStrategy,
   useSortable,
   arrayMove,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 /* ---------------------------------------
    Types + Helpers
@@ -81,22 +81,22 @@ function formatHeaderTimestamp(iso: string) {
   // Similar to: DECEMBER 18, 2025 AT 11:19 AM
   const d = new Date(iso);
   const date = new Intl.DateTimeFormat(undefined, {
-    month: "long",
-    day: "2-digit",
-    year: "numeric",
+    month: 'long',
+    day: '2-digit',
+    year: 'numeric',
   }).format(d);
   const time = new Intl.DateTimeFormat(undefined, {
-    hour: "numeric",
-    minute: "2-digit",
+    hour: 'numeric',
+    minute: '2-digit',
   }).format(d);
   return `${date} at ${time}`.toUpperCase();
 }
 
 function toFiniteNumber(value: unknown): number | null {
-  if (typeof value === "number") {
+  if (typeof value === 'number') {
     return Number.isFinite(value) ? value : null;
   }
-  if (typeof value === "string") {
+  if (typeof value === 'string') {
     const trimmed = value.trim();
     if (!trimmed) return null;
     const parsed = Number(trimmed);
@@ -107,12 +107,12 @@ function toFiniteNumber(value: unknown): number | null {
 
 function resolvePlanItemId(item: Record<string, unknown>): string | undefined {
   const raw = (item as any).id ?? (item as any).item_id ?? (item as any).plan_item_id;
-  return typeof raw === "string" ? raw : undefined;
+  return typeof raw === 'string' ? raw : undefined;
 }
 
 function resolvePlanItemDrillId(item: Record<string, unknown>): string {
   const raw = (item as any).drill_id ?? (item as any).drillId;
-  return typeof raw === "string" ? raw : "";
+  return typeof raw === 'string' ? raw : '';
 }
 
 function resolvePlanItemDrillName(item: Record<string, unknown>): string {
@@ -121,13 +121,13 @@ function resolvePlanItemDrillName(item: Record<string, unknown>): string {
     (item as any).drillName ??
     (item as any).title ??
     (item as any).name;
-  if (typeof raw === "string" && raw.trim()) return raw.trim();
-  return "Unknown drill";
+  if (typeof raw === 'string' && raw.trim()) return raw.trim();
+  return 'Unknown drill';
 }
 
 function resolvePlanItemNotes(item: Record<string, unknown>): string {
   const raw = (item as any).notes ?? (item as any).instructions ?? (item as any).title;
-  return typeof raw === "string" ? raw : "";
+  return typeof raw === 'string' ? raw : '';
 }
 
 function resolvePlanItemDurationMin(item: Record<string, unknown>): number {
@@ -150,7 +150,7 @@ function resolvePlanItemDurationMin(item: Record<string, unknown>): number {
 function normalizePlanSegments(items: unknown[]): PlanSegment[] {
   const normalized = items
     .map((item, index) => {
-      if (!item || typeof item !== "object") return null;
+      if (!item || typeof item !== 'object') return null;
       const typed = item as Record<string, unknown>;
       const position = toFiniteNumber(
         (typed as any).position ?? (typed as any).order ?? (typed as any).section_order,
@@ -198,14 +198,10 @@ function SortableSegmentRow({
   onPlay: (evt: React.MouseEvent<HTMLElement>) => void;
   disabledDrag: boolean;
 }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id, disabled: disabledDrag });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+    disabled: disabledDrag,
+  });
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -219,19 +215,19 @@ function SortableSegmentRow({
         alignItems="flex-start"
         sx={{
           py: 1.25,
-          cursor: disabledDrag ? "default" : "grab",
-          "&:active": { cursor: disabledDrag ? "default" : "grabbing" },
+          cursor: disabledDrag ? 'default' : 'grab',
+          '&:active': { cursor: disabledDrag ? 'default' : 'grabbing' },
         }}
       >
         {/* Drag handle */}
         <ListItemIcon sx={{ minWidth: 40, mt: 0.4 }}>
           <Box
             sx={{
-              display: "flex",
-              alignItems: "center",
+              display: 'flex',
+              alignItems: 'center',
               gap: 0.5,
-              color: "text.secondary",
-              userSelect: "none",
+              color: 'text.secondary',
+              userSelect: 'none',
             }}
             {...(!disabledDrag ? attributes : {})}
             {...(!disabledDrag ? listeners : {})}
@@ -253,34 +249,29 @@ function SortableSegmentRow({
             {drillName}
           </Typography>
           {notes ? (
-            <Typography variant="caption" color="text.secondary" noWrap sx={{ display: "block" }}>
+            <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>
               {notes}
             </Typography>
           ) : (
-            <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
               No notes
             </Typography>
           )}
         </Box>
 
         {/* Duration */}
-        <Box sx={{ width: 92, textAlign: "right", pt: 0.2 }}>
+        <Box sx={{ width: 92, textAlign: 'right', pt: 0.2 }}>
           <Typography variant="body2" fontWeight={800}>
             {durationMin}m
           </Typography>
         </Box>
 
-        <Button
-          size="small"
-          variant="outlined"
-          onClick={onPlay}
-          sx={{ ml: 1, flexShrink: 0 }}
-        >
+        <Button size="small" variant="outlined" onClick={onPlay} sx={{ ml: 1, flexShrink: 0 }}>
           Play
         </Button>
 
         {/* Menu */}
-        <IconButton edge="end" onClick={onOpenMenu} sx={{ ml: 0.5, alignSelf: "center" }}>
+        <IconButton edge="end" onClick={onOpenMenu} sx={{ ml: 0.5, alignSelf: 'center' }}>
           <MoreHorizIcon />
         </IconButton>
       </ListItemButton>
@@ -296,25 +287,25 @@ function SortableSegmentRow({
 
 export default function EditPracticePlansPage() {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
   const { id: planId } = useParams();
   const { profile, user } = useAuth();
-  const fallbackOrgId = profile?.default_org_id?.trim() || "";
+  const fallbackOrgId = profile?.default_org_id?.trim() || '';
 
   // plan header
-  const [planName, setPlanName] = React.useState("");
+  const [planName, setPlanName] = React.useState('');
   const [updatedAt, setUpdatedAt] = React.useState(() => new Date().toISOString());
   const [isSaving, setIsSaving] = React.useState(false);
   const [saveError, setSaveError] = React.useState<string | null>(null);
   const [planLoading, setPlanLoading] = React.useState(true);
   const [planError, setPlanError] = React.useState<string | null>(null);
-  const [planOrgId, setPlanOrgId] = React.useState("");
+  const [planOrgId, setPlanOrgId] = React.useState('');
   const [initialItemIds, setInitialItemIds] = React.useState<string[]>([]);
 
   // segments
   const [segments, setSegments] = React.useState<PlanSegment[]>([]);
-  const [segmentSearch, setSegmentSearch] = React.useState("");
+  const [segmentSearch, setSegmentSearch] = React.useState('');
 
   // add drills dialog
   const [addOpen, setAddOpen] = React.useState(false);
@@ -330,7 +321,7 @@ export default function EditPracticePlansPage() {
   const [editOpen, setEditOpen] = React.useState(false);
   const [editSegId, setEditSegId] = React.useState<string | null>(null);
   const [editDuration, setEditDuration] = React.useState<number>(10);
-  const [editNotes, setEditNotes] = React.useState<string>("");
+  const [editNotes, setEditNotes] = React.useState<string>('');
 
   const [playState, setPlayState] = React.useState<{
     open: boolean;
@@ -350,12 +341,12 @@ export default function EditPracticePlansPage() {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 6 }, // helps avoid accidental drags while scrolling
-    })
+    }),
   );
 
   React.useEffect(() => {
     if (!planId) {
-      setPlanError("Missing plan id.");
+      setPlanError('Missing plan id.');
       setPlanLoading(false);
       return;
     }
@@ -367,20 +358,20 @@ export default function EditPracticePlansPage() {
     getPlanById(planId, { orgId: fallbackOrgId })
       .then((plan) => {
         if (!active) return;
-        setPlanName(plan.name?.trim() || "Untitled plan");
+        setPlanName(plan.name?.trim() || 'Untitled plan');
         setUpdatedAt(plan.updated_at || plan.created_at || new Date().toISOString());
-        setPlanOrgId(plan.org_id ?? "");
+        setPlanOrgId(plan.org_id ?? '');
         const nextSegments = normalizePlanSegments(plan.items ?? []);
         setSegments(nextSegments);
         setInitialItemIds(
           nextSegments
             .map((segment) => segment.planItemId)
-            .filter((id): id is string => Boolean(id))
+            .filter((id): id is string => Boolean(id)),
         );
       })
       .catch((err: any) => {
         if (!active) return;
-        setPlanError(err?.message || "Failed to load plan.");
+        setPlanError(err?.message || 'Failed to load plan.');
         setSegments([]);
         setInitialItemIds([]);
       })
@@ -393,10 +384,10 @@ export default function EditPracticePlansPage() {
     };
   }, [planId, fallbackOrgId]);
 
-
   const totalDuration = React.useMemo(
-    () => segments.reduce((sum, s) => sum + (Number.isFinite(s.durationMin) ? s.durationMin : 0), 0),
-    [segments]
+    () =>
+      segments.reduce((sum, s) => sum + (Number.isFinite(s.durationMin) ? s.durationMin : 0), 0),
+    [segments],
   );
 
   const filteredSegments = React.useMemo(() => {
@@ -404,7 +395,7 @@ export default function EditPracticePlansPage() {
     if (!q) return segments;
 
     return segments.filter((s) => {
-      const label = s.drillName ?? "";
+      const label = s.drillName ?? '';
       return label.toLowerCase().includes(q) || s.notes.toLowerCase().includes(q);
     });
   }, [segments, segmentSearch]);
@@ -428,7 +419,7 @@ export default function EditPracticePlansPage() {
         drillId: drill.id,
         drillName: drill.name,
         durationMin,
-        notes: "",
+        notes: '',
       },
     ]);
   }
@@ -482,11 +473,13 @@ export default function EditPracticePlansPage() {
         s.id === editSegId
           ? {
               ...s,
-              durationMin: Number.isFinite(editDuration) ? Math.max(0, editDuration) : s.durationMin,
+              durationMin: Number.isFinite(editDuration)
+                ? Math.max(0, editDuration)
+                : s.durationMin,
               notes: editNotes,
             }
-          : s
-      )
+          : s,
+      ),
     );
     closeEdit();
   }
@@ -499,9 +492,9 @@ export default function EditPracticePlansPage() {
     if (!seg.drillId?.trim()) {
       setPlayState({
         open: true,
-        drillName: seg.drillName ?? "Drill video",
+        drillName: seg.drillName ?? 'Drill video',
         loading: false,
-        error: "Missing drill id.",
+        error: 'Missing drill id.',
         playUrl: null,
       });
       return;
@@ -511,9 +504,9 @@ export default function EditPracticePlansPage() {
     if (!orgId) {
       setPlayState({
         open: true,
-        drillName: seg.drillName ?? "Drill video",
+        drillName: seg.drillName ?? 'Drill video',
         loading: false,
-        error: "Missing org_id.",
+        error: 'Missing org_id.',
         playUrl: null,
       });
       return;
@@ -521,7 +514,7 @@ export default function EditPracticePlansPage() {
 
     setPlayState({
       open: true,
-      drillName: seg.drillName ?? "Drill video",
+      drillName: seg.drillName ?? 'Drill video',
       loading: true,
       error: null,
       playUrl: null,
@@ -541,7 +534,7 @@ export default function EditPracticePlansPage() {
         if (playRequestIdRef.current !== requestId) return;
         setPlayState((prev) => ({
           ...prev,
-          error: err?.message || "Failed to load drill video.",
+          error: err?.message || 'Failed to load drill video.',
           loading: false,
         }));
       });
@@ -563,19 +556,19 @@ export default function EditPracticePlansPage() {
     const trimmedPlanId = planId?.trim();
 
     if (!trimmedPlanId) {
-      setSaveError("Missing plan id.");
+      setSaveError('Missing plan id.');
       return;
     }
     if (!name) {
-      setSaveError("Plan name is required.");
+      setSaveError('Plan name is required.');
       return;
     }
     if (segments.length === 0) {
-      setSaveError("Add at least one drill before saving.");
+      setSaveError('Add at least one drill before saving.');
       return;
     }
     if (segments.some((seg) => !seg.drillId.trim())) {
-      setSaveError("Some drills are missing a drill id.");
+      setSaveError('Some drills are missing a drill id.');
       return;
     }
 
@@ -602,19 +595,17 @@ export default function EditPracticePlansPage() {
       );
 
       const refreshed = await getPlanById(trimmedPlanId, { orgId: fallbackOrgId });
-      setPlanName(refreshed.name?.trim() || "Untitled plan");
+      setPlanName(refreshed.name?.trim() || 'Untitled plan');
       setUpdatedAt(refreshed.updated_at || refreshed.created_at || new Date().toISOString());
-      setPlanOrgId(refreshed.org_id ?? "");
+      setPlanOrgId(refreshed.org_id ?? '');
       const nextSegments = normalizePlanSegments(refreshed.items ?? []);
       setSegments(nextSegments);
       setInitialItemIds(
-        nextSegments
-          .map((segment) => segment.planItemId)
-          .filter((id): id is string => Boolean(id))
+        nextSegments.map((segment) => segment.planItemId).filter((id): id is string => Boolean(id)),
       );
-      alert("Plan updated.");
+      alert('Plan updated.');
     } catch (err: any) {
-      setSaveError(err?.message || "Failed to update plan.");
+      setSaveError(err?.message || 'Failed to update plan.');
     } finally {
       setIsSaving(false);
     }
@@ -626,9 +617,9 @@ export default function EditPracticePlansPage() {
     Boolean(planId?.trim()) &&
     !isSaving &&
     !planLoading;
-  const headerChip = segments.length === 0 ? "Draft" : "In progress";
+  const headerChip = segments.length === 0 ? 'Draft' : 'In progress';
   const inviteOrgId = planOrgId.trim() || fallbackOrgId;
-  const inviteAddedBy = user?.id?.trim() || "";
+  const inviteAddedBy = user?.id?.trim() || '';
 
   return (
     <Box>
@@ -642,7 +633,12 @@ export default function EditPracticePlansPage() {
               {formatHeaderTimestamp(updatedAt)}
             </Typography>
 
-            <Stack direction={isMobile ? "column" : "row"} spacing={1} alignItems={isMobile ? "flex-start" : "center"} sx={{ mt: 0.25 }}>
+            <Stack
+              direction={isMobile ? 'column' : 'row'}
+              spacing={1}
+              alignItems={isMobile ? 'flex-start' : 'center'}
+              sx={{ mt: 0.25 }}
+            >
               <TextField
                 value={planName}
                 onChange={(e) => setPlanName(e.target.value)}
@@ -651,7 +647,7 @@ export default function EditPracticePlansPage() {
                 inputProps={{ style: { fontWeight: 900, fontSize: 20 } }}
                 sx={{ minWidth: 220, maxWidth: 420 }}
               />
-              <Chip size="small" label={headerChip} sx={{ textTransform: "capitalize" }} />
+              <Chip size="small" label={headerChip} sx={{ textTransform: 'capitalize' }} />
             </Stack>
 
             <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
@@ -662,7 +658,7 @@ export default function EditPracticePlansPage() {
                 onClick={handleSavePlan}
                 disabled={!canSave}
               >
-                {isSaving ? "Saving..." : "Save Plan"}
+                {isSaving ? 'Saving...' : 'Save Plan'}
               </Button>
               <Button
                 variant="contained"
@@ -674,24 +670,28 @@ export default function EditPracticePlansPage() {
               </Button>
             </Stack>
             {planLoading && (
-              <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: 'block', mt: 0.5 }}
+              >
                 Loading plan...
               </Typography>
             )}
             {planError && (
-              <Typography variant="caption" color="error" sx={{ display: "block", mt: 0.5 }}>
+              <Typography variant="caption" color="error" sx={{ display: 'block', mt: 0.5 }}>
                 {planError}
               </Typography>
             )}
             {saveError && (
-              <Typography variant="caption" color="error" sx={{ display: "block", mt: 0.5 }}>
+              <Typography variant="caption" color="error" sx={{ display: 'block', mt: 0.5 }}>
                 {saveError}
               </Typography>
             )}
           </Box>
 
           {/* (Optional) Back */}
-          <Button variant="text" onClick={() => navigate(-1)} sx={{ alignSelf: "flex-start" }}>
+          <Button variant="text" onClick={() => navigate(-1)} sx={{ alignSelf: 'flex-start' }}>
             Back
           </Button>
         </Stack>
@@ -709,7 +709,7 @@ export default function EditPracticePlansPage() {
               setAddOpen(true);
             }}
             aria-label="add drill"
-            sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: "999px" }}
+            sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: '999px' }}
           >
             <AddIcon />
           </IconButton>
@@ -732,13 +732,13 @@ export default function EditPracticePlansPage() {
         />
 
         {dragDisabled && (
-          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
             Drag & drop is disabled while searching.
           </Typography>
         )}
 
         {/* Table header (like screenshot) */}
-        <Box sx={{ display: "flex", gap: 1, px: 1.5, pb: 0.75, color: "text.secondary" }}>
+        <Box sx={{ display: 'flex', gap: 1, px: 1.5, pb: 0.75, color: 'text.secondary' }}>
           <Box sx={{ width: 40 }} />
           <Box sx={{ width: 64 }}>
             <Typography variant="caption" fontWeight={900}>
@@ -750,7 +750,7 @@ export default function EditPracticePlansPage() {
               DRILL NAME
             </Typography>
           </Box>
-          <Box sx={{ width: 92, textAlign: "right" }}>
+          <Box sx={{ width: 92, textAlign: 'right' }}>
             <Typography variant="caption" fontWeight={900}>
               DURATION
             </Typography>
@@ -758,7 +758,7 @@ export default function EditPracticePlansPage() {
           <Box sx={{ width: 44 }} />
         </Box>
 
-        <Paper variant="outlined" sx={{ overflow: "hidden" }}>
+        <Paper variant="outlined" sx={{ overflow: 'hidden' }}>
           {filteredSegments.length === 0 ? (
             <Box sx={{ p: 2 }}>
               <Typography variant="body2" color="text.secondary">
@@ -766,12 +766,19 @@ export default function EditPracticePlansPage() {
               </Typography>
             </Box>
           ) : (
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <SortableContext items={segments.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={segments.map((s) => s.id)}
+                strategy={verticalListSortingStrategy}
+              >
                 <List disablePadding>
                   {(segmentSearch.trim() ? filteredSegments : segments).map((seg) => {
                     const idx = segments.findIndex((x) => x.id === seg.id);
-                    const drillLabel = seg.drillName ?? "Unknown drill";
+                    const drillLabel = seg.drillName ?? 'Unknown drill';
                     return (
                       <SortableSegmentRow
                         key={seg.id}
@@ -800,8 +807,8 @@ export default function EditPracticePlansPage() {
           anchorEl={menuAnchorEl}
           open={Boolean(menuAnchorEl)}
           onClose={closeRowMenu}
-          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-          transformOrigin={{ vertical: "top", horizontal: "right" }}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         >
           <MenuItem
             onClick={() => {
@@ -819,7 +826,7 @@ export default function EditPracticePlansPage() {
               removeSegment(menuSegId);
               closeRowMenu();
             }}
-            sx={{ color: "error.main" }}
+            sx={{ color: 'error.main' }}
           >
             Remove
           </MenuItem>
@@ -865,7 +872,7 @@ export default function EditPracticePlansPage() {
               size="small"
               value={editDuration}
               onChange={(e) => setEditDuration(Math.max(0, Number(e.target.value)))}
-              inputProps={{ inputMode: "numeric" }}
+              inputProps={{ inputMode: 'numeric' }}
             />
             <TextField
               label="Notes"
@@ -895,6 +902,3 @@ export default function EditPracticePlansPage() {
     </Box>
   );
 }
-
-
-

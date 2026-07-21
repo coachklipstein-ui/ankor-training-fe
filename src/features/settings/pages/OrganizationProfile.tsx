@@ -2,7 +2,7 @@
 // Data grid with Search, Filters, and CSV Export + Edit per row.
 // Drop this under src/pages/ and point your route to it (e.g., /settings/organization).
 
-import * as React from 'react'
+import * as React from 'react';
 import {
   Box,
   Stack,
@@ -15,11 +15,11 @@ import {
   Select,
   MenuItem,
   Alert,
-} from '@mui/material'
-import VisibilityIcon from '@mui/icons-material/Visibility'
-import EditIcon from '@mui/icons-material/Edit'
-import SearchIcon from '@mui/icons-material/Search'
-import RestartAltIcon from '@mui/icons-material/RestartAlt'
+} from '@mui/material';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import EditIcon from '@mui/icons-material/Edit';
+import SearchIcon from '@mui/icons-material/Search';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import {
   DataGrid,
   GridColDef,
@@ -27,48 +27,60 @@ import {
   GridToolbarContainer,
   GridToolbarDensitySelector,
   GridToolbarExport,
-} from '@mui/x-data-grid'
-import { useNavigate } from 'react-router-dom'
-import {
-  listOrganizations,
-  type OrganizationListItem,
-} from '../services/organizationsService'
+} from '@mui/x-data-grid';
+import { useNavigate } from 'react-router-dom';
+import { listOrganizations, type OrganizationListItem } from '../services/organizationsService';
 
 // ---- Types ----
-export type OrgRow = OrganizationListItem
+export type OrgRow = OrganizationListItem;
 
 // ---- Helpers ----
 const fmtDate = (value: string) => {
-  const d = new Date(value)
-  if (Number.isNaN(d.getTime())) return value
-  return d.toLocaleString()
-}
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return d.toLocaleString();
+};
 
 // ---- Custom Toolbar with search, filters, export ----
 type OrgToolbarProps = {
-  searchText: string
-  setSearchText: (v: string) => void
-  gender: 'all' | 'boys' | 'girls' | 'coed'
-  setGender: (v: 'all' | 'boys' | 'girls' | 'coed') => void
-  sport: 'all' | 'single' | 'multi'
-  setSport: (v: 'all' | 'single' | 'multi') => void
-  onReset: () => void
-}
+  searchText: string;
+  setSearchText: (v: string) => void;
+  gender: 'all' | 'boys' | 'girls' | 'coed';
+  setGender: (v: 'all' | 'boys' | 'girls' | 'coed') => void;
+  sport: 'all' | 'single' | 'multi';
+  setSport: (v: 'all' | 'single' | 'multi') => void;
+  onReset: () => void;
+};
 
-function OrgToolbar({ searchText, setSearchText, gender, setGender, sport, setSport, onReset }: OrgToolbarProps) {
+function OrgToolbar({
+  searchText,
+  setSearchText,
+  gender,
+  setGender,
+  sport,
+  setSport,
+  onReset,
+}: OrgToolbarProps) {
   return (
     <GridToolbarContainer>
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ p: 1, width: '100%' }} alignItems={{ xs: 'stretch', sm: 'center' }}>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        spacing={1}
+        sx={{ p: 1, width: '100%' }}
+        alignItems={{ xs: 'stretch', sm: 'center' }}
+      >
         <TextField
           size="small"
           placeholder="Search name or slug…"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
-          InputProps={{ startAdornment: (
-            <InputAdornment position="start">
-              <SearchIcon />
-            </InputAdornment>
-          )}}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
           sx={{ minWidth: 220 }}
         />
         <FormControl size="small" sx={{ minWidth: 140 }}>
@@ -99,12 +111,7 @@ function OrgToolbar({ searchText, setSearchText, gender, setGender, sport, setSp
           </Select>
         </FormControl>
 
-        <Button
-          variant="text"
-          size="small"
-          startIcon={<RestartAltIcon />}
-          onClick={onReset}
-        >
+        <Button variant="text" size="small" startIcon={<RestartAltIcon />} onClick={onReset}>
           Reset
         </Button>
 
@@ -113,72 +120,71 @@ function OrgToolbar({ searchText, setSearchText, gender, setGender, sport, setSp
         <GridToolbarExport csvOptions={{ utf8WithBom: true }} />
       </Stack>
     </GridToolbarContainer>
-  )
+  );
 }
 
 export default function OrganizationProfilePage() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   // Local UI state for search + filters
-  const [searchText, setSearchText] = React.useState('')
-  const [gender, setGender] = React.useState<OrgToolbarProps['gender']>('all')
-  const [sport, setSport] = React.useState<OrgToolbarProps['sport']>('all')
-  const [rows, setRows] = React.useState<OrgRow[]>([])
-  const [loading, setLoading] = React.useState(true)
-  const [error, setError] = React.useState<string | null>(null)
+  const [searchText, setSearchText] = React.useState('');
+  const [gender, setGender] = React.useState<OrgToolbarProps['gender']>('all');
+  const [sport, setSport] = React.useState<OrgToolbarProps['sport']>('all');
+  const [rows, setRows] = React.useState<OrgRow[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    let active = true
+    let active = true;
 
     const loadOrganizations = async () => {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
 
       try {
-        const organizations = await listOrganizations()
-        if (active) setRows(organizations)
+        const organizations = await listOrganizations();
+        if (active) setRows(organizations);
       } catch (err) {
         if (active) {
-          setError(
-            err instanceof Error ? err.message : 'Failed to load organizations.',
-          )
+          setError(err instanceof Error ? err.message : 'Failed to load organizations.');
         }
       } finally {
-        if (active) setLoading(false)
+        if (active) setLoading(false);
       }
-    }
+    };
 
-    void loadOrganizations()
+    void loadOrganizations();
 
     return () => {
-      active = false
-    }
-  }, [])
+      active = false;
+    };
+  }, []);
 
   const onReset = () => {
-    setSearchText('')
-    setGender('all')
-    setSport('all')
-  }
+    setSearchText('');
+    setGender('all');
+    setSport('all');
+  };
 
   const onView = (row: OrgRow) => {
-    navigate(`/settings/organization/${row.id}`)
-  }
+    navigate(`/settings/organization/${row.id}`);
+  };
 
   const onEdit = (row: OrgRow) => {
-    navigate(`/settings/organization/${row.id}/edit`)
-  }
+    navigate(`/settings/organization/${row.id}/edit`);
+  };
 
   // Derived filtering
   const filteredRows = React.useMemo(() => {
-    const q = searchText.trim().toLowerCase()
+    const q = searchText.trim().toLowerCase();
     return rows.filter((r) => {
-      const matchesSearch = !q || r.name.toLowerCase().includes(q) || r.slug.toLowerCase().includes(q)
-      const matchesGender = gender === 'all' || r.program_gender === gender
-      const matchesSport = sport === 'all' || r.sport_mode === sport
-      return matchesSearch && matchesGender && matchesSport
-    })
-  }, [rows, searchText, gender, sport])
+      const matchesSearch =
+        !q || r.name.toLowerCase().includes(q) || r.slug.toLowerCase().includes(q);
+      const matchesGender = gender === 'all' || r.program_gender === gender;
+      const matchesSport = sport === 'all' || r.sport_mode === sport;
+      return matchesSearch && matchesGender && matchesSport;
+    });
+  }, [rows, searchText, gender, sport]);
 
   const columns = React.useMemo<GridColDef<OrgRow>[]>(
     () => [
@@ -236,7 +242,7 @@ export default function OrganizationProfilePage() {
       },
     ],
     [],
-  )
+  );
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -279,5 +285,5 @@ export default function OrganizationProfilePage() {
         />
       </Box>
     </Box>
-  )
+  );
 }

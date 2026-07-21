@@ -1,10 +1,10 @@
-import { Box, Button } from '@mui/material'
+import { Box, Button } from '@mui/material';
 
 type NewEvaluationActionsProps = {
-  onSave: () => void
-  saving: boolean
-  disableSave: boolean
-}
+  onSave: () => void;
+  saving: boolean;
+  disableSave: boolean;
+};
 
 export default function NewEvaluationActions({
   onSave,
@@ -19,14 +19,9 @@ export default function NewEvaluationActions({
         alignItems: 'center',
       }}
     >
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={onSave}
-        disabled={saving || disableSave}
-      >
+      <Button variant="contained" color="primary" onClick={onSave} disabled={saving || disableSave}>
         {saving ? 'Saving...' : 'Save evaluations'}
       </Button>
     </Box>
-  )
+  );
 }

@@ -1,35 +1,27 @@
-import * as React from 'react'
-import {
-  Autocomplete,
-  Chip,
-  MenuItem,
-  Paper,
-  Stack,
-  TextField,
-  Typography,
-} from '@mui/material'
-import type { Athlete, ScorecardTemplate, TeamOption } from '../types'
+import * as React from 'react';
+import { Autocomplete, Chip, MenuItem, Paper, Stack, TextField, Typography } from '@mui/material';
+import type { Athlete, ScorecardTemplate, TeamOption } from '../types';
 
 type PositionOption = {
-  value: string
-  label: string
-}
+  value: string;
+  label: string;
+};
 
 type NewEvaluationFiltersProps = {
-  scorecards: ScorecardTemplate[]
-  teams: TeamOption[]
-  athletes: Athlete[]
-  selectedScorecardId: string
-  selectedTeamId: string
-  selectedPosition: string
-  selectedAthletes: Athlete[]
-  positionOptions: PositionOption[]
-  isPositionDisabled: boolean
-  onScorecardChange: (scorecardId: string) => void
-  onTeamChange: (teamId: string) => void
-  onPositionChange: (position: string) => void
-  onAthletesChange: (event: React.SyntheticEvent, value: Athlete[]) => void
-}
+  scorecards: ScorecardTemplate[];
+  teams: TeamOption[];
+  athletes: Athlete[];
+  selectedScorecardId: string;
+  selectedTeamId: string;
+  selectedPosition: string;
+  selectedAthletes: Athlete[];
+  positionOptions: PositionOption[];
+  isPositionDisabled: boolean;
+  onScorecardChange: (scorecardId: string) => void;
+  onTeamChange: (teamId: string) => void;
+  onPositionChange: (position: string) => void;
+  onAthletesChange: (event: React.SyntheticEvent, value: Athlete[]) => void;
+};
 
 export default function NewEvaluationFilters({
   scorecards,
@@ -106,11 +98,7 @@ export default function NewEvaluationFilters({
           onChange={onAthletesChange}
           renderTags={(value, getTagProps) =>
             value.map((option, index) => (
-              <Chip
-                {...getTagProps({ index })}
-                key={option.id}
-                label={option.full_name}
-              />
+              <Chip {...getTagProps({ index })} key={option.id} label={option.full_name} />
             ))
           }
           renderInput={(params) => (
@@ -118,9 +106,7 @@ export default function NewEvaluationFilters({
               {...params}
               label="Athletes to evaluate"
               placeholder={
-                selectedTeamId
-                  ? 'All team athletes selected by default'
-                  : 'Select athletes'
+                selectedTeamId ? 'All team athletes selected by default' : 'Select athletes'
               }
             />
           )}
@@ -129,9 +115,9 @@ export default function NewEvaluationFilters({
       </Stack>
 
       <Typography variant="body2" sx={{ mt: 1 }} color="text.secondary">
-        Flow: 1) Pick a scorecard 2) Choose a team to auto-select its athletes
-        (optional) filter by position 3) Adjust athletes 4) Fill scores in the matrix.
+        Flow: 1) Pick a scorecard 2) Choose a team to auto-select its athletes (optional) filter by
+        position 3) Adjust athletes 4) Fill scores in the matrix.
       </Typography>
     </Paper>
-  )
+  );
 }

@@ -44,14 +44,13 @@ export default function TeamsForm({
   sportsError?: string | null;
   initial?: TeamRow[]; // if provided with mixed sports, we default to the first row's sport
 }) {
-  const initialSport = (initial.find((r) => r.sport)?.sport) ?? '';
+  const initialSport = initial.find((r) => r.sport)?.sport ?? '';
   const [selectedSport, setSelectedSport] = React.useState<string>(initialSport);
   const [rows, setRows] = React.useState<TeamRow[]>(
-    initial.map((r) => ({ ...r, sport: initialSport }))
+    initial.map((r) => ({ ...r, sport: initialSport })),
   );
 
-  const applySport = (list: TeamRow[], sport: string) =>
-    list.map((r) => ({ ...r, sport }));
+  const applySport = (list: TeamRow[], sport: string) => list.map((r) => ({ ...r, sport }));
 
   const propagate = (next: TeamRow[], sport = selectedSport) => {
     const withSport = applySport(next, sport);

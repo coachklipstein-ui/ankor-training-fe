@@ -1,10 +1,10 @@
-﻿import { InputAdornment, Paper, Stack, TextField } from '@mui/material'
-import SearchIcon from '@mui/icons-material/Search'
+﻿import { InputAdornment, Paper, Stack, TextField } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
 
 type EvaluationsListFiltersProps = {
-  search: string
-  onSearchChange: (value: string) => void
-}
+  search: string;
+  onSearchChange: (value: string) => void;
+};
 
 export default function EvaluationsListFilters({
   search,
@@ -30,5 +30,5 @@ export default function EvaluationsListFilters({
         />
       </Stack>
     </Paper>
-  )
+  );
 }

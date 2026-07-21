@@ -1,19 +1,8 @@
-import * as React from "react";
-import {
-  Box,
-  Button,
-  Paper,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "../../../app/providers/AuthProvider";
-import {
-  getCoachById,
-  updateCoach,
-  type CoachListItem,
-} from "../services/coachService";
+import * as React from 'react';
+import { Box, Button, Paper, Stack, TextField, Typography } from '@mui/material';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
+import { getCoachById, updateCoach, type CoachListItem } from '../services/coachService';
 
 type LocationState = {
   coach?: CoachListItem;
@@ -21,16 +10,16 @@ type LocationState = {
 
 export default function EditCoachPage() {
   const { id } = useParams<{ id: string }>();
-  const coachId = id ?? "";
+  const coachId = id ?? '';
   const { state } = useLocation() as { state?: LocationState };
   const routeCoach = state?.coach ?? null;
   const navigate = useNavigate();
   const { orgId, loading: authLoading } = useAuth();
   const [coach, setCoach] = React.useState<CoachListItem | null>(routeCoach);
-  const [fullName, setFullName] = React.useState(routeCoach?.full_name ?? "");
-  const [email, setEmail] = React.useState(routeCoach?.email ?? "");
-  const [phone, setPhone] = React.useState(routeCoach?.phone ?? "");
-  const [cellNumber, setCellNumber] = React.useState(routeCoach?.cell_number ?? "");
+  const [fullName, setFullName] = React.useState(routeCoach?.full_name ?? '');
+  const [email, setEmail] = React.useState(routeCoach?.email ?? '');
+  const [phone, setPhone] = React.useState(routeCoach?.phone ?? '');
+  const [cellNumber, setCellNumber] = React.useState(routeCoach?.cell_number ?? '');
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [saving, setSaving] = React.useState(false);
   const [submitError, setSubmitError] = React.useState<string | null>(null);
@@ -39,10 +28,10 @@ export default function EditCoachPage() {
 
   React.useEffect(() => {
     setCoach(routeCoach);
-    setFullName(routeCoach?.full_name ?? "");
-    setEmail(routeCoach?.email ?? "");
-    setPhone(routeCoach?.phone ?? "");
-    setCellNumber(routeCoach?.cell_number ?? "");
+    setFullName(routeCoach?.full_name ?? '');
+    setEmail(routeCoach?.email ?? '');
+    setPhone(routeCoach?.phone ?? '');
+    setCellNumber(routeCoach?.cell_number ?? '');
     setErrors({});
     setSubmitError(null);
     setLoadError(null);
@@ -54,11 +43,11 @@ export default function EditCoachPage() {
     const loadCoach = async () => {
       if (authLoading) return;
       if (!coachId) {
-        setLoadError("Missing coach id in route.");
+        setLoadError('Missing coach id in route.');
         return;
       }
       if (!orgId) {
-        setLoadError("Missing org_id. Please sign in again.");
+        setLoadError('Missing org_id. Please sign in again.');
         return;
       }
 
@@ -68,15 +57,15 @@ export default function EditCoachPage() {
         const result = await getCoachById(coachId, { orgId });
         if (!active) return;
         setCoach(result);
-        setFullName(result.full_name ?? "");
-        setEmail(result.email ?? "");
-        setPhone(result.phone ?? "");
-        setCellNumber(result.cell_number ?? "");
+        setFullName(result.full_name ?? '');
+        setEmail(result.email ?? '');
+        setPhone(result.phone ?? '');
+        setCellNumber(result.cell_number ?? '');
       } catch (err) {
         if (!active) return;
         if (!routeCoach) {
           setCoach(null);
-          setLoadError(err instanceof Error ? err.message : "Failed to load coach.");
+          setLoadError(err instanceof Error ? err.message : 'Failed to load coach.');
         }
       } finally {
         if (active) setLoading(false);
@@ -96,18 +85,18 @@ export default function EditCoachPage() {
 
     const nextErrors: Record<string, string> = {};
     if (!fullName.trim()) {
-      nextErrors.full_name = "Full name is required.";
+      nextErrors.full_name = 'Full name is required.';
     }
 
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
     if (!coachId) {
-      setSubmitError("Missing coach id in route.");
+      setSubmitError('Missing coach id in route.');
       return;
     }
     if (!orgId) {
-      setSubmitError("Missing org_id. Please sign in again.");
+      setSubmitError('Missing org_id. Please sign in again.');
       return;
     }
 
@@ -123,9 +112,9 @@ export default function EditCoachPage() {
         { orgId },
       );
 
-      navigate("/coaches");
+      navigate('/coaches');
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to update coach.";
+      const message = err instanceof Error ? err.message : 'Failed to update coach.';
       setSubmitError(message);
     } finally {
       setSaving(false);
@@ -138,12 +127,12 @@ export default function EditCoachPage() {
         spacing={3}
         component="form"
         onSubmit={handleSubmit}
-        sx={{ maxWidth: 960, width: "100%", mx: "auto" }}
+        sx={{ maxWidth: 960, width: '100%', mx: 'auto' }}
       >
         <Stack
-          direction={{ xs: "column", sm: "row" }}
+          direction={{ xs: 'column', sm: 'row' }}
           spacing={2}
-          alignItems={{ sm: "center" }}
+          alignItems={{ sm: 'center' }}
           justifyContent="space-between"
         >
           <Box>
@@ -154,12 +143,12 @@ export default function EditCoachPage() {
               Update a coach account for your organization.
             </Typography>
           </Box>
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-            <Button variant="outlined" onClick={() => navigate("/coaches")}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+            <Button variant="outlined" onClick={() => navigate('/coaches')}>
               Cancel
             </Button>
             <Button type="submit" variant="contained" disabled={saving || loading}>
-              {saving ? "Saving..." : "Save"}
+              {saving ? 'Saving...' : 'Save'}
             </Button>
           </Stack>
         </Stack>
@@ -189,8 +178,8 @@ export default function EditCoachPage() {
             </Typography>
             <Box
               sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
                 gap: 2,
               }}
             >
@@ -236,14 +225,14 @@ export default function EditCoachPage() {
             </Typography>
             <Box
               sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
                 gap: 2,
               }}
             >
               <TextField
                 label="User ID"
-                value={coach?.user_id ?? ""}
+                value={coach?.user_id ?? ''}
                 helperText="Account identifier"
                 fullWidth
                 InputProps={{ readOnly: true }}

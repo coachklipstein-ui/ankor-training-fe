@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Box,
   Stack,
@@ -10,13 +10,13 @@ import {
   InputAdornment,
   MenuItem,
   Divider,
-} from "@mui/material";
-import Autocomplete from "@mui/material/Autocomplete";
-import LinkIcon from "@mui/icons-material/Link";
-import type { DrillTag } from "../services/drillsService";
-import type { SegmentOption } from "../utils/options";
-import type { DrillFormState } from "../utils/drillForm";
-import { toYouTubeThumbnailFromId } from "../utils/youtube";
+} from '@mui/material';
+import Autocomplete from '@mui/material/Autocomplete';
+import LinkIcon from '@mui/icons-material/Link';
+import type { DrillTag } from '../services/drillsService';
+import type { SegmentOption } from '../utils/options';
+import type { DrillFormState } from '../utils/drillForm';
+import { toYouTubeThumbnailFromId } from '../utils/youtube';
 
 type DrillFormFieldsProps = {
   form: DrillFormState;
@@ -62,7 +62,7 @@ export default function DrillFormFields({
             <TextField
               label="Drill name"
               value={form.name}
-              onChange={onFieldChange("name")}
+              onChange={onFieldChange('name')}
               required
               fullWidth
               error={Boolean(errors.name)}
@@ -72,14 +72,14 @@ export default function DrillFormFields({
               select
               label="Segment"
               value={form.segmentId}
-              onChange={onFieldChange("segmentId")}
+              onChange={onFieldChange('segmentId')}
               required
               fullWidth
               error={Boolean(errors.segmentId || segmentsError)}
               helperText={
                 errors.segmentId ||
                 segmentsError ||
-                (segmentsLoading ? "Loading segments..." : undefined)
+                (segmentsLoading ? 'Loading segments...' : undefined)
               }
               SelectProps={{
                 MenuProps: { PaperProps: { sx: { minWidth: 320 } } },
@@ -104,7 +104,7 @@ export default function DrillFormFields({
             <TextField
               label="Description"
               value={form.description}
-              onChange={onFieldChange("description")}
+              onChange={onFieldChange('description')}
               multiline
               minRows={4}
               fullWidth
@@ -123,7 +123,7 @@ export default function DrillFormFields({
               <TextField
                 label="Min players"
                 value={form.minPlayers}
-                onChange={onFieldChange("minPlayers")}
+                onChange={onFieldChange('minPlayers')}
                 type="number"
                 inputProps={{ min: 0 }}
                 fullWidth
@@ -135,7 +135,7 @@ export default function DrillFormFields({
               <TextField
                 label="Max players"
                 value={form.maxPlayers}
-                onChange={onFieldChange("maxPlayers")}
+                onChange={onFieldChange('maxPlayers')}
                 type="number"
                 inputProps={{ min: 0 }}
                 fullWidth
@@ -147,7 +147,7 @@ export default function DrillFormFields({
               <TextField
                 label="Min age"
                 value={form.minAge}
-                onChange={onFieldChange("minAge")}
+                onChange={onFieldChange('minAge')}
                 type="number"
                 inputProps={{ min: 0 }}
                 fullWidth
@@ -159,7 +159,7 @@ export default function DrillFormFields({
               <TextField
                 label="Max age"
                 value={form.maxAge}
-                onChange={onFieldChange("maxAge")}
+                onChange={onFieldChange('maxAge')}
                 type="number"
                 inputProps={{ min: 0 }}
                 fullWidth
@@ -200,7 +200,7 @@ export default function DrillFormFields({
                 label="Add skill tags"
                 placeholder="Select one or more tags"
                 error={Boolean(tagsError)}
-                helperText={tagsError ? "Failed to load tags." : undefined}
+                helperText={tagsError ? 'Failed to load tags.' : undefined}
               />
             )}
           />
@@ -218,10 +218,10 @@ export default function DrillFormFields({
                 <TextField
                   label="YouTube URL"
                   value={form.youtubeUrl}
-                  onChange={onFieldChange("youtubeUrl")}
+                  onChange={onFieldChange('youtubeUrl')}
                   fullWidth
                   error={Boolean(errors.youtubeUrl)}
-                  helperText={errors.youtubeUrl || "Paste a YouTube link."}
+                  helperText={errors.youtubeUrl || 'Paste a YouTube link.'}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -250,47 +250,41 @@ export default function DrillFormFields({
   );
 }
 
-function PreviewBox({
-  label,
-  imageUrl,
-}: {
-  label: string;
-  imageUrl?: string | null;
-}) {
+function PreviewBox({ label, imageUrl }: { label: string; imageUrl?: string | null }) {
   return (
     <Box
       sx={{
-        border: "1px dashed",
-        borderColor: "divider",
+        border: '1px dashed',
+        borderColor: 'divider',
         borderRadius: 2,
         p: 1,
-        textAlign: "center",
-        color: "text.secondary",
+        textAlign: 'center',
+        color: 'text.secondary',
       }}
     >
-      <Box sx={{ position: "relative", paddingTop: "56.25%" }}>
+      <Box sx={{ position: 'relative', paddingTop: '56.25%' }}>
         {imageUrl ? (
           <Box
             component="img"
             src={imageUrl}
             alt={label}
             sx={{
-              position: "absolute",
+              position: 'absolute',
               inset: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
               borderRadius: 8,
             }}
           />
         ) : (
           <Box
             sx={{
-              position: "absolute",
+              position: 'absolute',
               inset: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
             <Typography variant="caption">{label}</Typography>

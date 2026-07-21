@@ -20,10 +20,7 @@ export default function InfoMobile({ totalPrice }: InfoProps) {
 
   const DrawerList = (
     <Box sx={{ width: 'auto', px: 3, pb: 3, pt: 8 }} role="presentation">
-      <IconButton
-        onClick={toggleDrawer(false)}
-        sx={{ position: 'absolute', right: 8, top: 8 }}
-      >
+      <IconButton onClick={toggleDrawer(false)} sx={{ position: 'absolute', right: 8, top: 8 }}>
         <CloseIcon />
       </IconButton>
       <Info totalPrice={totalPrice} />
@@ -32,11 +29,7 @@ export default function InfoMobile({ totalPrice }: InfoProps) {
 
   return (
     <div>
-      <Button
-        variant="text"
-        endIcon={<ExpandMoreRoundedIcon />}
-        onClick={toggleDrawer(true)}
-      >
+      <Button variant="text" endIcon={<ExpandMoreRoundedIcon />} onClick={toggleDrawer(true)}>
         View details
       </Button>
       <Drawer

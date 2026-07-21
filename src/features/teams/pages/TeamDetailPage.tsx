@@ -1,18 +1,14 @@
-import * as React from "react";
-import { Box, Button, Stack, TextField, Typography } from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "../../../app/providers/AuthProvider";
-import { SPORT_OPTIONS } from "../constants";
-import { getTeamById, type Team } from "../services/teamsService";
-import TeamFormFields from "../components/TeamFormFields";
-import {
-  createInitialTeamForm,
-  toTeamFormState,
-  type TeamFormState,
-} from "../utils/teamForm";
+import * as React from 'react';
+import { Box, Button, Stack, TextField, Typography } from '@mui/material';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
+import { SPORT_OPTIONS } from '../constants';
+import { getTeamById, type Team } from '../services/teamsService';
+import TeamFormFields from '../components/TeamFormFields';
+import { createInitialTeamForm, toTeamFormState, type TeamFormState } from '../utils/teamForm';
 
 const formatDateTime = (value?: string | null) => {
-  if (!value) return "";
+  if (!value) return '';
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return value;
   return d.toLocaleString();
@@ -20,13 +16,11 @@ const formatDateTime = (value?: string | null) => {
 
 export default function TeamDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const teamId = id ?? "";
+  const teamId = id ?? '';
   const navigate = useNavigate();
   const { orgId, loading: authLoading } = useAuth();
   const [team, setTeam] = React.useState<Team | null>(null);
-  const [form, setForm] = React.useState<TeamFormState>(
-    createInitialTeamForm(),
-  );
+  const [form, setForm] = React.useState<TeamFormState>(createInitialTeamForm());
   const [loading, setLoading] = React.useState(false);
   const [loadError, setLoadError] = React.useState<string | null>(null);
   const initializedRef = React.useRef(false);
@@ -43,11 +37,11 @@ export default function TeamDetailPage() {
     const loadTeam = async () => {
       if (authLoading) return;
       if (!teamId) {
-        setLoadError("Missing team id in route.");
+        setLoadError('Missing team id in route.');
         return;
       }
       if (!orgId) {
-        setLoadError("Missing org_id. Please sign in again.");
+        setLoadError('Missing org_id. Please sign in again.');
         return;
       }
 
@@ -60,7 +54,7 @@ export default function TeamDetailPage() {
       } catch (err) {
         if (!active) return;
         setTeam(null);
-        setLoadError(err instanceof Error ? err.message : "Failed to load team.");
+        setLoadError(err instanceof Error ? err.message : 'Failed to load team.');
       } finally {
         if (active) setLoading(false);
       }
@@ -80,16 +74,15 @@ export default function TeamDetailPage() {
   }, [team]);
 
   const handleChange =
-    (_field: keyof TeamFormState) =>
-    (_event: React.ChangeEvent<HTMLInputElement>) => {};
+    (_field: keyof TeamFormState) => (_event: React.ChangeEvent<HTMLInputElement>) => {};
 
   return (
     <Box sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
-      <Stack spacing={3} sx={{ maxWidth: 1100, width: "100%", mx: "auto" }}>
+      <Stack spacing={3} sx={{ maxWidth: 1100, width: '100%', mx: 'auto' }}>
         <Stack
-          direction={{ xs: "column", sm: "row" }}
+          direction={{ xs: 'column', sm: 'row' }}
           spacing={2}
-          alignItems={{ sm: "center" }}
+          alignItems={{ sm: 'center' }}
           justifyContent="space-between"
         >
           <Box>
@@ -100,8 +93,8 @@ export default function TeamDetailPage() {
               View team details.
             </Typography>
           </Box>
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-            <Button variant="outlined" onClick={() => navigate("/teams")}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+            <Button variant="outlined" onClick={() => navigate('/teams')}>
               Back
             </Button>
             <Button
@@ -128,13 +121,13 @@ export default function TeamDetailPage() {
 
         <TextField
           label="Team ID"
-          value={team?.id ?? ""}
+          value={team?.id ?? ''}
           fullWidth
           InputProps={{ readOnly: true }}
         />
         <TextField
           label="Organization ID"
-          value={team?.org_id ?? ""}
+          value={team?.org_id ?? ''}
           fullWidth
           InputProps={{ readOnly: true }}
         />

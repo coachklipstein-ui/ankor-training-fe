@@ -1,12 +1,12 @@
-import { Box, Stack, Paper, Typography, Pagination } from "@mui/material";
-import SkillsCardGrid from "../components/list/SkillsCardGrid";
-import SkillsFiltersPanel from "../components/list/SkillsFiltersPanel";
-import SkillsListHeader from "../components/list/SkillsListHeader";
-import { useNavigate } from "react-router-dom";
-import SkillsPlayDialog from "../components/list/SkillsPlayDialog";
-import useSkillsListPage from "../hooks/useSkillsListPage";
-import { useAuth } from "../../../app/providers/AuthProvider";
-import { isAdminRole } from "../../../shared/auth/roles";
+import { Box, Stack, Paper, Typography, Pagination } from '@mui/material';
+import SkillsCardGrid from '../components/list/SkillsCardGrid';
+import SkillsFiltersPanel from '../components/list/SkillsFiltersPanel';
+import SkillsListHeader from '../components/list/SkillsListHeader';
+import { useNavigate } from 'react-router-dom';
+import SkillsPlayDialog from '../components/list/SkillsPlayDialog';
+import useSkillsListPage from '../hooks/useSkillsListPage';
+import { useAuth } from '../../../app/providers/AuthProvider';
+import { isAdminRole } from '../../../shared/auth/roles';
 
 export default function SkillListPage() {
   const navigate = useNavigate();
@@ -33,10 +33,10 @@ export default function SkillListPage() {
 
   return (
     <Box sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
-      <Stack spacing={2.5} sx={{ maxWidth: 1200, mx: "auto" }}>
+      <Stack spacing={2.5} sx={{ maxWidth: 1200, mx: 'auto' }}>
         <SkillsListHeader
           totalCount={totalCount}
-          onCreate={() => navigate("/skills/new")}
+          onCreate={() => navigate('/skills/new')}
           onClear={clearAll}
         />
 
@@ -61,11 +61,11 @@ export default function SkillListPage() {
           filters={filters}
           categoryOptions={categoryOptions}
           onQueryChange={setQuery}
-          onCategoryChange={(value) => updateFilter("category", value)}
+          onCategoryChange={(value) => updateFilter('category', value)}
         />
 
         {!loading && skills.length === 0 ? (
-          <Paper variant="outlined" sx={{ p: 4, textAlign: "center" }}>
+          <Paper variant="outlined" sx={{ p: 4, textAlign: 'center' }}>
             <Typography variant="h6">No skills match your filters.</Typography>
             <Typography variant="body2" color="text.secondary">
               Try clearing filters or searching a different term.

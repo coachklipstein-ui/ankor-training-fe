@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Alert,
   Box,
@@ -9,20 +9,20 @@ import {
   Stack,
   TextField,
   Typography,
-} from "@mui/material";
-import Autocomplete from "@mui/material/Autocomplete";
-import { useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "../../../app/providers/AuthProvider";
+} from '@mui/material';
+import Autocomplete from '@mui/material/Autocomplete';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
 import {
   athleteLabel,
   listAthletes,
   type AthleteListItem,
-} from "../../athletes/services/athleteService";
+} from '../../athletes/services/athleteService';
 import {
   getGuardianById,
   updateGuardian,
   type GuardianListItem,
-} from "../services/guardianService";
+} from '../services/guardianService';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -32,7 +32,7 @@ const makePlaceholderAthlete = (athleteId: string): AthleteListItem => ({
   user_id: null,
   first_name: null,
   last_name: null,
-  full_name: "Unknown athlete",
+  full_name: 'Unknown athlete',
   email: null,
   phone: null,
   cell_number: null,
@@ -42,7 +42,7 @@ const makePlaceholderAthlete = (athleteId: string): AthleteListItem => ({
 
 export default function EditParentPage() {
   const { id } = useParams<{ id: string }>();
-  const guardianId = id ?? "";
+  const guardianId = id ?? '';
   const navigate = useNavigate();
   const { orgId, loading: authLoading } = useAuth();
   const [guardian, setGuardian] = React.useState<GuardianListItem | null>(null);
@@ -51,19 +51,17 @@ export default function EditParentPage() {
   const [athletes, setAthletes] = React.useState<AthleteListItem[]>([]);
   const [athletesLoading, setAthletesLoading] = React.useState(false);
   const [athletesError, setAthletesError] = React.useState<string | null>(null);
-  const [fullName, setFullName] = React.useState("");
-  const [email, setEmail] = React.useState("");
-  const [phone, setPhone] = React.useState("");
-  const [relationship, setRelationship] = React.useState("");
-  const [addressLine1, setAddressLine1] = React.useState("");
-  const [addressLine2, setAddressLine2] = React.useState("");
-  const [city, setCity] = React.useState("");
-  const [region, setRegion] = React.useState("");
-  const [postalCode, setPostalCode] = React.useState("");
-  const [country, setCountry] = React.useState("");
-  const [selectedAthleteIds, setSelectedAthleteIds] = React.useState<string[]>(
-    [],
-  );
+  const [fullName, setFullName] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [phone, setPhone] = React.useState('');
+  const [relationship, setRelationship] = React.useState('');
+  const [addressLine1, setAddressLine1] = React.useState('');
+  const [addressLine2, setAddressLine2] = React.useState('');
+  const [city, setCity] = React.useState('');
+  const [region, setRegion] = React.useState('');
+  const [postalCode, setPostalCode] = React.useState('');
+  const [country, setCountry] = React.useState('');
+  const [selectedAthleteIds, setSelectedAthleteIds] = React.useState<string[]>([]);
   const [initialAthleteIds, setInitialAthleteIds] = React.useState<string[]>([]);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [saving, setSaving] = React.useState(false);
@@ -75,16 +73,16 @@ export default function EditParentPage() {
     initializedRef.current = false;
     setGuardian(null);
     setLoadError(null);
-    setFullName("");
-    setEmail("");
-    setPhone("");
-    setRelationship("");
-    setAddressLine1("");
-    setAddressLine2("");
-    setCity("");
-    setRegion("");
-    setPostalCode("");
-    setCountry("");
+    setFullName('');
+    setEmail('');
+    setPhone('');
+    setRelationship('');
+    setAddressLine1('');
+    setAddressLine2('');
+    setCity('');
+    setRegion('');
+    setPostalCode('');
+    setCountry('');
     setSelectedAthleteIds([]);
     setInitialAthleteIds([]);
     setErrors({});
@@ -98,11 +96,11 @@ export default function EditParentPage() {
     const loadGuardian = async () => {
       if (authLoading) return;
       if (!guardianId) {
-        setLoadError("Missing parent id in route.");
+        setLoadError('Missing parent id in route.');
         return;
       }
       if (!orgId) {
-        setLoadError("Missing org_id. Please sign in again.");
+        setLoadError('Missing org_id. Please sign in again.');
         return;
       }
 
@@ -115,9 +113,7 @@ export default function EditParentPage() {
       } catch (err) {
         if (!active) return;
         setGuardian(null);
-        setLoadError(
-          err instanceof Error ? err.message : "Failed to load parent.",
-        );
+        setLoadError(err instanceof Error ? err.message : 'Failed to load parent.');
       } finally {
         if (active) setLoading(false);
       }
@@ -134,10 +130,10 @@ export default function EditParentPage() {
     if (authLoading) return;
     let active = true;
 
-    const resolvedOrgId = orgId?.trim() || "";
+    const resolvedOrgId = orgId?.trim() || '';
     if (!resolvedOrgId) {
       setAthletes([]);
-      setAthletesError("Missing org_id. Please sign in again.");
+      setAthletesError('Missing org_id. Please sign in again.');
       setAthletesLoading(false);
       return () => {
         active = false;
@@ -155,7 +151,7 @@ export default function EditParentPage() {
       .catch((err: any) => {
         if (!active) return;
         setAthletes([]);
-        setAthletesError(err?.message || "Failed to load athletes.");
+        setAthletesError(err?.message || 'Failed to load athletes.');
       })
       .finally(() => {
         if (active) setAthletesLoading(false);
@@ -168,18 +164,16 @@ export default function EditParentPage() {
 
   React.useEffect(() => {
     if (!guardian || initializedRef.current) return;
-    setFullName(guardian.full_name ?? "");
-    setEmail(guardian.email ?? "");
-    setPhone(guardian.phone ?? "");
-    setAddressLine1(guardian.address_line1 ?? "");
-    setAddressLine2(guardian.address_line2 ?? "");
-    setCity(guardian.city ?? "");
-    setRegion(guardian.region ?? "");
-    setPostalCode(guardian.postal_code ?? "");
-    setCountry(guardian.country ?? "");
-    const athleteIds = guardian.athletes
-      .map((entry) => entry.athlete_id)
-      .filter(Boolean);
+    setFullName(guardian.full_name ?? '');
+    setEmail(guardian.email ?? '');
+    setPhone(guardian.phone ?? '');
+    setAddressLine1(guardian.address_line1 ?? '');
+    setAddressLine2(guardian.address_line2 ?? '');
+    setCity(guardian.city ?? '');
+    setRegion(guardian.region ?? '');
+    setPostalCode(guardian.postal_code ?? '');
+    setCountry(guardian.country ?? '');
+    const athleteIds = guardian.athletes.map((entry) => entry.athlete_id).filter(Boolean);
     setSelectedAthleteIds(athleteIds);
     setInitialAthleteIds(athleteIds);
 
@@ -187,15 +181,13 @@ export default function EditParentPage() {
       .map((entry) => entry.relationship?.trim())
       .filter((value): value is string => Boolean(value));
     const uniqueRelationships = Array.from(new Set(relationships));
-    setRelationship(uniqueRelationships.length === 1 ? uniqueRelationships[0] : "");
+    setRelationship(uniqueRelationships.length === 1 ? uniqueRelationships[0] : '');
 
     initializedRef.current = true;
   }, [guardian]);
 
   const athleteOptions = React.useMemo(() => {
-    return [...athletes].sort((a, b) =>
-      athleteLabel(a).localeCompare(athleteLabel(b)),
-    );
+    return [...athletes].sort((a, b) => athleteLabel(a).localeCompare(athleteLabel(b)));
   }, [athletes]);
 
   const athleteMap = React.useMemo(() => {
@@ -218,31 +210,28 @@ export default function EditParentPage() {
 
     const nextErrors: Record<string, string> = {};
     if (!fullName.trim()) {
-      nextErrors.full_name = "Full name is required.";
+      nextErrors.full_name = 'Full name is required.';
     }
     if (selectedAthleteIds.length === 0) {
-      nextErrors.athlete_ids = "Select at least one athlete.";
+      nextErrors.athlete_ids = 'Select at least one athlete.';
     }
 
     const trimmedRelationship = relationship.trim();
     const initialSet = new Set(initialAthleteIds);
-    const addedAthleteIds = selectedAthleteIds.filter(
-      (idValue) => !initialSet.has(idValue),
-    );
+    const addedAthleteIds = selectedAthleteIds.filter((idValue) => !initialSet.has(idValue));
     if (addedAthleteIds.length > 0 && !trimmedRelationship) {
-      nextErrors.relationship =
-        "Relationship is required for newly added athletes.";
+      nextErrors.relationship = 'Relationship is required for newly added athletes.';
     }
 
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
     if (!guardianId) {
-      setSubmitError("Missing parent id in route.");
+      setSubmitError('Missing parent id in route.');
       return;
     }
     if (!orgId) {
-      setSubmitError("Missing org_id. Please sign in again.");
+      setSubmitError('Missing org_id. Please sign in again.');
       return;
     }
 
@@ -250,12 +239,8 @@ export default function EditParentPage() {
       setSaving(true);
       const initialSet = new Set(initialAthleteIds);
       const selectedSet = new Set(selectedAthleteIds);
-      const addAthleteIds = selectedAthleteIds.filter(
-        (idValue) => !initialSet.has(idValue),
-      );
-      const removeAthleteIds = initialAthleteIds.filter(
-        (idValue) => !selectedSet.has(idValue),
-      );
+      const addAthleteIds = selectedAthleteIds.filter((idValue) => !initialSet.has(idValue));
+      const removeAthleteIds = initialAthleteIds.filter((idValue) => !selectedSet.has(idValue));
       const trimmedRelationship = relationship.trim();
 
       const payload = {
@@ -275,26 +260,21 @@ export default function EditParentPage() {
               })),
             }
           : {}),
-        ...(removeAthleteIds.length > 0
-          ? { remove_athlete_ids: removeAthleteIds }
-          : {}),
+        ...(removeAthleteIds.length > 0 ? { remove_athlete_ids: removeAthleteIds } : {}),
       };
 
       const updated = await updateGuardian(guardianId, payload, { orgId });
       setGuardian(updated);
       setSubmitError(null);
       setToastOpen(true);
-      const refreshedIds = updated.athletes
-        .map((entry) => entry.athlete_id)
-        .filter(Boolean);
+      const refreshedIds = updated.athletes.map((entry) => entry.athlete_id).filter(Boolean);
       setInitialAthleteIds(refreshedIds);
       setSelectedAthleteIds(refreshedIds);
       if (addAthleteIds.length > 0) {
-        setRelationship("");
+        setRelationship('');
       }
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to update parent.";
+      const message = err instanceof Error ? err.message : 'Failed to update parent.';
       setSubmitError(message);
     } finally {
       setSaving(false);
@@ -306,8 +286,8 @@ export default function EditParentPage() {
     : athletesError
       ? athletesError
       : athletesLoading
-        ? "Loading athletes..."
-        : "Select one or more athletes.";
+        ? 'Loading athletes...'
+        : 'Select one or more athletes.';
 
   return (
     <Box sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
@@ -315,12 +295,12 @@ export default function EditParentPage() {
         spacing={3}
         component="form"
         onSubmit={handleSubmit}
-        sx={{ maxWidth: 1200, width: "100%", mx: "auto" }}
+        sx={{ maxWidth: 1200, width: '100%', mx: 'auto' }}
       >
         <Stack
-          direction={{ xs: "column", sm: "row" }}
+          direction={{ xs: 'column', sm: 'row' }}
           spacing={2}
-          alignItems={{ sm: "center" }}
+          alignItems={{ sm: 'center' }}
           justifyContent="space-between"
         >
           <Box>
@@ -331,12 +311,12 @@ export default function EditParentPage() {
               Update parent/guardian details.
             </Typography>
           </Box>
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-            <Button variant="outlined" onClick={() => navigate("/parents")}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+            <Button variant="outlined" onClick={() => navigate('/parents')}>
               Back
             </Button>
             <Button type="submit" variant="contained" disabled={saving || loading}>
-              {saving ? "Saving..." : "Update"}
+              {saving ? 'Saving...' : 'Update'}
             </Button>
           </Stack>
         </Stack>
@@ -366,8 +346,8 @@ export default function EditParentPage() {
             </Typography>
             <Box
               sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
                 gap: 2,
               }}
             >
@@ -386,8 +366,8 @@ export default function EditParentPage() {
                 value={email}
                 helperText={
                   email && emailRegex.test(email.trim())
-                    ? "Email cannot be edited here."
-                    : "Email cannot be edited here."
+                    ? 'Email cannot be edited here.'
+                    : 'Email cannot be edited here.'
                 }
                 fullWidth
                 InputProps={{ readOnly: true }}
@@ -404,10 +384,7 @@ export default function EditParentPage() {
                 value={relationship}
                 onChange={(event) => setRelationship(event.target.value)}
                 error={Boolean(errors.relationship)}
-                helperText={
-                  errors.relationship ||
-                  "Applies to newly added athletes."
-                }
+                helperText={errors.relationship || 'Applies to newly added athletes.'}
                 fullWidth
               />
             </Box>
@@ -423,9 +400,7 @@ export default function EditParentPage() {
               multiple
               options={athleteOptions}
               value={selectedAthletes}
-              onChange={(_, value) =>
-                setSelectedAthleteIds(value.map((athlete) => athlete.id))
-              }
+              onChange={(_, value) => setSelectedAthleteIds(value.map((athlete) => athlete.id))}
               loading={athletesLoading}
               getOptionLabel={(option) => athleteLabel(option)}
               isOptionEqualToValue={(option, value) => option.id === value.id}
@@ -460,8 +435,8 @@ export default function EditParentPage() {
             </Typography>
             <Box
               sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
                 gap: 2,
               }}
             >
@@ -516,13 +491,13 @@ export default function EditParentPage() {
         open={toastOpen}
         autoHideDuration={3000}
         onClose={() => setToastOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert
           onClose={() => setToastOpen(false)}
           severity="success"
           variant="filled"
-          sx={{ width: "100%" }}
+          sx={{ width: '100%' }}
         >
           Parent record saved successfully.
         </Alert>

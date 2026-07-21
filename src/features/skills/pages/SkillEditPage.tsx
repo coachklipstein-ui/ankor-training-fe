@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Autocomplete,
   Box,
@@ -8,13 +8,10 @@ import {
   Stack,
   TextField,
   Typography,
-} from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "../../../app/providers/AuthProvider";
-import {
-  listDrills,
-  type DrillItem,
-} from "../../drills/services/drillsService";
+} from '@mui/material';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
+import { listDrills, type DrillItem } from '../../drills/services/drillsService';
 import {
   bulkUpdateSkillDrillMap,
   createSkillMedia,
@@ -25,20 +22,20 @@ import {
   uploadSkillMediaBatch,
   type Skill,
   type SkillDrillMapItem,
-} from "../services/skillsService";
+} from '../services/skillsService';
 import DrillPickerDialog, {
   type DialogDrill,
-} from "../../practice-plans/components/DrillPickerDialog";
-import SkillFormFields from "../components/SkillFormFields";
-import SkillRecordingControls from "../components/SkillRecordingControls";
+} from '../../practice-plans/components/DrillPickerDialog';
+import SkillFormFields from '../components/SkillFormFields';
+import SkillRecordingControls from '../components/SkillRecordingControls';
 import {
   DEBUG_SPORT_ID,
   SKILL_LEVEL_OPTIONS,
   SKILL_STATUS_OPTIONS,
   SKILL_VISIBILITY_OPTIONS,
-} from "../constants";
-import { createInitialSkillForm, type SkillFormState } from "../utils/skillForm";
-import { validateSkillForm } from "../utils/validation";
+} from '../constants';
+import { createInitialSkillForm, type SkillFormState } from '../utils/skillForm';
+import { validateSkillForm } from '../utils/validation';
 
 type SelectOption = { id: string; label: string };
 
@@ -47,9 +44,7 @@ const DRILL_OPTION_LIMIT = 100;
 const ensureOption = (options: SelectOption[], value: string) => {
   const trimmed = value.trim();
   if (!trimmed) return options;
-  const exists = options.some(
-    (option) => option.id.toLowerCase() === trimmed.toLowerCase(),
-  );
+  const exists = options.some((option) => option.id.toLowerCase() === trimmed.toLowerCase());
   return exists ? options : [...options, { id: trimmed, label: trimmed }];
 };
 
@@ -73,7 +68,7 @@ const mergeDrillOptions = (primary: DrillItem[], secondary: DrillItem[]) => {
 };
 
 const drillOptionLabel = (drill: DrillItem) => {
-  const name = drill.name?.trim() || "Untitled drill";
+  const name = drill.name?.trim() || 'Untitled drill';
   const segment = drill.segment?.name?.trim();
   return segment ? `${name} (${segment})` : name;
 };
@@ -96,8 +91,8 @@ const mapSkillDrillToDrillItem = (item: SkillDrillMapItem): DrillItem | null => 
     duration_min: item.drill?.duration_min ?? null,
     visibility: null,
     is_archived: false,
-    created_at: item.created_at ?? "",
-    updated_at: item.created_at ?? "",
+    created_at: item.created_at ?? '',
+    updated_at: item.created_at ?? '',
     segment: null,
     skill_tags: [],
     media: [],
@@ -105,95 +100,91 @@ const mapSkillDrillToDrillItem = (item: SkillDrillMapItem): DrillItem | null => 
 };
 
 const pickRecorderMimeType = () => {
-  if (typeof MediaRecorder === "undefined") return "";
-  const candidates = [
-    "video/webm;codecs=vp9,opus",
-    "video/webm;codecs=vp8,opus",
-    "video/webm",
-  ];
-  return candidates.find((type) => MediaRecorder.isTypeSupported(type)) || "";
+  if (typeof MediaRecorder === 'undefined') return '';
+  const candidates = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+  return candidates.find((type) => MediaRecorder.isTypeSupported(type)) || '';
 };
 
 const pickFileExtension = (contentType: string) => {
-  if (contentType.includes("mp4")) return "mp4";
-  if (contentType.includes("webm")) return "webm";
-  return "webm";
+  if (contentType.includes('mp4')) return 'mp4';
+  if (contentType.includes('webm')) return 'webm';
+  return 'webm';
 };
 
 const pickUploadUrl = (data: unknown) => {
-  if (!data || typeof data !== "object") return "";
+  if (!data || typeof data !== 'object') return '';
   const typed = data as any;
-  if (typed.upload && typeof typed.upload === "object") {
+  if (typed.upload && typeof typed.upload === 'object') {
     const inner = typed.upload as any;
-    if (typeof inner.signed_url === "string") return inner.signed_url;
-    if (typeof inner.signedUrl === "string") return inner.signedUrl;
-    if (typeof inner.upload_url === "string") return inner.upload_url;
-    if (typeof inner.uploadUrl === "string") return inner.uploadUrl;
+    if (typeof inner.signed_url === 'string') return inner.signed_url;
+    if (typeof inner.signedUrl === 'string') return inner.signedUrl;
+    if (typeof inner.upload_url === 'string') return inner.upload_url;
+    if (typeof inner.uploadUrl === 'string') return inner.uploadUrl;
   }
-  if (typeof typed.upload_url === "string") return typed.upload_url;
-  if (typeof typed.uploadUrl === "string") return typed.uploadUrl;
-  if (typeof typed.signed_url === "string") return typed.signed_url;
-  if (typeof typed.signedUrl === "string") return typed.signedUrl;
-  if (typed.data && typeof typed.data === "object") {
+  if (typeof typed.upload_url === 'string') return typed.upload_url;
+  if (typeof typed.uploadUrl === 'string') return typed.uploadUrl;
+  if (typeof typed.signed_url === 'string') return typed.signed_url;
+  if (typeof typed.signedUrl === 'string') return typed.signedUrl;
+  if (typed.data && typeof typed.data === 'object') {
     const inner = typed.data as any;
-    if (typeof inner.upload_url === "string") return inner.upload_url;
-    if (typeof inner.uploadUrl === "string") return inner.uploadUrl;
-    if (typeof inner.signed_url === "string") return inner.signed_url;
-    if (typeof inner.signedUrl === "string") return inner.signedUrl;
+    if (typeof inner.upload_url === 'string') return inner.upload_url;
+    if (typeof inner.uploadUrl === 'string') return inner.uploadUrl;
+    if (typeof inner.signed_url === 'string') return inner.signed_url;
+    if (typeof inner.signedUrl === 'string') return inner.signedUrl;
   }
-  return "";
+  return '';
 };
 
 const pickPublicUrl = (data: unknown) => {
-  if (!data || typeof data !== "object") return "";
+  if (!data || typeof data !== 'object') return '';
   const typed = data as any;
-  if (typed.upload && typeof typed.upload === "object") {
+  if (typed.upload && typeof typed.upload === 'object') {
     const inner = typed.upload as any;
-    if (typeof inner.public_url === "string") return inner.public_url;
-    if (typeof inner.publicUrl === "string") return inner.publicUrl;
+    if (typeof inner.public_url === 'string') return inner.public_url;
+    if (typeof inner.publicUrl === 'string') return inner.publicUrl;
   }
-  if (typed.media && typeof typed.media === "object") {
+  if (typed.media && typeof typed.media === 'object') {
     const inner = typed.media as any;
-    if (typeof inner.url === "string") return inner.url;
+    if (typeof inner.url === 'string') return inner.url;
   }
-  if (typeof typed.public_url === "string") return typed.public_url;
-  if (typeof typed.publicUrl === "string") return typed.publicUrl;
-  if (typed.data && typeof typed.data === "object") {
+  if (typeof typed.public_url === 'string') return typed.public_url;
+  if (typeof typed.publicUrl === 'string') return typed.publicUrl;
+  if (typed.data && typeof typed.data === 'object') {
     const inner = typed.data as any;
-    if (typeof inner.public_url === "string") return inner.public_url;
-    if (typeof inner.publicUrl === "string") return inner.publicUrl;
-    if (typeof inner.url === "string") return inner.url;
+    if (typeof inner.public_url === 'string') return inner.public_url;
+    if (typeof inner.publicUrl === 'string') return inner.publicUrl;
+    if (typeof inner.url === 'string') return inner.url;
   }
-  return "";
+  return '';
 };
 
 const pickStoragePath = (data: unknown) => {
-  if (!data || typeof data !== "object") return "";
+  if (!data || typeof data !== 'object') return '';
   const typed = data as any;
-  if (typed.upload && typeof typed.upload === "object") {
+  if (typed.upload && typeof typed.upload === 'object') {
     const inner = typed.upload as any;
-    if (typeof inner.path === "string") return inner.path;
-    if (typeof inner.storage_path === "string") return inner.storage_path;
-    if (typeof inner.storagePath === "string") return inner.storagePath;
+    if (typeof inner.path === 'string') return inner.path;
+    if (typeof inner.storage_path === 'string') return inner.storage_path;
+    if (typeof inner.storagePath === 'string') return inner.storagePath;
   }
-  if (typed.media && typeof typed.media === "object") {
+  if (typed.media && typeof typed.media === 'object') {
     const inner = typed.media as any;
-    if (typeof inner.storage_path === "string") return inner.storage_path;
-    if (typeof inner.storagePath === "string") return inner.storagePath;
+    if (typeof inner.storage_path === 'string') return inner.storage_path;
+    if (typeof inner.storagePath === 'string') return inner.storagePath;
   }
-  if (typeof typed.storage_path === "string") return typed.storage_path;
-  if (typeof typed.storagePath === "string") return typed.storagePath;
-  if (typed.data && typeof typed.data === "object") {
+  if (typeof typed.storage_path === 'string') return typed.storage_path;
+  if (typeof typed.storagePath === 'string') return typed.storagePath;
+  if (typed.data && typeof typed.data === 'object') {
     const inner = typed.data as any;
-    if (typeof inner.storage_path === "string") return inner.storage_path;
-    if (typeof inner.storagePath === "string") return inner.storagePath;
+    if (typeof inner.storage_path === 'string') return inner.storage_path;
+    if (typeof inner.storagePath === 'string') return inner.storagePath;
   }
-  return "";
+  return '';
 };
 
 export default function SkillEditPage() {
   const { id } = useParams<{ id: string }>();
-  const skillId = id ?? "";
+  const skillId = id ?? '';
   const navigate = useNavigate();
   const { profile, loading: authLoading } = useAuth();
   const orgId = profile?.default_org_id?.trim() || null;
@@ -248,11 +239,11 @@ export default function SkillEditPage() {
         return;
       }
       if (!skillId) {
-        setSkillError("Missing skill id in route.");
+        setSkillError('Missing skill id in route.');
         return;
       }
       if (!orgId) {
-        setSkillError("Missing org_id. Please sign in again.");
+        setSkillError('Missing org_id. Please sign in again.');
         return;
       }
 
@@ -264,7 +255,7 @@ export default function SkillEditPage() {
         setSkillItem(skill);
       } catch (err) {
         if (!active) return;
-        setSkillError(err instanceof Error ? err.message : "Failed to load skill.");
+        setSkillError(err instanceof Error ? err.message : 'Failed to load skill.');
         setSkillItem(null);
       } finally {
         if (active) setSkillLoading(false);
@@ -284,7 +275,7 @@ export default function SkillEditPage() {
     const loadDrills = async () => {
       if (authLoading) return;
       if (!orgId) {
-        setDrillsError("Missing org_id. Please sign in again.");
+        setDrillsError('Missing org_id. Please sign in again.');
         setDrillOptions([]);
         setSelectedDrills([]);
         setMappedDrillIds([]);
@@ -308,9 +299,7 @@ export default function SkillEditPage() {
 
         if (!active) return;
 
-        const optionsById = new Map(
-          optionsResult.items.map((drill) => [drill.id, drill]),
-        );
+        const optionsById = new Map(optionsResult.items.map((drill) => [drill.id, drill]));
         const mappedItems = mappedResult.items
           .map((item) => optionsById.get(item.drill_id) ?? mapSkillDrillToDrillItem(item))
           .filter((drill): drill is DrillItem => Boolean(drill?.id));
@@ -322,9 +311,7 @@ export default function SkillEditPage() {
         setDrillOptions([]);
         setSelectedDrills([]);
         setMappedDrillIds([]);
-        setDrillsError(
-          err instanceof Error ? err.message : "Failed to load drill map.",
-        );
+        setDrillsError(err instanceof Error ? err.message : 'Failed to load drill map.');
       } finally {
         if (active) setDrillsLoading(false);
       }
@@ -341,13 +328,13 @@ export default function SkillEditPage() {
     if (!skillItem || initializedRef.current) return;
 
     setForm({
-      title: skillItem.title ?? "",
-      category: skillItem.category ?? "",
-      description: skillItem.description ?? "",
-      level: skillItem.level ?? "",
-      visibility: skillItem.visibility ?? "",
-      status: skillItem.status ?? "",
-      sportId: skillItem.sport_id ?? "",
+      title: skillItem.title ?? '',
+      category: skillItem.category ?? '',
+      description: skillItem.description ?? '',
+      level: skillItem.level ?? '',
+      visibility: skillItem.visibility ?? '',
+      status: skillItem.status ?? '',
+      sportId: skillItem.sport_id ?? '',
     });
     initializedRef.current = true;
   }, [skillItem]);
@@ -391,22 +378,19 @@ export default function SkillEditPage() {
     () =>
       Boolean(uploadedUrl) ||
       Boolean(
-        skillItem?.media?.some(
-          (media) => media.type?.toLowerCase() === "video" && media.url,
-        ),
+        skillItem?.media?.some((media) => media.type?.toLowerCase() === 'video' && media.url),
       ),
     [skillItem?.media, uploadedUrl],
   );
 
-  const handleChange = (field: keyof SkillFormState) => (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    setForm((prev) => ({ ...prev, [field]: event.target.value }));
-  };
+  const handleChange =
+    (field: keyof SkillFormState) => (event: React.ChangeEvent<HTMLInputElement>) => {
+      setForm((prev) => ({ ...prev, [field]: event.target.value }));
+    };
 
   const syncDrillMap = async () => {
     if (!skillId) {
-      throw new Error("Missing skill id in route.");
+      throw new Error('Missing skill id in route.');
     }
 
     const selectedIds = new Set(selectedDrills.map((drill) => drill.id));
@@ -419,7 +403,7 @@ export default function SkillEditPage() {
     }
 
     if (!orgId) {
-      throw new Error("Missing org_id. Please sign in again.");
+      throw new Error('Missing org_id. Please sign in again.');
     }
 
     await bulkUpdateSkillDrillMap({
@@ -450,15 +434,15 @@ export default function SkillEditPage() {
     if (Object.keys(nextErrors).length > 0) return;
 
     if (!skillId) {
-      setSubmitError("Missing skill id in route.");
+      setSubmitError('Missing skill id in route.');
       return;
     }
     if (!orgId) {
-      setSubmitError("Missing org_id. Please sign in again.");
+      setSubmitError('Missing org_id. Please sign in again.');
       return;
     }
     if (!skillItem) {
-      setSubmitError("Skill details are not loaded yet.");
+      setSubmitError('Skill details are not loaded yet.');
       return;
     }
 
@@ -481,8 +465,7 @@ export default function SkillEditPage() {
       await syncDrillMap();
       setSubmitError(null);
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to update skill.";
+      const message = err instanceof Error ? err.message : 'Failed to update skill.';
       setSubmitError(message);
     } finally {
       setSaving(false);
@@ -501,15 +484,15 @@ export default function SkillEditPage() {
 
   const uploadRecordedBlob = async (blob: Blob) => {
     if (!skillId) {
-      setUploadError("Missing skill id in route.");
+      setUploadError('Missing skill id in route.');
       return;
     }
     if (!orgId) {
-      setUploadError("Missing org_id. Please sign in again.");
+      setUploadError('Missing org_id. Please sign in again.');
       return;
     }
     if (hasSkillVideo) {
-      setUploadError("Only one video is allowed for each skill.");
+      setUploadError('Only one video is allowed for each skill.');
       return;
     }
 
@@ -517,10 +500,8 @@ export default function SkillEditPage() {
     setUploadError(null);
     setUploadedUrl(null);
 
-    const contentType = blob.type || "video/webm";
-    const fileName = `skill-${skillId}-${Date.now()}.${pickFileExtension(
-      contentType,
-    )}`;
+    const contentType = blob.type || 'video/webm';
+    const fileName = `skill-${skillId}-${Date.now()}.${pickFileExtension(contentType)}`;
 
     try {
       const upload = await createSkillMediaUploadUrl({
@@ -536,12 +517,10 @@ export default function SkillEditPage() {
 
       const uploadUrl = pickUploadUrl(upload);
       if (!uploadUrl) {
-        throw new Error("Upload URL missing from response.");
+        throw new Error('Upload URL missing from response.');
       }
 
-      const fields = (upload as any)?.fields as
-        | Record<string, string>
-        | undefined;
+      const fields = (upload as any)?.fields as Record<string, string> | undefined;
       let uploadRes: Response;
 
       if (fields && Object.keys(fields).length > 0) {
@@ -549,26 +528,26 @@ export default function SkillEditPage() {
         Object.entries(fields).forEach(([key, value]) => {
           formData.append(key, value);
         });
-        formData.append("file", blob, fileName);
+        formData.append('file', blob, fileName);
         uploadRes = await fetch(uploadUrl, {
-          method: "POST",
+          method: 'POST',
           body: formData,
         });
       } else {
         uploadRes = await fetch(uploadUrl, {
-          method: "PUT",
-          headers: { "Content-Type": contentType },
+          method: 'PUT',
+          headers: { 'Content-Type': contentType },
           body: blob,
         });
       }
 
       if (!uploadRes.ok) {
-        throw new Error("Failed to upload video.");
+        throw new Error('Failed to upload video.');
       }
 
       const publicUrl = pickPublicUrl(upload);
       if (!publicUrl) {
-        throw new Error("Upload completed but public URL is missing.");
+        throw new Error('Upload completed but public URL is missing.');
       }
 
       const storagePath = pickStoragePath(upload);
@@ -580,41 +559,37 @@ export default function SkillEditPage() {
         url: publicUrl,
         title: form.title.trim() || null,
         description: form.description.trim() || null,
-        media_type: "video",
+        media_type: 'video',
         position: 1,
       });
 
       setUploadedUrl(publicUrl);
     } catch (err) {
-      setUploadError(
-        err instanceof Error ? err.message : "Failed to upload video.",
-      );
+      setUploadError(err instanceof Error ? err.message : 'Failed to upload video.');
     } finally {
       setUploading(false);
     }
   };
 
-  const handleVideoFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleVideoFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
-    event.target.value = "";
+    event.target.value = '';
     if (!file) return;
 
     if (!skillId) {
-      setUploadError("Missing skill id in route.");
+      setUploadError('Missing skill id in route.');
       return;
     }
     if (!orgId) {
-      setUploadError("Missing org_id. Please sign in again.");
+      setUploadError('Missing org_id. Please sign in again.');
       return;
     }
     if (hasSkillVideo) {
-      setUploadError("Only one video is allowed for each skill.");
+      setUploadError('Only one video is allowed for each skill.');
       return;
     }
-    if (file.type && file.type !== "video/mp4") {
-      setUploadError("Please choose an MP4 video file.");
+    if (file.type && file.type !== 'video/mp4') {
+      setUploadError('Please choose an MP4 video file.');
       return;
     }
 
@@ -627,27 +602,22 @@ export default function SkillEditPage() {
         org_id: orgId,
         skill_id: skillId,
         file,
-        title: form.title.trim() || "Skill video",
+        title: form.title.trim() || 'Skill video',
       });
 
-      const uploadedItem = result.items.find(
-        (item) => item.status === "uploaded",
-      );
-      const publicUrl =
-        uploadedItem?.media?.url || uploadedItem?.upload?.public_url || null;
+      const uploadedItem = result.items.find((item) => item.status === 'uploaded');
+      const publicUrl = uploadedItem?.media?.url || uploadedItem?.upload?.public_url || null;
 
       if (!uploadedItem || !publicUrl) {
         const reason =
           result.items.find((item) => item.reason)?.reason ||
-          "Upload completed but no video URL was returned.";
+          'Upload completed but no video URL was returned.';
         throw new Error(reason);
       }
 
       setUploadedUrl(publicUrl);
     } catch (err) {
-      setUploadError(
-        err instanceof Error ? err.message : "Failed to upload video.",
-      );
+      setUploadError(err instanceof Error ? err.message : 'Failed to upload video.');
     } finally {
       setUploading(false);
     }
@@ -656,11 +626,11 @@ export default function SkillEditPage() {
   const startRecording = async () => {
     if (recording || uploading) return;
     if (hasSkillVideo) {
-      setRecordingError("Only one video is allowed for each skill.");
+      setRecordingError('Only one video is allowed for each skill.');
       return;
     }
     if (!navigator.mediaDevices?.getUserMedia) {
-      setRecordingError("Recording is not supported in this browser.");
+      setRecordingError('Recording is not supported in this browser.');
       return;
     }
 
@@ -697,11 +667,11 @@ export default function SkillEditPage() {
         setRecording(false);
 
         const blob = new Blob(chunks, {
-          type: recorder.mimeType || "video/webm",
+          type: recorder.mimeType || 'video/webm',
         });
 
         if (blob.size === 0) {
-          setRecordingError("No video was captured.");
+          setRecordingError('No video was captured.');
           return;
         }
 
@@ -713,15 +683,13 @@ export default function SkillEditPage() {
       setRecording(true);
     } catch (err) {
       stopStream();
-      setRecordingError(
-        err instanceof Error ? err.message : "Unable to start recording.",
-      );
+      setRecordingError(err instanceof Error ? err.message : 'Unable to start recording.');
     }
   };
 
   const stopRecording = () => {
     if (!mediaRecorderRef.current) return;
-    if (mediaRecorderRef.current.state === "inactive") return;
+    if (mediaRecorderRef.current.state === 'inactive') return;
     mediaRecorderRef.current.stop();
     setRecording(false);
   };
@@ -734,12 +702,12 @@ export default function SkillEditPage() {
         spacing={3}
         component="form"
         onSubmit={handleSubmit}
-        sx={{ maxWidth: 1400, width: "100%", mx: "auto" }}
+        sx={{ maxWidth: 1400, width: '100%', mx: 'auto' }}
       >
         <Stack
-          direction={{ xs: "column", sm: "row" }}
+          direction={{ xs: 'column', sm: 'row' }}
           spacing={2}
-          alignItems={{ sm: "center" }}
+          alignItems={{ sm: 'center' }}
           justifyContent="space-between"
         >
           <Box>
@@ -750,12 +718,12 @@ export default function SkillEditPage() {
               Update skill details.
             </Typography>
           </Box>
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-            <Button variant="outlined" onClick={() => navigate("/skills")}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+            <Button variant="outlined" onClick={() => navigate('/skills')}>
               Cancel
             </Button>
             <Button type="submit" variant="contained" disabled={saving}>
-              {saving ? "Saving..." : "Update"}
+              {saving ? 'Saving...' : 'Update'}
             </Button>
           </Stack>
         </Stack>
@@ -808,9 +776,9 @@ export default function SkillEditPage() {
         <Paper variant="outlined" sx={{ p: { xs: 2, md: 3 } }}>
           <Stack spacing={2}>
             <Stack
-              direction={{ xs: "column", sm: "row" }}
+              direction={{ xs: 'column', sm: 'row' }}
               spacing={1.5}
-              alignItems={{ sm: "center" }}
+              alignItems={{ sm: 'center' }}
               justifyContent="space-between"
             >
               <Box>
@@ -853,10 +821,7 @@ export default function SkillEditPage() {
                   label="Mapped drills"
                   placeholder="Select drills"
                   error={Boolean(drillsError)}
-                  helperText={
-                    drillsError ||
-                    (drillsLoading ? "Loading drills..." : undefined)
-                  }
+                  helperText={drillsError || (drillsLoading ? 'Loading drills...' : undefined)}
                 />
               )}
             />
@@ -865,7 +830,7 @@ export default function SkillEditPage() {
       </Stack>
       <DrillPickerDialog
         open={addDrillsOpen}
-        orgId={orgId ?? ""}
+        orgId={orgId ?? ''}
         onClose={() => setAddDrillsOpen(false)}
         onAddDrill={handleAddDrillFromDialog}
         missingOrgIdMessage="Missing org_id. Please sign in again."

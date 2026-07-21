@@ -1,29 +1,29 @@
-import type { Session, User } from '@supabase/supabase-js'
-import { supabase } from '../../lib/supabaseClient'
+import type { Session, User } from '@supabase/supabase-js';
+import { supabase } from '../../lib/supabaseClient';
 
-export type AuthUser = User
+export type AuthUser = User;
 
 export type AuthSession = {
-  accessToken: string
-  refreshToken?: string
-  expiresAt?: number
-  orgId?: string
-  user?: AuthUser | null
-}
+  accessToken: string;
+  refreshToken?: string;
+  expiresAt?: number;
+  orgId?: string;
+  user?: AuthUser | null;
+};
 
-const REFRESH_SKEW_MS = 60_000
+const REFRESH_SKEW_MS = 60_000;
 
-let cachedSession: AuthSession | null = null
-let refreshPromise: Promise<AuthSession | null> | null = null
+let cachedSession: AuthSession | null = null;
+let refreshPromise: Promise<AuthSession | null> | null = null;
 
 function parseExpiresAt(session: Session): number | undefined {
   if (Number.isFinite(session.expires_at)) {
-    return Number(session.expires_at) * 1000
+    return Number(session.expires_at) * 1000;
   }
   if (Number.isFinite(session.expires_in)) {
-    return Date.now() + Number(session.expires_in) * 1000
+    return Date.now() + Number(session.expires_in) * 1000;
   }
-  return undefined
+  return undefined;
 }
 
 function extractOrgId(user?: User | null): string | undefined {
@@ -34,15 +34,15 @@ function extractOrgId(user?: User | null): string | undefined {
     user?.user_metadata?.orgId,
     user?.app_metadata?.org_id,
     user?.app_metadata?.orgId,
-  ]
+  ];
 
   for (const candidate of candidates) {
     if (typeof candidate === 'string' && candidate.trim()) {
-      return candidate.trim()
+      return candidate.trim();
     }
   }
 
-  return undefined
+  return undefined;
 }
 
 function normalizeSupabaseSession(session: Session): AuthSession {
@@ -52,130 +52,128 @@ function normalizeSupabaseSession(session: Session): AuthSession {
     expiresAt: parseExpiresAt(session),
     orgId: extractOrgId(session.user) ?? undefined,
     user: session.user ?? null,
-  }
+  };
 }
 
 function isSessionExpiring(session: AuthSession, skewMs = REFRESH_SKEW_MS) {
-  if (!session.expiresAt) return false
-  return Date.now() >= session.expiresAt - skewMs
+  if (!session.expiresAt) return false;
+  return Date.now() >= session.expiresAt - skewMs;
 }
 
 export function getStoredSession(): AuthSession | null {
-  return cachedSession
+  return cachedSession;
 }
 
 export function setStoredSession(session: AuthSession | null) {
-  cachedSession = session
+  cachedSession = session;
 }
 
 export function clearStoredSession() {
-  cachedSession = null
+  cachedSession = null;
 }
 
 export function getAccessToken(): string | null {
-  return cachedSession?.accessToken ?? null
+  return cachedSession?.accessToken ?? null;
 }
 
 export function getOrgId(): string | null {
-  return cachedSession?.orgId ?? null
+  return cachedSession?.orgId ?? null;
 }
 
 export async function loginWithEmailPassword(
   email: string,
   password: string,
 ): Promise<AuthSession> {
-  const e = (email ?? '').trim()
-  const p = password ?? ''
+  const e = (email ?? '').trim();
+  const p = password ?? '';
 
   if (!e || !/\S+@\S+\.\S+/.test(e)) {
-    throw new Error('Please enter a valid email address.')
+    throw new Error('Please enter a valid email address.');
   }
   if (!p) {
-    throw new Error('Please enter your password.')
+    throw new Error('Please enter your password.');
   }
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email: e,
     password: p,
-  })
+  });
 
   if (error) {
-    throw new Error(error.message || 'Unable to sign in.')
+    throw new Error(error.message || 'Unable to sign in.');
   }
 
   if (!data.session) {
-    throw new Error('Login did not return a session.')
+    throw new Error('Login did not return a session.');
   }
 
-  const normalized = normalizeSupabaseSession(data.session)
-  setStoredSession(normalized)
-  return normalized
+  const normalized = normalizeSupabaseSession(data.session);
+  setStoredSession(normalized);
+  return normalized;
 }
 
 export async function sendPasswordResetEmail(email: string): Promise<void> {
-  const e = (email ?? '').trim()
+  const e = (email ?? '').trim();
 
   if (!e || !/\S+@\S+\.\S+/.test(e)) {
-    throw new Error('Please enter a valid email address.')
+    throw new Error('Please enter a valid email address.');
   }
 
   const { error } = await supabase.auth.resetPasswordForEmail(e, {
     redirectTo: `${window.location.origin}/reset-password`,
-  })
+  });
 
   if (error) {
-    throw new Error(error.message || 'Unable to send password reset email.')
+    throw new Error(error.message || 'Unable to send password reset email.');
   }
 }
 
-export async function refreshAuthSession(
-  _current?: AuthSession,
-): Promise<AuthSession> {
-  const { data, error } = await supabase.auth.refreshSession()
+export async function refreshAuthSession(_current?: AuthSession): Promise<AuthSession> {
+  const { data, error } = await supabase.auth.refreshSession();
 
   if (error) {
-    throw new Error(error.message || 'Unable to refresh session.')
+    throw new Error(error.message || 'Unable to refresh session.');
   }
 
   if (!data.session) {
-    throw new Error('Refresh did not return a session.')
+    throw new Error('Refresh did not return a session.');
   }
 
-  const normalized = normalizeSupabaseSession(data.session)
-  setStoredSession(normalized)
-  return normalized
+  const normalized = normalizeSupabaseSession(data.session);
+  setStoredSession(normalized);
+  return normalized;
 }
 
 export async function ensureValidSession(): Promise<AuthSession | null> {
-  const { data, error } = await supabase.auth.getSession()
+  const { data, error } = await supabase.auth.getSession();
 
   if (error) {
-    throw new Error(error.message || 'Unable to load session.')
+    throw new Error(error.message || 'Unable to load session.');
   }
 
   if (!data.session) {
-    clearStoredSession()
-    return null
+    clearStoredSession();
+    return null;
   }
 
-  const normalized = normalizeSupabaseSession(data.session)
-  setStoredSession(normalized)
+  const normalized = normalizeSupabaseSession(data.session);
+  setStoredSession(normalized);
 
   if (!isSessionExpiring(normalized)) {
-    return normalized
+    return normalized;
   }
 
   if (!refreshPromise) {
     refreshPromise = refreshAuthSession(normalized)
       .then((refreshed) => refreshed)
       .catch(() => {
-        clearStoredSession()
-        return null
+        clearStoredSession();
+        return null;
       })
       .finally(() => {
-        refreshPromise = null
-      })
+        refreshPromise = null;
+      });
   }
 
-  return refreshPromise
+  return refreshPromise;
 }

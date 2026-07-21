@@ -1,10 +1,10 @@
-import * as React from 'react'
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome'
-import GraphicEqIcon from '@mui/icons-material/GraphicEq'
-import MicIcon from '@mui/icons-material/Mic'
-import MicOffIcon from '@mui/icons-material/MicOff'
-import RefreshIcon from '@mui/icons-material/Refresh'
-import WifiOffIcon from '@mui/icons-material/WifiOff'
+import * as React from 'react';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import GraphicEqIcon from '@mui/icons-material/GraphicEq';
+import MicIcon from '@mui/icons-material/Mic';
+import MicOffIcon from '@mui/icons-material/MicOff';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import WifiOffIcon from '@mui/icons-material/WifiOff';
 import {
   Alert,
   Box,
@@ -15,54 +15,54 @@ import {
   Stack,
   TextField,
   Typography,
-} from '@mui/material'
-import { useVoiceAgent } from '../hooks/useVoiceAgent'
+} from '@mui/material';
+import { useVoiceAgent } from '../hooks/useVoiceAgent';
 
 type VoiceAgentPanelProps = {
-  orgId: string | null
-  teamId: string | null
-  teamName?: string | null
-  coachId: string | null
-}
+  orgId: string | null;
+  teamId: string | null;
+  teamName?: string | null;
+  coachId: string | null;
+};
 
 function formatStatusLabel(status: ReturnType<typeof useVoiceAgent>['status']) {
   switch (status) {
     case 'connected':
-      return 'Connected'
+      return 'Connected';
     case 'authenticating':
-      return 'Authenticating'
+      return 'Authenticating';
     case 'connecting':
-      return 'Connecting'
+      return 'Connecting';
     case 'reconnecting':
-      return 'Reconnecting'
+      return 'Reconnecting';
     case 'disconnected':
-      return 'Disconnected'
+      return 'Disconnected';
     case 'error':
-      return 'Error'
+      return 'Error';
     case 'unconfigured':
-      return 'Not configured'
+      return 'Not configured';
     case 'idle':
     default:
-      return 'Idle'
+      return 'Idle';
   }
 }
 
 function getStatusColor(status: ReturnType<typeof useVoiceAgent>['status']) {
   switch (status) {
     case 'connected':
-      return 'success' as const
+      return 'success' as const;
     case 'authenticating':
     case 'connecting':
     case 'reconnecting':
-      return 'warning' as const
+      return 'warning' as const;
     case 'error':
     case 'unconfigured':
-      return 'error' as const
+      return 'error' as const;
     case 'disconnected':
-      return 'default' as const
+      return 'default' as const;
     case 'idle':
     default:
-      return 'info' as const
+      return 'info' as const;
   }
 }
 
@@ -72,7 +72,7 @@ export default function VoiceAgentPanel({
   teamName,
   coachId,
 }: VoiceAgentPanelProps) {
-  const [draft, setDraft] = React.useState('')
+  const [draft, setDraft] = React.useState('');
   const {
     wsUrl,
     isConfigured,
@@ -98,36 +98,36 @@ export default function VoiceAgentPanel({
     coachId,
     locale: 'en-US',
     enabled: true,
-  })
+  });
 
   const handleSend = React.useCallback(async () => {
-    const sent = await sendText(draft)
+    const sent = await sendText(draft);
     if (sent) {
-      setDraft('')
+      setDraft('');
     }
-  }, [draft, sendText])
+  }, [draft, sendText]);
 
   const handleDraftKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
-      if (event.key !== 'Enter' || event.shiftKey) return
-      event.preventDefault()
-      void handleSend()
+      if (event.key !== 'Enter' || event.shiftKey) return;
+      event.preventDefault();
+      void handleSend();
     },
     [handleSend],
-  )
+  );
 
   const handleMicClick = React.useCallback(async () => {
     try {
       if (isRecording) {
-        stopRecording()
-        return
+        stopRecording();
+        return;
       }
 
-      await startRecording()
+      await startRecording();
     } catch (err: any) {
-      console.error('Voice agent microphone error', err)
+      console.error('Voice agent microphone error', err);
     }
-  }, [isRecording, startRecording, stopRecording])
+  }, [isRecording, startRecording, stopRecording]);
 
   return (
     <Paper sx={{ p: 2.5 }}>
@@ -152,11 +152,7 @@ export default function VoiceAgentPanel({
           </Box>
 
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            <Chip
-              size="small"
-              color={getStatusColor(status)}
-              label={formatStatusLabel(status)}
-            />
+            <Chip size="small" color={getStatusColor(status)} label={formatStatusLabel(status)} />
             <Button
               size="small"
               variant="outlined"
@@ -176,12 +172,7 @@ export default function VoiceAgentPanel({
             >
               Disconnect
             </Button>
-            <Button
-              size="small"
-              variant="outlined"
-              onClick={resetSession}
-              disabled={!isReady}
-            >
+            <Button size="small" variant="outlined" onClick={resetSession} disabled={!isReady}>
               Reset session
             </Button>
           </Stack>
@@ -189,8 +180,8 @@ export default function VoiceAgentPanel({
 
         {!isConfigured ? (
           <Alert severity="warning">
-            Missing <code>ANKOR_VOICE_AGENT_URL</code>. Add it to the frontend env before using
-            the agent.
+            Missing <code>ANKOR_VOICE_AGENT_URL</code>. Add it to the frontend env before using the
+            agent.
           </Alert>
         ) : null}
 
@@ -328,8 +319,8 @@ export default function VoiceAgentPanel({
                       message.role === 'user'
                         ? 'flex-end'
                         : message.role === 'agent'
-                        ? 'flex-start'
-                        : 'stretch',
+                          ? 'flex-start'
+                          : 'stretch',
                     maxWidth: message.role === 'system' ? '100%' : '82%',
                     px: 1.25,
                     py: 1,
@@ -338,16 +329,16 @@ export default function VoiceAgentPanel({
                       message.role === 'user'
                         ? 'primary.main'
                         : message.role === 'agent'
-                        ? 'background.paper'
-                        : message.role === 'error'
-                        ? 'error.light'
-                        : 'action.hover',
+                          ? 'background.paper'
+                          : message.role === 'error'
+                            ? 'error.light'
+                            : 'action.hover',
                     color:
                       message.role === 'user'
                         ? 'primary.contrastText'
                         : message.role === 'error'
-                        ? 'error.contrastText'
-                        : 'text.primary',
+                          ? 'error.contrastText'
+                          : 'text.primary',
                     border: message.role === 'agent' ? 1 : 0,
                     borderColor: 'divider',
                   }}
@@ -356,10 +347,10 @@ export default function VoiceAgentPanel({
                     {message.role === 'user'
                       ? 'You'
                       : message.role === 'agent'
-                      ? 'Agent'
-                      : message.role === 'error'
-                      ? 'Error'
-                      : 'Session'}
+                        ? 'Agent'
+                        : message.role === 'error'
+                          ? 'Error'
+                          : 'Session'}
                   </Typography>
                   <Typography variant="body2">{message.text}</Typography>
                 </Box>
@@ -413,5 +404,5 @@ export default function VoiceAgentPanel({
         </Stack>
       </Stack>
     </Paper>
-  )
+  );
 }

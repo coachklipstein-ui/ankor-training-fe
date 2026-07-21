@@ -1,56 +1,51 @@
-import * as React from "react";
-import { Box, Button, MenuItem, Stack, TextField, Typography } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../app/providers/AuthProvider";
-import { createAthlete } from "../services/athleteService";
-import AthleteFormFields from "../components/AthleteFormFields";
-import {
-  createInitialAthleteForm,
-  type AthleteFormState,
-} from "../utils/athleteForm";
-import { relationshipOptions } from "../utils/relationshipOptions";
-import { validateAthleteForm } from "../utils/validation";
-import { getAllTeams, type Team } from "../../teams/services/teamsService";
-import { listPositions, type Position } from "../services/positionsService";
+import * as React from 'react';
+import { Box, Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
+import { createAthlete } from '../services/athleteService';
+import AthleteFormFields from '../components/AthleteFormFields';
+import { createInitialAthleteForm, type AthleteFormState } from '../utils/athleteForm';
+import { relationshipOptions } from '../utils/relationshipOptions';
+import { validateAthleteForm } from '../utils/validation';
+import { getAllTeams, type Team } from '../../teams/services/teamsService';
+import { listPositions, type Position } from '../services/positionsService';
 
 export default function NewAthletePage() {
   const navigate = useNavigate();
   const { orgId, loading: authLoading } = useAuth();
-  const [form, setForm] = React.useState<AthleteFormState>(
-    createInitialAthleteForm(),
-  );
-  const [confirmPassword, setConfirmPassword] = React.useState("");
+  const [form, setForm] = React.useState<AthleteFormState>(createInitialAthleteForm());
+  const [confirmPassword, setConfirmPassword] = React.useState('');
   const [teams, setTeams] = React.useState<Team[]>([]);
   const [teamsLoading, setTeamsLoading] = React.useState(false);
   const [teamsError, setTeamsError] = React.useState<string | null>(null);
-  const [selectedTeamId, setSelectedTeamId] = React.useState("");
+  const [selectedTeamId, setSelectedTeamId] = React.useState('');
   const [positions, setPositions] = React.useState<Position[]>([]);
   const [positionsLoading, setPositionsLoading] = React.useState(false);
   const [positionsError, setPositionsError] = React.useState<string | null>(null);
-  const [selectedPositionId, setSelectedPositionId] = React.useState("");
-  const [age, setAge] = React.useState("");
-  const [gender, setGender] = React.useState("");
-  const [parentFullName, setParentFullName] = React.useState("");
-  const [parentEmail, setParentEmail] = React.useState("");
-  const [parentMobilePhone, setParentMobilePhone] = React.useState("");
-  const [relationship, setRelationship] = React.useState("");
+  const [selectedPositionId, setSelectedPositionId] = React.useState('');
+  const [age, setAge] = React.useState('');
+  const [gender, setGender] = React.useState('');
+  const [parentFullName, setParentFullName] = React.useState('');
+  const [parentEmail, setParentEmail] = React.useState('');
+  const [parentMobilePhone, setParentMobilePhone] = React.useState('');
+  const [relationship, setRelationship] = React.useState('');
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [saving, setSaving] = React.useState(false);
   const [submitError, setSubmitError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    setSelectedTeamId("");
-    setSelectedPositionId("");
+    setSelectedTeamId('');
+    setSelectedPositionId('');
   }, [orgId]);
 
   React.useEffect(() => {
     if (authLoading) return;
     let active = true;
 
-    const resolvedOrgId = orgId?.trim() || "";
+    const resolvedOrgId = orgId?.trim() || '';
     if (!resolvedOrgId) {
       setTeams([]);
-      setTeamsError("Missing org_id. Please sign in again.");
+      setTeamsError('Missing org_id. Please sign in again.');
       setTeamsLoading(false);
       return () => {
         active = false;
@@ -68,7 +63,7 @@ export default function NewAthletePage() {
       .catch((err: any) => {
         if (!active) return;
         setTeams([]);
-        setTeamsError(err?.message || "Failed to load teams.");
+        setTeamsError(err?.message || 'Failed to load teams.');
       })
       .finally(() => {
         if (active) setTeamsLoading(false);
@@ -83,10 +78,10 @@ export default function NewAthletePage() {
     if (authLoading) return;
     let active = true;
 
-    const resolvedOrgId = orgId?.trim() || "";
+    const resolvedOrgId = orgId?.trim() || '';
     if (!resolvedOrgId) {
       setPositions([]);
-      setPositionsError("Missing org_id. Please sign in again.");
+      setPositionsError('Missing org_id. Please sign in again.');
       setPositionsLoading(false);
       return () => {
         active = false;
@@ -104,7 +99,7 @@ export default function NewAthletePage() {
       .catch((err: any) => {
         if (!active) return;
         setPositions([]);
-        setPositionsError(err?.message || "Failed to load positions.");
+        setPositionsError(err?.message || 'Failed to load positions.');
       })
       .finally(() => {
         if (active) setPositionsLoading(false);
@@ -126,24 +121,23 @@ export default function NewAthletePage() {
   const teamHelperText = teamsError
     ? teamsError
     : teamsLoading
-      ? "Loading teams..."
+      ? 'Loading teams...'
       : teamOptions.length === 0
-        ? "No teams available."
-        : "Optional";
+        ? 'No teams available.'
+        : 'Optional';
 
   const positionHelperText = positionsError
     ? positionsError
     : positionsLoading
-      ? "Loading positions..."
+      ? 'Loading positions...'
       : positionOptions.length === 0
-        ? "No positions available."
-        : "Optional";
+        ? 'No positions available.'
+        : 'Optional';
 
-  const handleChange = (field: keyof AthleteFormState) => (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    setForm((prev) => ({ ...prev, [field]: event.target.value }));
-  };
+  const handleChange =
+    (field: keyof AthleteFormState) => (event: React.ChangeEvent<HTMLInputElement>) => {
+      setForm((prev) => ({ ...prev, [field]: event.target.value }));
+    };
 
   const toOptionalNumber = (value: string) => {
     const trimmed = value.trim();
@@ -162,22 +156,22 @@ export default function NewAthletePage() {
     const trimmedPassword = form.password.trim();
     const trimmedConfirm = confirmPassword.trim();
     if (!trimmedConfirm) {
-      nextErrors.confirm_password = "Confirm your password.";
+      nextErrors.confirm_password = 'Confirm your password.';
     } else if (trimmedPassword !== trimmedConfirm) {
-      nextErrors.confirm_password = "Passwords do not match.";
+      nextErrors.confirm_password = 'Passwords do not match.';
     }
     const trimmedAge = age.trim();
     const ageValue = toOptionalNumber(age);
     if (trimmedAge && ageValue === null) {
-      nextErrors.age = "Age must be a number.";
+      nextErrors.age = 'Age must be a number.';
     } else if (ageValue !== null && ageValue <= 0) {
-      nextErrors.age = "Age must be greater than 0.";
+      nextErrors.age = 'Age must be greater than 0.';
     }
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
     if (!orgId) {
-      setSubmitError("Missing org_id. Please sign in again.");
+      setSubmitError('Missing org_id. Please sign in again.');
       return;
     }
 
@@ -189,7 +183,7 @@ export default function NewAthletePage() {
         password: form.password.trim(),
         first_name: form.firstName.trim(),
         last_name: form.lastName.trim(),
-        full_name: [form.firstName, form.lastName].filter(Boolean).join(" ").trim(),
+        full_name: [form.firstName, form.lastName].filter(Boolean).join(' ').trim(),
         username: form.username.trim(),
         graduation_year: toOptionalNumber(form.graduationYear),
         team_id: selectedTeamId.trim() || null,
@@ -205,11 +199,10 @@ export default function NewAthletePage() {
       if (created?.id) {
         navigate(`/athletes/${created.id}/edit`);
       } else {
-        navigate("/athletes");
+        navigate('/athletes');
       }
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to create athlete.";
+      const message = err instanceof Error ? err.message : 'Failed to create athlete.';
       setSubmitError(message);
     } finally {
       setSaving(false);
@@ -222,12 +215,12 @@ export default function NewAthletePage() {
         spacing={3}
         component="form"
         onSubmit={handleSubmit}
-        sx={{ maxWidth: 1200, width: "100%", mx: "auto" }}
+        sx={{ maxWidth: 1200, width: '100%', mx: 'auto' }}
       >
         <Stack
-          direction={{ xs: "column", sm: "row" }}
+          direction={{ xs: 'column', sm: 'row' }}
           spacing={2}
-          alignItems={{ sm: "center" }}
+          alignItems={{ sm: 'center' }}
           justifyContent="space-between"
         >
           <Box>
@@ -238,12 +231,12 @@ export default function NewAthletePage() {
               Add an athlete to your organization.
             </Typography>
           </Box>
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-            <Button variant="outlined" onClick={() => navigate("/athletes")}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+            <Button variant="outlined" onClick={() => navigate('/athletes')}>
               Cancel
             </Button>
             <Button type="submit" variant="contained" disabled={saving}>
-              {saving ? "Saving..." : "Save"}
+              {saving ? 'Saving...' : 'Save'}
             </Button>
           </Stack>
         </Stack>
@@ -284,7 +277,7 @@ export default function NewAthletePage() {
             value={gender}
             onChange={(event) => setGender(event.target.value)}
             error={Boolean(errors.gender)}
-            helperText={errors.gender || "Optional"}
+            helperText={errors.gender || 'Optional'}
             fullWidth
           >
             <MenuItem value="">Prefer not to say</MenuItem>
@@ -327,7 +320,7 @@ export default function NewAthletePage() {
               </MenuItem>
             ))}
           </TextField>
-          <Box sx={{ gridColumn: "1 / -1" }}>
+          <Box sx={{ gridColumn: '1 / -1' }}>
             <Typography variant="subtitle2" color="text.secondary">
               Parent/Guardian
             </Typography>
@@ -337,7 +330,7 @@ export default function NewAthletePage() {
             value={parentFullName}
             onChange={(event) => setParentFullName(event.target.value)}
             error={Boolean(errors.parent_full_name)}
-            helperText={errors.parent_full_name || "Optional"}
+            helperText={errors.parent_full_name || 'Optional'}
             fullWidth
           />
           <TextField
@@ -346,7 +339,7 @@ export default function NewAthletePage() {
             value={parentEmail}
             onChange={(event) => setParentEmail(event.target.value)}
             error={Boolean(errors.parent_email)}
-            helperText={errors.parent_email || "Optional"}
+            helperText={errors.parent_email || 'Optional'}
             fullWidth
           />
           <TextField
@@ -354,7 +347,7 @@ export default function NewAthletePage() {
             value={parentMobilePhone}
             onChange={(event) => setParentMobilePhone(event.target.value)}
             error={Boolean(errors.parent_mobile_phone)}
-            helperText={errors.parent_mobile_phone || "Optional"}
+            helperText={errors.parent_mobile_phone || 'Optional'}
             fullWidth
           />
           <TextField
@@ -363,7 +356,7 @@ export default function NewAthletePage() {
             value={relationship}
             onChange={(event) => setRelationship(event.target.value)}
             error={Boolean(errors.relationship)}
-            helperText={errors.relationship || "Optional"}
+            helperText={errors.relationship || 'Optional'}
             fullWidth
           >
             <MenuItem value="">No relationship</MenuItem>
