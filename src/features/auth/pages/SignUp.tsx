@@ -97,6 +97,8 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
 //     "username": "ecruz"
 //   }
 
+const PASSWORD_MIN_LENGTH = 8;
+
 export default function SignUp(props: { disableCustomTheme?: boolean }) {
   const navigate = useNavigate(); // ✅ hook
 
@@ -209,9 +211,9 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
       setEmailErrorMessage('');
     }
 
-    if (!password?.value || password.value.length < 6) {
+    if (!password?.value || password.value.length < PASSWORD_MIN_LENGTH) {
       setPasswordError(true);
-      setPasswordErrorMessage('Password must be at least 6 characters long.');
+      setPasswordErrorMessage(`Password must be at least ${PASSWORD_MIN_LENGTH} characters long.`);
       isValid = false;
     } else {
       setPasswordError(false);
