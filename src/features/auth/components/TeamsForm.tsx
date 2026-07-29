@@ -33,12 +33,14 @@ type TeamRow = {
 
 export default function TeamsForm({
   onChange,
+  onTouch,
   sports,
   sportsLoading = false,
   sportsError = null,
   initial = [{ id: crypto.randomUUID?.() ?? String(Date.now()), sport: '', name: '' }],
 }: {
   onChange?: (rows: TeamRow[]) => void;
+  onTouch?: () => void;
   sports?: Sport[];
   sportsLoading?: boolean;
   sportsError?: string | null;
@@ -75,12 +77,13 @@ export default function TeamsForm({
 
   const handleNameChange = (id: string, value: string) => {
     propagate(rows.map((r) => (r.id === id ? { ...r, name: value } : r)));
+    onTouch?.();
   };
 
   const handleSportChange = (value: string) => {
     setSelectedSport(value);
-    // ensure all rows carry the chosen sport for submission/serialization
     propagate(rows, value);
+    onTouch?.();
   };
 
   return (
@@ -92,8 +95,9 @@ export default function TeamsForm({
           fullWidth
           displayEmpty
           value={selectedSport}
-          onChange={(e) => handleSportChange(e.target.value as string)}
+          autoComplete="off"
           required
+          onChange={(e) => handleSportChange(e.target.value as string)}
           disabled={sportsLoading || Boolean(sportsError) || !sports?.length}
         >
           <MenuItem value="">
@@ -136,8 +140,9 @@ export default function TeamsForm({
                       placeholder="e.g., U14 Girls Blue"
                       value={row.name}
                       name={`teams[${row.id}].name`}
-                      onChange={(e) => handleNameChange(row.id, e.target.value)}
+                      autoComplete="off"
                       required
+                      onChange={(e) => handleNameChange(row.id, e.target.value)}
                     />
                   </TableCell>
                   <TableCell align="right">

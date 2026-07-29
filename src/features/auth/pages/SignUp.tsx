@@ -193,7 +193,72 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
         ? 'No positions available.'
         : '';
 
+  const validateEmail = () => {
+    const el = document.getElementById('email') as HTMLInputElement | null;
+    if (!el?.value || !/\S+@\S+\.\S+/.test(el.value)) {
+      setEmailError(true);
+      setEmailErrorMessage('Please enter a valid email address.');
+    } else {
+      setEmailError(false);
+      setEmailErrorMessage('');
+    }
+  };
+
+  const validatePassword = () => {
+    const el = document.getElementById('password') as HTMLInputElement | null;
+    if (!el?.value || el.value.length < PASSWORD_MIN_LENGTH) {
+      setPasswordError(true);
+      setPasswordErrorMessage(`Password must be at least ${PASSWORD_MIN_LENGTH} characters long.`);
+    } else {
+      setPasswordError(false);
+      setPasswordErrorMessage('');
+    }
+  };
+
+  const validateConfirmPassword = () => {
+    const pw = document.getElementById('password') as HTMLInputElement | null;
+    const el = document.getElementById('confirmPassword') as HTMLInputElement | null;
+    if (!el?.value) {
+      setConfirmPasswordError(true);
+      setConfirmPasswordErrorMessage('Please confirm your password.');
+    } else if (el.value !== pw?.value) {
+      setConfirmPasswordError(true);
+      setConfirmPasswordErrorMessage('Passwords do not match.');
+    } else {
+      setConfirmPasswordError(false);
+      setConfirmPasswordErrorMessage('');
+    }
+  };
+
+  const validateTypecode = () => {
+    const el = document.getElementById('typecode') as HTMLInputElement | null;
+    if (!el?.value || el.value.length < 1) {
+      setNameError(true);
+      setNameErrorMessage('Type code is required.');
+    } else {
+      setNameError(false);
+      setNameErrorMessage('');
+    }
+  };
+
+  const validateCellNumber = () => {
+    const el = document.getElementById('cellNumber') as HTMLInputElement | null;
+    if (!el?.value.trim()) {
+      setCellNumberError(true);
+      setCellNumberErrorMessage('Cell number is required.');
+    } else {
+      setCellNumberError(false);
+      setCellNumberErrorMessage('');
+    }
+  };
+
   const validateInputs = () => {
+    validateEmail();
+    validatePassword();
+    validateConfirmPassword();
+    validateTypecode();
+    validateCellNumber();
+
     const email = document.getElementById('email') as HTMLInputElement | null;
     const password = document.getElementById('password') as HTMLInputElement | null;
     const confirmPassword = document.getElementById('confirmPassword') as HTMLInputElement | null;
@@ -201,55 +266,11 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
     const cellNumber = document.getElementById('cellNumber') as HTMLInputElement | null;
 
     let isValid = true;
-
-    if (!email?.value || !/\S+@\S+\.\S+/.test(email.value)) {
-      setEmailError(true);
-      setEmailErrorMessage('Please enter a valid email address.');
-      isValid = false;
-    } else {
-      setEmailError(false);
-      setEmailErrorMessage('');
-    }
-
-    if (!password?.value || password.value.length < PASSWORD_MIN_LENGTH) {
-      setPasswordError(true);
-      setPasswordErrorMessage(`Password must be at least ${PASSWORD_MIN_LENGTH} characters long.`);
-      isValid = false;
-    } else {
-      setPasswordError(false);
-      setPasswordErrorMessage('');
-    }
-
-    if (!confirmPassword?.value) {
-      setConfirmPasswordError(true);
-      setConfirmPasswordErrorMessage('Please confirm your password.');
-      isValid = false;
-    } else if (confirmPassword.value !== password?.value) {
-      setConfirmPasswordError(true);
-      setConfirmPasswordErrorMessage('Passwords do not match.');
-      isValid = false;
-    } else {
-      setConfirmPasswordError(false);
-      setConfirmPasswordErrorMessage('');
-    }
-
-    if (!typecode?.value || typecode.value.length < 1) {
-      setNameError(true);
-      setNameErrorMessage('Type code is required.');
-      isValid = false;
-    } else {
-      setNameError(false);
-      setNameErrorMessage('');
-    }
-
-    if (!cellNumber?.value.trim()) {
-      setCellNumberError(true);
-      setCellNumberErrorMessage('Cell number is required.');
-      isValid = false;
-    } else {
-      setCellNumberError(false);
-      setCellNumberErrorMessage('');
-    }
+    if (!email?.value || !/\S+@\S+\.\S+/.test(email.value)) isValid = false;
+    if (!password?.value || password.value.length < PASSWORD_MIN_LENGTH) isValid = false;
+    if (!confirmPassword?.value || confirmPassword.value !== password?.value) isValid = false;
+    if (!typecode?.value) isValid = false;
+    if (!cellNumber?.value.trim()) isValid = false;
 
     if (role === 'athlete') {
       if (!selectedPositionId.trim()) {
@@ -377,6 +398,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                 error={nameError}
                 helperText={nameErrorMessage}
                 color={nameError ? 'error' : 'primary'}
+                onBlur={validateTypecode}
               />
             </FormControl>
 
@@ -407,7 +429,8 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                 variant="outlined"
                 error={emailError}
                 helperText={emailErrorMessage}
-                color={passwordError ? 'error' : 'primary'}
+                color={emailError ? 'error' : 'primary'}
+                onBlur={validateEmail}
               />
             </FormControl>
 
@@ -425,6 +448,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                 error={passwordError}
                 helperText={passwordErrorMessage}
                 color={passwordError ? 'error' : 'primary'}
+                onBlur={validatePassword}
               />
             </FormControl>
 
@@ -441,6 +465,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                 error={confirmPasswordError}
                 helperText={confirmPasswordErrorMessage}
                 color={confirmPasswordError ? 'error' : 'primary'}
+                onBlur={validateConfirmPassword}
               />
             </FormControl>
 
@@ -528,6 +553,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                 error={cellNumberError}
                 helperText={cellNumberErrorMessage}
                 color={cellNumberError ? 'error' : 'primary'}
+                onBlur={validateCellNumber}
               />
             </FormControl>
 

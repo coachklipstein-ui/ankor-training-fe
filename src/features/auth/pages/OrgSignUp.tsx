@@ -47,11 +47,15 @@ export default function OrgSignUp(props: { disableCustomTheme?: boolean }) {
   const [sports, setSports] = React.useState<Sport[]>([]);
   const [sportsLoading, setSportsLoading] = React.useState(true);
   const [sportsError, setSportsError] = React.useState<string | null>(null);
+  const [step2Touched, setStep2Touched] = React.useState(false);
 
   // Single form wrapper so we can read values and build JSON
   const formRef = React.useRef<HTMLFormElement>(null);
 
-  const handleBack = () => setActiveStep((s) => Math.max(0, s - 1));
+  const handleBack = () => {
+    setServerError(null);
+    setActiveStep((s) => Math.max(0, s - 1));
+  };
   const goNext = () => setActiveStep((s) => Math.min(steps.length - 1, s + 1));
 
   React.useEffect(() => {
@@ -84,17 +88,88 @@ export default function OrgSignUp(props: { disableCustomTheme?: boolean }) {
     };
   }, []);
 
+  const validateStep = (step: number): string | null => {
+    if (!formRef.current) return null;
+    const fd = new FormData(formRef.current);
+
+    const require = (name: string, label: string) => {
+      const v = String(fd.get(name) ?? '').trim();
+      if (!v) return `${label} is required.`;
+      return null;
+    };
+
+    if (step === 0) {
+      const email = String(fd.get('adminEmail') ?? '').trim();
+      const phone = String(fd.get('adminPhoneNumber') ?? '').trim();
+      const password = String(fd.get('adminPassword') ?? '');
+      const confirm = String(fd.get('adminPasswordConfirm') ?? '');
+
+      return (
+        require('adminFirstName', 'Admin First Name') ||
+        require('adminLastName', 'Admin Last Name') ||
+        require('adminEmail', 'Admin Email') ||
+        (!/\S+@\S+\.\S+/.test(email) ? 'Please enter a valid email address.' : null) ||
+        require('adminPhoneNumber', 'Admin Phone Number') ||
+        (!/^\+?\d{7,}$/.test(phone) ? 'Please enter a valid phone number.' : null) ||
+        require('adminPassword', 'Password') ||
+        (password.length < 8 ? 'Password must be at least 8 characters long.' : null) ||
+        require('adminPasswordConfirm', 'Confirm Password') ||
+        (confirm !== password ? 'Passwords do not match.' : null) ||
+        null
+      );
+    }
+    if (step === 1) {
+      return (
+        require('organizationName', 'Organization Name') ||
+        require('address1', 'Address') ||
+        require('city', 'City') ||
+        require('state', 'State') ||
+        require('zip', 'Zip Code') ||
+        require('country', 'Country') ||
+        null
+      );
+    }
+    if (step === 2) {
+      if (!step2Touched) return null;
+      const sport = String(fd.get('teamsSport') ?? '').trim();
+      if (!sport) return 'Please select a sport.';
+      const teamsJson = String(fd.get('teamsJson') ?? '[]');
+      try {
+        const rows = JSON.parse(teamsJson) as { name: string }[];
+        if (!rows.length || rows.some((r) => !r.name.trim())) {
+          return 'All team names are required.';
+        }
+      } catch {
+        return 'Invalid teams data.';
+      }
+      return null;
+    }
+    return null;
+  };
+
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
     setServerError(null);
 
     if (activeStep < steps.length - 1) {
+      const err = validateStep(activeStep);
+      if (err) {
+        setServerError(err);
+        return;
+      }
       goNext();
       return;
     }
 
-    // Last step => send JSON
+    // Last step => validate current step then send JSON
     if (!formRef.current) return;
+
+    setStep2Touched(true);
+    const err = validateStep(activeStep);
+    if (err) {
+      setServerError(err);
+      return;
+    }
 
     // Client-side guard for password match (optional; backend also validates)
     const fd = new FormData(formRef.current);
@@ -102,6 +177,7 @@ export default function OrgSignUp(props: { disableCustomTheme?: boolean }) {
     const pw2 = String(fd.get('adminPasswordConfirm') ?? '');
     if (pw !== pw2) {
       setServerError('Passwords do not match');
+      setActiveStep(0);
       return;
     }
 
@@ -240,7 +316,7 @@ export default function OrgSignUp(props: { disableCustomTheme?: boolean }) {
             </Stepper>
 
             {/* ===== Form wrapper (JSON submit on Save) ===== */}
-            <form ref={formRef} onSubmit={handleSubmit}>
+            <form ref={formRef} onSubmit={handleSubmit} autoComplete="off">
               {activeStep === steps.length ? (
                 <Stack spacing={2} useFlexGap>
                   <Typography variant="h1">🎉</Typography>
@@ -268,6 +344,7 @@ export default function OrgSignUp(props: { disableCustomTheme?: boolean }) {
                       sports={sports}
                       sportsLoading={sportsLoading}
                       sportsError={sportsError}
+                      onTouch={() => setStep2Touched(true)}
                     />
                   </Box>
 
@@ -328,17 +405,25 @@ export default function OrgSignUp(props: { disableCustomTheme?: boolean }) {
                     )}
                     <Button
                       variant="contained"
-                      endIcon={<ChevronRightRoundedIcon />}
-                      type={activeStep === steps.length - 1 ? 'submit' : 'button'}
-                      onClick={
-                        activeStep === steps.length - 1
-                          ? undefined
-                          : () => setActiveStep((s) => s + 1)
-                      }
+                      endIcon={activeStep < steps.length - 1 ? <ChevronRightRoundedIcon /> : undefined}
+                      type="button"
+                      onClick={() => {
+                        setServerError(null);
+                        const err = validateStep(activeStep);
+                        if (err) {
+                          setServerError(err);
+                          return;
+                        }
+                        if (activeStep < steps.length - 1) {
+                          setActiveStep((s) => s + 1);
+                        } else {
+                          formRef.current?.requestSubmit();
+                        }
+                      }}
                       sx={{ width: { xs: '100%', sm: 'fit-content' } }}
                       disabled={submitting}
                     >
-                      {activeStep === steps.length - 1 ? (submitting ? 'Saving…' : 'Save') : 'Next'}
+                      {activeStep < steps.length - 1 ? 'Next' : (submitting ? 'Saving…' : 'Save')}
                     </Button>
                   </Box>
                 </React.Fragment>
