@@ -18,7 +18,18 @@ const FormGrid = styled(Grid)(() => ({
   flexDirection: 'column',
 }));
 
-export default function AdminInfoForm() {
+type FormState = {
+  values: Record<string, string>;
+  errors: Record<string, string>;
+  handleChange: (name: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  handleBlur: (name: string) => () => void;
+};
+
+type Props = {
+  form: FormState;
+};
+
+export default function AdminInfoForm({ form }: Props) {
   const [password, setPassword] = React.useState('');
   const [confirm, setConfirm] = React.useState('');
   const [showPw, setShowPw] = React.useState(false);
@@ -29,12 +40,14 @@ export default function AdminInfoForm() {
   return (
     <Grid container spacing={3}>
       <FormGrid size={{ xs: 12, md: 6 }}>
-        <FormLabel htmlFor="admin-first-name" required>
-          Admin First
-        </FormLabel>
+        <FormLabel htmlFor="adminFirstName" required>Admin First</FormLabel>
         <OutlinedInput
-          id="admin-first-name"
+          id="adminFirstName"
           name="adminFirstName"
+          value={form.values.adminFirstName}
+          onChange={form.handleChange('adminFirstName')}
+          onBlur={form.handleBlur('adminFirstName')}
+          error={!!form.errors.adminFirstName}
           type="text"
           placeholder="John"
           autoComplete="given-name"
@@ -44,12 +57,14 @@ export default function AdminInfoForm() {
       </FormGrid>
 
       <FormGrid size={{ xs: 12, md: 6 }}>
-        <FormLabel htmlFor="admin-last-name" required>
-          Admin Last
-        </FormLabel>
+        <FormLabel htmlFor="adminLastName" required>Admin Last</FormLabel>
         <OutlinedInput
-          id="admin-last-name"
+          id="adminLastName"
           name="adminLastName"
+          value={form.values.adminLastName}
+          onChange={form.handleChange('adminLastName')}
+          onBlur={form.handleBlur('adminLastName')}
+          error={!!form.errors.adminLastName}
           type="text"
           placeholder="Doe"
           autoComplete="family-name"
@@ -59,12 +74,14 @@ export default function AdminInfoForm() {
       </FormGrid>
 
       <FormGrid size={{ xs: 12, md: 6 }}>
-        <FormLabel htmlFor="admin-email" required>
-          Admin Email
-        </FormLabel>
+        <FormLabel htmlFor="adminEmail" required>Admin Email</FormLabel>
         <OutlinedInput
-          id="admin-email"
+          id="adminEmail"
           name="adminEmail"
+          value={form.values.adminEmail}
+          onChange={form.handleChange('adminEmail')}
+          onBlur={form.handleBlur('adminEmail')}
+          error={!!form.errors.adminEmail}
           type="email"
           placeholder="admin@ankorapp.com"
           autoComplete="email"
@@ -74,12 +91,14 @@ export default function AdminInfoForm() {
       </FormGrid>
 
       <FormGrid size={{ xs: 12, md: 6 }}>
-        <FormLabel htmlFor="admin-phone" required>
-          Admin Phone Number
-        </FormLabel>
+        <FormLabel htmlFor="adminPhoneNumber" required>Admin Phone Number</FormLabel>
         <OutlinedInput
-          id="admin-phone"
+          id="adminPhoneNumber"
           name="adminPhoneNumber"
+          value={form.values.adminPhoneNumber}
+          onChange={form.handleChange('adminPhoneNumber')}
+          onBlur={form.handleBlur('adminPhoneNumber')}
+          error={!!form.errors.adminPhoneNumber}
           type="tel"
           placeholder="+1 555 555 5555"
           autoComplete="tel"
@@ -88,22 +107,24 @@ export default function AdminInfoForm() {
         />
       </FormGrid>
 
-      {/* Password */}
       <FormGrid size={{ xs: 12, md: 6 }}>
-        <FormLabel htmlFor="admin-password" required>
-          Password
-        </FormLabel>
+        <FormLabel htmlFor="adminPassword" required>Password</FormLabel>
         <OutlinedInput
-          id="admin-password"
+          id="adminPassword"
           name="adminPassword"
+          value={password}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            form.handleChange('adminPassword')(e);
+          }}
+          onBlur={form.handleBlur('adminPassword')}
+          error={!!form.errors.adminPassword}
           type={showPw ? 'text' : 'password'}
           placeholder="Create a password"
           autoComplete="new-password"
           required
           size="small"
           inputProps={{ minLength: 8 }}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
           endAdornment={
             <InputAdornment position="end">
               <IconButton
@@ -120,22 +141,23 @@ export default function AdminInfoForm() {
         <FormHelperText>At least 8 characters.</FormHelperText>
       </FormGrid>
 
-      {/* Confirm Password */}
       <FormGrid size={{ xs: 12, md: 6 }}>
-        <FormLabel htmlFor="admin-password-confirm" required>
-          Confirm Password
-        </FormLabel>
+        <FormLabel htmlFor="adminPasswordConfirm" required>Confirm Password</FormLabel>
         <OutlinedInput
-          id="admin-password-confirm"
+          id="adminPasswordConfirm"
           name="adminPasswordConfirm"
+          value={confirm}
+          onChange={(e) => {
+            setConfirm(e.target.value);
+            form.handleChange('adminPasswordConfirm')(e);
+          }}
+          onBlur={form.handleBlur('adminPasswordConfirm')}
+          error={mismatch || !!form.errors.adminPasswordConfirm}
           type={showConfirm ? 'text' : 'password'}
           placeholder="Re-enter your password"
           autoComplete="new-password"
           required
           size="small"
-          value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
-          error={mismatch}
           endAdornment={
             <InputAdornment position="end">
               <IconButton
@@ -154,9 +176,7 @@ export default function AdminInfoForm() {
 
       <FormGrid size={{ xs: 12 }}>
         <FormControl>
-          <FormLabel id="gender-label" required>
-            Gender
-          </FormLabel>
+          <FormLabel id="gender-label" required>Gender</FormLabel>
           <RadioGroup row aria-labelledby="gender-label" name="gender" defaultValue="coed">
             <FormControlLabel value="girls" control={<Radio />} label="Girls" />
             <FormControlLabel value="boys" control={<Radio />} label="Boys" />

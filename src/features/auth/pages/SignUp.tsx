@@ -18,6 +18,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { signUp, makeAthleteInput, makeCoachInput } from '../services/signupService';
 import { useNavigate } from 'react-router-dom';
 import { listPositions, type Position } from '../../athletes/services/positionsService';
+import { useFormValidation } from '../hooks/useFormValidation';
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -33,8 +34,6 @@ const Card = styled(MuiCard)(({ theme }) => ({
   [theme.breakpoints.up('sm')]: {
     maxWidth: 900,
   },
-
-  /* keep smaller screens scrollable, let desktop breathe */
   maxHeight: '85dvh',
   overflowY: 'auto',
   scrollbarGutter: 'stable',
@@ -42,12 +41,12 @@ const Card = styled(MuiCard)(({ theme }) => ({
     maxHeight: 'none',
     overflowY: 'visible',
   },
-
   ...theme.applyStyles('dark', {
     boxShadow:
       'hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px',
   }),
 }));
+
 const SignUpContainer = styled(Stack)(({ theme }) => ({
   height: 'calc((1 - var(--template-frame-height, 0)) * 100dvh)',
   minHeight: '100%',
@@ -69,61 +68,60 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
   },
 }));
 
-//COACH FORM
-// {
-//     "joinCode": "BOU-LAX-2026A-COACH-1",
-//     "role": "coach",
-//     "email": "cruzdejesusenmanueln@gmail.com",
-//     "password": "Enter2021",
-//     "firstName": "Jose",
-//     "lastName": "Cruz",
-//     "cellNumber": "555-222-3333",
-//     "termsAccepted": true,
-//     "username": "coach_jose"
-//   }
-
-//ATHLETE FORM
-// {
-//     "joinCode": "BOU-LAX-2026A-ATH-1",
-//     "role": "athlete",
-//     "email": "enmanuelcruzdejesus@gmail.com",
-//     "password": "Open2020",
-//     "firstName": "Enmanuel",
-//     "lastName": "Cruz",
-//     "cellNumber": "555-111-2222",
-//     "graduationYear": 2027,
-//     "position_id": "<uuid>",
-//     "termsAccepted": true,
-//     "username": "ecruz"
-//   }
-
 const PASSWORD_MIN_LENGTH = 8;
+const EMAIL_RE = /\S+@\S+\.\S+/;
+const PHONE_RE = /^\+?\d{7,}$/;
+
+const FIELD_CONFIG = {
+  typecode: {
+    label: 'Type code',
+    required: true,
+  },
+  email: {
+    label: 'Email',
+    required: true,
+    validate: (v: string) => (!EMAIL_RE.test(v) ? 'Please enter a valid email address.' : null),
+  },
+  password: {
+    label: 'Password',
+    required: true,
+    validate: (v: string) =>
+      v.length < PASSWORD_MIN_LENGTH
+        ? `Password must be at least ${PASSWORD_MIN_LENGTH} characters long.`
+        : null,
+  },
+  confirmPassword: {
+    label: 'Confirm password',
+    required: true,
+    validate: (_v: string, all: Record<string, string>) =>
+      _v !== all.password ? 'Passwords do not match.' : null,
+  },
+  firstName: { label: 'First name', required: true },
+  lastName: { label: 'Last name', required: true },
+  cellNumber: {
+    label: 'Cell number',
+    required: true,
+    validate: (v: string) => (!PHONE_RE.test(v) ? 'Please enter a valid phone number.' : null),
+  },
+} as const;
 
 export default function SignUp(props: { disableCustomTheme?: boolean }) {
-  const navigate = useNavigate(); // ✅ hook
-
+  const navigate = useNavigate();
   const [role, setRole] = React.useState<'athlete' | 'coach'>('athlete');
-  const [typeCodeError, setTypeCodeError] = React.useState(false);
-  const [emailError, setEmailError] = React.useState(false);
-  const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
-  const [passwordError, setPasswordError] = React.useState(false);
-  const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
-  const [confirmPasswordError, setConfirmPasswordError] = React.useState(false);
-  const [confirmPasswordErrorMessage, setConfirmPasswordErrorMessage] = React.useState('');
-  const [firstNameError, setFirstNameError] = React.useState(false);
-  const [firstNameErrorMessage, setFirstNameErrorMessage] = React.useState('');
-  const [lastNameError, setLasNameError] = React.useState(false);
-  const [lastNameErrorMessage, setLastNameErrorMessage] = React.useState('');
-  const [cellNumberError, setCellNumberError] = React.useState(false);
-  const [cellNumberErrorMessage, setCellNumberErrorMessage] = React.useState('');
-  const [nameError, setNameError] = React.useState(false);
-  const [nameErrorMessage, setNameErrorMessage] = React.useState('');
+  const [positionError, setPositionError] = React.useState(false);
+  const [positionErrorMessage, setPositionErrorMessage] = React.useState('');
+
+  const form = useFormValidation(FIELD_CONFIG);
+
+  const [termsAccepted, setTermsAccepted] = React.useState(false);
+  const [graduationYear, setGraduationYear] = React.useState('');
+  const [graduationYearError, setGraduationYearError] = React.useState('');
+
+  // Positions
   const [positions, setPositions] = React.useState<Position[]>([]);
   const [positionsLoading, setPositionsLoading] = React.useState(false);
   const [positionsError, setPositionsError] = React.useState<string | null>(null);
   const [selectedPositionId, setSelectedPositionId] = React.useState('');
-  const [positionError, setPositionError] = React.useState(false);
-  const [positionErrorMessage, setPositionErrorMessage] = React.useState('');
 
   const debugOrgId = (import.meta.env.VITE_DEBUG_ORG_ID as string | undefined)?.trim() || '';
 
@@ -151,9 +149,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
       setPositions([]);
       setPositionsError('Missing org_id for positions.');
       setPositionsLoading(false);
-      return () => {
-        active = false;
-      };
+      return () => { active = false; };
     }
 
     setPositionsLoading(true);
@@ -163,27 +159,22 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
       requireAuth: false,
       headers: positionsAuthHeaders,
     })
-      .then(({ items }) => {
-        if (!active) return;
-        setPositions(items);
-      })
+      .then(({ items }) => { if (active) setPositions(items); })
       .catch((err: any) => {
-        if (!active) return;
-        setPositions([]);
-        setPositionsError(err?.message || 'Failed to load positions.');
+        if (active) {
+          setPositions([]);
+          setPositionsError(err?.message || 'Failed to load positions.');
+        }
       })
-      .finally(() => {
-        if (active) setPositionsLoading(false);
-      });
+      .finally(() => { if (active) setPositionsLoading(false); });
 
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, [role, debugOrgId, positionsAuthHeaders]);
 
-  const positionOptions = React.useMemo(() => {
-    return [...positions].sort((a, b) => a.name.localeCompare(b.name));
-  }, [positions]);
+  const positionOptions = React.useMemo(
+    () => [...positions].sort((a, b) => a.name.localeCompare(b.name)),
+    [positions],
+  );
 
   const positionHelperText = positionsError
     ? positionsError
@@ -193,176 +184,66 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
         ? 'No positions available.'
         : '';
 
-  const validateEmail = () => {
-    const el = document.getElementById('email') as HTMLInputElement | null;
-    if (!el?.value || !/\S+@\S+\.\S+/.test(el.value)) {
-      setEmailError(true);
-      setEmailErrorMessage('Please enter a valid email address.');
-    } else {
-      setEmailError(false);
-      setEmailErrorMessage('');
-    }
-  };
-
-  const validatePassword = () => {
-    const el = document.getElementById('password') as HTMLInputElement | null;
-    if (!el?.value || el.value.length < PASSWORD_MIN_LENGTH) {
-      setPasswordError(true);
-      setPasswordErrorMessage(`Password must be at least ${PASSWORD_MIN_LENGTH} characters long.`);
-    } else {
-      setPasswordError(false);
-      setPasswordErrorMessage('');
-    }
-  };
-
-  const validateConfirmPassword = () => {
-    const pw = document.getElementById('password') as HTMLInputElement | null;
-    const el = document.getElementById('confirmPassword') as HTMLInputElement | null;
-    if (!el?.value) {
-      setConfirmPasswordError(true);
-      setConfirmPasswordErrorMessage('Please confirm your password.');
-    } else if (el.value !== pw?.value) {
-      setConfirmPasswordError(true);
-      setConfirmPasswordErrorMessage('Passwords do not match.');
-    } else {
-      setConfirmPasswordError(false);
-      setConfirmPasswordErrorMessage('');
-    }
-  };
-
-  const validateTypecode = () => {
-    const el = document.getElementById('typecode') as HTMLInputElement | null;
-    if (!el?.value || el.value.length < 1) {
-      setNameError(true);
-      setNameErrorMessage('Type code is required.');
-    } else {
-      setNameError(false);
-      setNameErrorMessage('');
-    }
-  };
-
-  const validateCellNumber = () => {
-    const el = document.getElementById('cellNumber') as HTMLInputElement | null;
-    if (!el?.value.trim()) {
-      setCellNumberError(true);
-      setCellNumberErrorMessage('Cell number is required.');
-    } else {
-      setCellNumberError(false);
-      setCellNumberErrorMessage('');
-    }
-  };
-
-  const validateInputs = () => {
-    validateEmail();
-    validatePassword();
-    validateConfirmPassword();
-    validateTypecode();
-    validateCellNumber();
-
-    const email = document.getElementById('email') as HTMLInputElement | null;
-    const password = document.getElementById('password') as HTMLInputElement | null;
-    const confirmPassword = document.getElementById('confirmPassword') as HTMLInputElement | null;
-    const typecode = document.getElementById('typecode') as HTMLInputElement | null;
-    const cellNumber = document.getElementById('cellNumber') as HTMLInputElement | null;
-
-    let isValid = true;
-    if (!email?.value || !/\S+@\S+\.\S+/.test(email.value)) isValid = false;
-    if (!password?.value || password.value.length < PASSWORD_MIN_LENGTH) isValid = false;
-    if (!confirmPassword?.value || confirmPassword.value !== password?.value) isValid = false;
-    if (!typecode?.value) isValid = false;
-    if (!cellNumber?.value.trim()) isValid = false;
-
-    if (role === 'athlete') {
-      if (!selectedPositionId.trim()) {
-        setPositionError(true);
-        setPositionErrorMessage('Position is required.');
-        isValid = false;
-      } else {
-        setPositionError(false);
-        setPositionErrorMessage('');
-      }
-    } else {
-      setPositionError(false);
-      setPositionErrorMessage('');
-    }
-
-    return isValid;
-  };
-
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!validateInputs()) return;
+    if (!form.validate()) return;
 
-    const form = new FormData(event.currentTarget);
-
-    // map form fields to payload
-    const joinCode = String(form.get('typecode') || '').trim(); // "typecode" input -> joinCode
-    const email = String(form.get('email') || '').trim();
-    const password = String(form.get('password') || '');
-    const confirmPassword = String(form.get('confirmPassword') || '');
-    const firstName = String(form.get('firstName') || '').trim();
-    const lastName = String(form.get('lastName') || '').trim();
-    const cellNumber = String(form.get('cellNumber') || '').trim();
-
-    if (confirmPassword !== password) {
-      setConfirmPasswordError(true);
-      setConfirmPasswordErrorMessage('Passwords do not match.');
+    if (role === 'athlete' && !selectedPositionId.trim()) {
+      setPositionError(true);
+      setPositionErrorMessage('Position is required.');
       return;
     }
+    setPositionError(false);
+    setPositionErrorMessage('');
 
-    // username may not be present in your current form—fallback to email local-part
-    const usernameField = String(form.get('username') || '').trim();
-    const username = usernameField || (email.includes('@') ? email.split('@')[0] : '');
+    if (role === 'athlete') {
+      const year = Number(graduationYear);
+      if (!graduationYear || Number.isNaN(year)) {
+        setGraduationYearError('Graduation year is required.');
+        return;
+      }
+      setGraduationYearError('');
+    }
 
-    // checkbox: FormData returns "on" when checked
-    const termsAccepted =
-      !!form.get('termsAccepted') ||
-      !!(document.getElementById('termsAccepted') as HTMLInputElement | null)?.checked;
-
-    // athlete-only fields (gracefully handle if hidden/not present)
-    const graduationYearStr = String(form.get('graduationYear') || '').trim();
-    const graduationYear = graduationYearStr ? Number(graduationYearStr) : NaN;
-
-    const positionIdRaw = selectedPositionId || String(form.get('position_id') || '');
-    const positionId = positionIdRaw.trim();
+    const v = form.getValues();
+    const username = v.email.includes('@') ? v.email.split('@')[0] : '';
 
     try {
       if (role === 'athlete') {
         const input = makeAthleteInput({
-          joinCode,
-          email,
-          password,
-          firstName,
-          lastName,
+          joinCode: v.typecode,
+          email: v.email,
+          password: v.password,
+          firstName: v.firstName,
+          lastName: v.lastName,
           username,
-          cellNumber,
+          cellNumber: v.cellNumber,
           termsAccepted,
-          graduationYear,
-          position_id: positionId,
+          graduationYear: Number(graduationYear),
+          position_id: selectedPositionId,
         });
-        const res = await signUp(input);
-        navigate('/');
+        await signUp(input);
       } else {
         const input = makeCoachInput({
-          joinCode,
-          email,
-          password,
-          firstName,
-          lastName,
+          joinCode: v.typecode,
+          email: v.email,
+          password: v.password,
+          firstName: v.firstName,
+          lastName: v.lastName,
           username,
-          cellNumber,
+          cellNumber: v.cellNumber,
           termsAccepted,
         });
-        const res = await signUp(input);
-        navigate('/');
+        await signUp(input);
       }
+      navigate('/');
     } catch (err: any) {
       console.error('Signup error:', err);
-      // minimal feedback without altering UI structure
       alert(err?.message || 'Signup failed');
     }
   };
+
   return (
     <AppTheme {...props}>
       <CssBaseline enableColorScheme />
@@ -387,18 +268,19 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
             }}
           >
             <FormControl>
-              <FormLabel htmlFor="name">TypeCode</FormLabel>
+              <FormLabel htmlFor="typecode">TypeCode</FormLabel>
               <TextField
-                autoComplete="off"
                 name="typecode"
+                id="typecode"
+                value={form.values.typecode}
+                onChange={form.handleChange('typecode')}
+                onBlur={form.handleBlur('typecode')}
+                error={!!form.errors.typecode}
+                helperText={form.errors.typecode || ''}
+                autoComplete="off"
                 required
                 fullWidth
-                id="typecode"
                 placeholder="BOU-LAX-2026A-COACH-1"
-                error={nameError}
-                helperText={nameErrorMessage}
-                color={nameError ? 'error' : 'primary'}
-                onBlur={validateTypecode}
               />
             </FormControl>
 
@@ -420,61 +302,66 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
             <FormControl>
               <FormLabel htmlFor="email">Email</FormLabel>
               <TextField
+                name="email"
+                id="email"
+                value={form.values.email}
+                onChange={form.handleChange('email')}
+                onBlur={form.handleBlur('email')}
+                error={!!form.errors.email}
+                helperText={form.errors.email || ''}
                 required
                 fullWidth
-                id="email"
                 placeholder="your@email.com"
-                name="email"
                 autoComplete="email"
-                variant="outlined"
-                error={emailError}
-                helperText={emailErrorMessage}
-                color={emailError ? 'error' : 'primary'}
-                onBlur={validateEmail}
               />
             </FormControl>
 
             <FormControl>
               <FormLabel htmlFor="password">Password</FormLabel>
               <TextField
+                name="password"
+                id="password"
+                value={form.values.password}
+                onChange={form.handleChange('password')}
+                onBlur={form.handleBlur('password')}
+                error={!!form.errors.password}
+                helperText={form.errors.password || ''}
                 required
                 fullWidth
-                name="password"
                 placeholder="••••••"
                 type="password"
-                id="password"
                 autoComplete="new-password"
-                variant="outlined"
-                error={passwordError}
-                helperText={passwordErrorMessage}
-                color={passwordError ? 'error' : 'primary'}
-                onBlur={validatePassword}
               />
             </FormControl>
 
             <FormControl>
               <FormLabel htmlFor="confirmPassword">Confirm password</FormLabel>
               <TextField
+                name="confirmPassword"
+                id="confirmPassword"
+                value={form.values.confirmPassword}
+                onChange={form.handleChange('confirmPassword')}
+                onBlur={form.handleBlur('confirmPassword')}
+                error={!!form.errors.confirmPassword}
+                helperText={form.errors.confirmPassword || ''}
                 required
                 fullWidth
-                name="confirmPassword"
                 type="password"
-                id="confirmPassword"
                 autoComplete="new-password"
-                variant="outlined"
-                error={confirmPasswordError}
-                helperText={confirmPasswordErrorMessage}
-                color={confirmPasswordError ? 'error' : 'primary'}
-                onBlur={validateConfirmPassword}
               />
             </FormControl>
 
             <FormControl>
               <FormLabel htmlFor="firstName">First name</FormLabel>
               <TextField
-                autoComplete="given-name"
                 name="firstName"
                 id="firstName"
+                value={form.values.firstName}
+                onChange={form.handleChange('firstName')}
+                onBlur={form.handleBlur('firstName')}
+                error={!!form.errors.firstName}
+                helperText={form.errors.firstName || ''}
+                autoComplete="given-name"
                 required
                 fullWidth
                 placeholder="Jose"
@@ -484,16 +371,20 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
             <FormControl>
               <FormLabel htmlFor="lastName">Last name</FormLabel>
               <TextField
-                autoComplete="family-name"
                 name="lastName"
                 id="lastName"
+                value={form.values.lastName}
+                onChange={form.handleChange('lastName')}
+                onBlur={form.handleBlur('lastName')}
+                error={!!form.errors.lastName}
+                helperText={form.errors.lastName || ''}
+                autoComplete="family-name"
                 required
                 fullWidth
                 placeholder="Cruz"
               />
             </FormControl>
 
-            {/* ATHLETE-ONLY FIELDS */}
             {role === 'athlete' && (
               <>
                 <FormControl>
@@ -502,9 +393,15 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                     type="number"
                     name="graduationYear"
                     id="graduationYear"
-                    required
                     fullWidth
                     placeholder="2026"
+                    value={graduationYear}
+                    onChange={(e) => {
+                      setGraduationYear(e.target.value);
+                      if (graduationYearError) setGraduationYearError('');
+                    }}
+                    error={!!graduationYearError}
+                    helperText={graduationYearError}
                     inputProps={{ min: 1900, max: 2100 }}
                   />
                 </FormControl>
@@ -518,8 +415,8 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                     fullWidth
                     required
                     value={selectedPositionId}
-                    onChange={(event) => {
-                      setSelectedPositionId(event.target.value);
+                    onChange={(e) => {
+                      setSelectedPositionId(e.target.value);
                       if (positionError) {
                         setPositionError(false);
                         setPositionErrorMessage('');
@@ -543,24 +440,31 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
             <FormControl>
               <FormLabel htmlFor="cellNumber">Cell number</FormLabel>
               <TextField
-                type="tel"
-                autoComplete="tel"
                 name="cellNumber"
                 id="cellNumber"
+                value={form.values.cellNumber}
+                onChange={form.handleChange('cellNumber')}
+                onBlur={form.handleBlur('cellNumber')}
+                error={!!form.errors.cellNumber}
+                helperText={form.errors.cellNumber || ''}
+                type="tel"
+                autoComplete="tel"
                 required
                 fullWidth
                 placeholder="555-222-3333"
-                error={cellNumberError}
-                helperText={cellNumberErrorMessage}
-                color={cellNumberError ? 'error' : 'primary'}
-                onBlur={validateCellNumber}
               />
             </FormControl>
 
             <FormControlLabel
               sx={{ gridColumn: { sm: '1 / -1' } }}
               control={
-                <Checkbox name="termsAccepted" id="termsAccepted" color="primary" required />
+                <Checkbox
+                  name="termsAccepted"
+                  color="primary"
+                  required
+                  checked={termsAccepted}
+                  onChange={(e) => setTermsAccepted(e.target.checked)}
+                />
               }
               label="I agree to the Terms of Service and Privacy Policy."
             />
@@ -570,7 +474,6 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
               type="submit"
               fullWidth
               variant="contained"
-              onClick={validateInputs}
             >
               Sign up
             </Button>
