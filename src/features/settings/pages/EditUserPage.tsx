@@ -30,8 +30,6 @@ const ROLE_OPTIONS: ManagedOrgRole[] = [
   'coach',
   'athlete',
   'parent',
-  'staff',
-  'viewer',
 ];
 
 function roleLabel(role: string) {
@@ -52,7 +50,7 @@ export default function EditUserPage() {
   const initialUser = toInitialUser((location.state as any)?.user);
 
   const [user, setUser] = React.useState<ManagedUser | null>(null);
-  const [role, setRole] = React.useState<ManagedOrgRole>('viewer');
+  const [role, setRole] = React.useState<ManagedOrgRole>('athlete');
   const [isActive, setIsActive] = React.useState(true);
   const [password, setPassword] = React.useState('');
   const [confirmPassword, setConfirmPassword] = React.useState('');
@@ -83,7 +81,7 @@ export default function EditUserPage() {
         const data = await getManagedUser({ userId: id, orgId });
         if (!active) return;
         setUser(data);
-        setRole(data.org_role ?? 'viewer');
+        setRole(data.org_role ?? 'athlete');
         setIsActive(data.is_active ?? true);
       } catch (err) {
         if (!active) return;
