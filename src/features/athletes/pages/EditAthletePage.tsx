@@ -21,6 +21,7 @@ import {
 import { relationshipOptions } from '../utils/relationshipOptions';
 import { validateAthleteForm } from '../utils/validation';
 import { listPositions, type Position } from '../services/positionsService';
+import { getAllTeams, type Team } from '../../teams/services/teamsService';
 
 export default function EditAthletePage() {
   const { id } = useParams<{ id: string }>();
@@ -37,6 +38,12 @@ export default function EditAthletePage() {
   const [positionsError, setPositionsError] = React.useState<string | null>(null);
   const [selectedPositionId, setSelectedPositionId] = React.useState('');
   const [pendingPositionName, setPendingPositionName] = React.useState<string | null>(null);
+  const [age, setAge] = React.useState('');
+  const [gender, setGender] = React.useState('');
+  const [teams, setTeams] = React.useState<Team[]>([]);
+  const [teamsLoading, setTeamsLoading] = React.useState(false);
+  const [teamsError, setTeamsError] = React.useState<string | null>(null);
+  const [selectedTeamId, setSelectedTeamId] = React.useState('');
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [saving, setSaving] = React.useState(false);
   const [submitError, setSubmitError] = React.useState<string | null>(null);
@@ -62,6 +69,9 @@ export default function EditAthletePage() {
     setRelationship('');
     setSelectedPositionId('');
     setPendingPositionName(null);
+    setAge('');
+    setGender('');
+    setSelectedTeamId('');
     setErrors({});
     setSubmitError(null);
     setLoadError(null);
@@ -141,12 +151,51 @@ export default function EditAthletePage() {
   }, [authLoading, orgId]);
 
   React.useEffect(() => {
+    if (authLoading) return;
+    let active = true;
+
+    const resolvedOrgId = orgId?.trim() || '';
+    if (!resolvedOrgId) {
+      setTeams([]);
+      setTeamsError('Missing org_id. Please sign in again.');
+      setTeamsLoading(false);
+      return () => {
+        active = false;
+      };
+    }
+
+    setTeamsLoading(true);
+    setTeamsError(null);
+
+    getAllTeams({ orgId: resolvedOrgId })
+      .then((items) => {
+        if (!active) return;
+        setTeams(items);
+      })
+      .catch((err: any) => {
+        if (!active) return;
+        setTeams([]);
+        setTeamsError(err?.message || 'Failed to load teams.');
+      })
+      .finally(() => {
+        if (active) setTeamsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [authLoading, orgId]);
+
+  React.useEffect(() => {
     if (!athlete || initializedRef.current) return;
     setForm(toAthleteFormState(athlete));
     setParentFullName(athlete.parent_full_name ?? '');
     setParentEmail(athlete.parent_email ?? '');
     setParentMobilePhone(athlete.parent_mobile_phone ?? '');
     setRelationship(athlete.relationship ?? '');
+    setAge(athlete.age !== null && athlete.age !== undefined ? String(athlete.age) : '');
+    setGender(athlete.gender ?? '');
+    setSelectedTeamId(athlete.teams?.[0]?.id ?? '');
     const initialPositionId = athlete.position_id ?? '';
     setSelectedPositionId(initialPositionId);
     if (!initialPositionId) {
@@ -172,6 +221,18 @@ export default function EditAthletePage() {
   const positionOptions = React.useMemo(() => {
     return [...positions].sort((a, b) => a.name.localeCompare(b.name));
   }, [positions]);
+
+  const teamOptions = React.useMemo(() => {
+    return [...teams].sort((a, b) => a.name.localeCompare(b.name));
+  }, [teams]);
+
+  const teamHelperText = teamsError
+    ? teamsError
+    : teamsLoading
+      ? 'Loading teams...'
+      : teamOptions.length === 0
+        ? 'No teams available.'
+        : 'Optional';
 
   const relationshipMenuOptions = React.useMemo(() => {
     const trimmedRelationship = relationship.trim();
@@ -199,8 +260,15 @@ export default function EditAthletePage() {
     setSubmitError(null);
     const nextErrors = validateAthleteForm(form, {
       requirePassword: false,
-      requireUsername: false,
+      requireUsername: true,
     });
+    const trimmedAge = age.trim();
+    const ageValue = toOptionalNumber(age);
+    if (trimmedAge && ageValue === null) {
+      nextErrors.age = 'Age must be a number.';
+    } else if (ageValue !== null && ageValue <= 0) {
+      nextErrors.age = 'Age must be greater than 0.';
+    }
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
@@ -220,6 +288,7 @@ export default function EditAthletePage() {
         first_name: form.firstName.trim(),
         last_name: form.lastName.trim(),
         full_name: [form.firstName, form.lastName].filter(Boolean).join(' ').trim(),
+        username: form.username.trim(),
         cell_number: form.cellNumber.trim() || null,
         graduation_year: toOptionalNumber(form.graduationYear),
         parent_email: parentEmail.trim() || null,
@@ -227,6 +296,9 @@ export default function EditAthletePage() {
         parent_mobile_phone: parentMobilePhone.trim() || null,
         relationship: relationship.trim() || null,
         position_id: selectedPositionId.trim() || null,
+        team_id: selectedTeamId.trim() || null,
+        age: ageValue,
+        gender: gender.trim() || null,
       };
 
       const updated = await updateAthlete(athleteId, payload, { orgId });
@@ -303,8 +375,49 @@ export default function EditAthletePage() {
           errors={errors}
           onFieldChange={handleChange}
           showPassword={false}
-          showUsername={false}
         >
+          <TextField
+            label="Age"
+            type="number"
+            value={age}
+            onChange={(event) => setAge(event.target.value)}
+            error={Boolean(errors.age)}
+            helperText={errors.age}
+            fullWidth
+            inputProps={{ min: 1, max: 120 }}
+          />
+          <TextField
+            select
+            label="Gender"
+            value={gender}
+            onChange={(event) => setGender(event.target.value)}
+            error={Boolean(errors.gender)}
+            helperText={errors.gender || 'Optional'}
+            fullWidth
+          >
+            <MenuItem value="">Prefer not to say</MenuItem>
+            <MenuItem value="female">Female</MenuItem>
+            <MenuItem value="male">Male</MenuItem>
+            <MenuItem value="nonbinary">Non-binary</MenuItem>
+            <MenuItem value="other">Other</MenuItem>
+          </TextField>
+          <TextField
+            select
+            label="Team"
+            value={selectedTeamId}
+            onChange={(event) => setSelectedTeamId(event.target.value)}
+            error={Boolean(teamsError) || Boolean(errors.team_id)}
+            helperText={errors.team_id || teamHelperText}
+            fullWidth
+            disabled={teamsLoading}
+          >
+            <MenuItem value="">No team</MenuItem>
+            {teamOptions.map((team) => (
+              <MenuItem key={team.id} value={team.id}>
+                {team.name}
+              </MenuItem>
+            ))}
+          </TextField>
           <TextField
             select
             label="Position"
