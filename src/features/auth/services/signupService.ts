@@ -20,6 +20,7 @@ type CommonFields = {
 type AthleteOnly = {
   graduationYear: number;
   position_id: string;
+  parentEmail?: string | null;
 };
 
 export type AthleteSignUp = CommonFields & { role: 'athlete' } & AthleteOnly;
@@ -63,10 +64,12 @@ function toBackendPayload(input: SignUpInput) {
   };
 
   if (input.role === 'athlete') {
+    const parentEmail = input.parentEmail?.trim() || null;
     return {
       ...base,
       graduationYear: Number(input.graduationYear),
       position_id: input.position_id.trim(),
+      parentEmail,
     };
   }
 
@@ -92,6 +95,12 @@ export async function signUp(
     }
     if (!input.position_id?.trim()) {
       throw new Error('Position is required for athletes.');
+    }
+    const parentEmail = input.parentEmail?.trim() ?? '';
+    if (parentEmail) {
+      if (parentEmail.toLowerCase() === input.email.trim().toLowerCase()) {
+        throw new Error('Parent email must be different from your email.');
+      }
     }
   }
 
@@ -132,6 +141,7 @@ export function makeAthleteInput(params: {
   termsAccepted: boolean;
   graduationYear: number;
   position_id: string;
+  parentEmail?: string | null;
 }): AthleteSignUp {
   return { role: 'athlete', ...params };
 }

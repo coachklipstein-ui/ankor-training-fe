@@ -12,6 +12,34 @@ export const email =
     return null;
   };
 
+export const emailWhenPresent =
+  <TData extends FormData>(): FieldValidator<TData, Nillable<string>> =>
+  (value, allValues, field, config) => {
+    const trimmed = typeof value === 'string' ? value.trim() : '';
+    if (!trimmed) return null;
+    return email<TData>()(trimmed, allValues, field, config);
+  };
+
+export const notEqualToField =
+  <TData extends FormData>(
+    otherField: keyof TData,
+    message: string,
+    options?: { readonly caseInsensitive?: boolean },
+  ): FieldValidator<TData, Nillable<string>> =>
+  (value: Nillable<string>, allValues: TData) => {
+    const trimmed = typeof value === 'string' ? value.trim() : '';
+    if (!trimmed) return null;
+
+    const other = String(allValues[otherField] ?? '').trim();
+    if (!other) return null;
+
+    const left = options?.caseInsensitive ? trimmed.toLowerCase() : trimmed;
+    const right = options?.caseInsensitive ? other.toLowerCase() : other;
+
+    if (left === right) return message;
+    return null;
+  };
+
 export const phone =
   <TData extends FormData>(): FieldValidator<TData, Nillable<string>> =>
   (value: Nillable<string>, allValues: TData) => {

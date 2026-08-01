@@ -60,6 +60,7 @@ export const AthleteSignUpForm = ({ data, config, onSubmit, onChangeRole }: Prop
       termsAccepted: state.values.termsAccepted,
       graduationYear: getSafeNumberValue(state.values.graduationYear),
       position_id: state.values.position_id,
+      parentEmail: state.values.parentEmail.trim() || null,
     });
 
     onSubmit(input);
@@ -87,6 +88,12 @@ export const AthleteSignUpForm = ({ data, config, onSubmit, onChangeRole }: Prop
         autoComplete: 'email',
         required: true,
         placeholder: 'your@email.com',
+      })}
+
+      {renderTextField('parentEmail', {
+        autoComplete: 'email',
+        placeholder: 'parent@email.com',
+        helperText: state.errors.parentEmail || 'Optional',
       })}
 
       {renderTextField('password', {
