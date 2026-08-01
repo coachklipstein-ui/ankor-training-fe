@@ -1,6 +1,4 @@
 import * as React from 'react';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import FormLabel from '@mui/material/FormLabel';
 import Grid from '@mui/material/Grid';
 import OutlinedInput from '@mui/material/OutlinedInput';
@@ -11,17 +9,29 @@ const FormGrid = styled(Grid)(() => ({
   flexDirection: 'column',
 }));
 
-export default function OrganizationForm() {
+type FormState = {
+  values: Record<string, string>;
+  errors: Record<string, string>;
+  handleChange: (name: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  handleBlur: (name: string) => () => void;
+};
+
+type Props = {
+  form: FormState;
+};
+
+export default function OrganizationForm({ form }: Props) {
   return (
     <Grid container spacing={3}>
-      {/* Organization Name (replaces First/Last Name) */}
       <FormGrid size={{ xs: 12 }}>
-        <FormLabel htmlFor="org-name" required>
-          Organization Name
-        </FormLabel>
+        <FormLabel htmlFor="organizationName" required>Organization Name</FormLabel>
         <OutlinedInput
-          id="org-name"
+          id="organizationName"
           name="organizationName"
+          value={form.values.organizationName}
+          onChange={form.handleChange('organizationName')}
+          onBlur={form.handleBlur('organizationName')}
+          error={!!form.errors.organizationName}
           type="text"
           placeholder="Ankor Lacrosse Academy"
           autoComplete="organization"
@@ -30,11 +40,10 @@ export default function OrganizationForm() {
         />
       </FormGrid>
 
-      {/* Logo file uploader */}
       <FormGrid size={{ xs: 12 }}>
-        <FormLabel htmlFor="org-logo">Logo</FormLabel>
+        <FormLabel htmlFor="logo">Logo</FormLabel>
         <OutlinedInput
-          id="org-logo"
+          id="logo"
           name="logo"
           type="file"
           inputProps={{ accept: 'image/*' }}
@@ -42,14 +51,15 @@ export default function OrganizationForm() {
         />
       </FormGrid>
 
-      {/* Address 1 */}
       <FormGrid size={{ xs: 12 }}>
-        <FormLabel htmlFor="address1" required>
-          Address line 1
-        </FormLabel>
+        <FormLabel htmlFor="address1" required>Address line 1</FormLabel>
         <OutlinedInput
           id="address1"
           name="address1"
+          value={form.values.address1}
+          onChange={form.handleChange('address1')}
+          onBlur={form.handleBlur('address1')}
+          error={!!form.errors.address1}
           type="text"
           placeholder="Street name and number"
           autoComplete="address-line1"
@@ -58,7 +68,6 @@ export default function OrganizationForm() {
         />
       </FormGrid>
 
-      {/* Address 2 */}
       <FormGrid size={{ xs: 12 }}>
         <FormLabel htmlFor="address2">Address line 2</FormLabel>
         <OutlinedInput
@@ -71,14 +80,15 @@ export default function OrganizationForm() {
         />
       </FormGrid>
 
-      {/* City */}
       <FormGrid size={{ xs: 12, md: 6 }}>
-        <FormLabel htmlFor="city" required>
-          City
-        </FormLabel>
+        <FormLabel htmlFor="city" required>City</FormLabel>
         <OutlinedInput
           id="city"
           name="city"
+          value={form.values.city}
+          onChange={form.handleChange('city')}
+          onBlur={form.handleBlur('city')}
+          error={!!form.errors.city}
           type="text"
           placeholder="New York"
           autoComplete="address-level2"
@@ -87,14 +97,15 @@ export default function OrganizationForm() {
         />
       </FormGrid>
 
-      {/* State */}
       <FormGrid size={{ xs: 12, md: 6 }}>
-        <FormLabel htmlFor="state" required>
-          State
-        </FormLabel>
+        <FormLabel htmlFor="state" required>State</FormLabel>
         <OutlinedInput
           id="state"
           name="state"
+          value={form.values.state}
+          onChange={form.handleChange('state')}
+          onBlur={form.handleBlur('state')}
+          error={!!form.errors.state}
           type="text"
           placeholder="NY"
           autoComplete="address-level1"
@@ -103,14 +114,15 @@ export default function OrganizationForm() {
         />
       </FormGrid>
 
-      {/* Zip */}
       <FormGrid size={{ xs: 12, md: 6 }}>
-        <FormLabel htmlFor="zip" required>
-          Zip / Postal code
-        </FormLabel>
+        <FormLabel htmlFor="zip" required>Zip / Postal code</FormLabel>
         <OutlinedInput
           id="zip"
           name="zip"
+          value={form.values.zip}
+          onChange={form.handleChange('zip')}
+          onBlur={form.handleBlur('zip')}
+          error={!!form.errors.zip}
           type="text"
           placeholder="12345"
           autoComplete="postal-code"
@@ -119,14 +131,15 @@ export default function OrganizationForm() {
         />
       </FormGrid>
 
-      {/* Country */}
       <FormGrid size={{ xs: 12, md: 6 }}>
-        <FormLabel htmlFor="country" required>
-          Country
-        </FormLabel>
+        <FormLabel htmlFor="country" required>Country</FormLabel>
         <OutlinedInput
           id="country"
           name="country"
+          value={form.values.country}
+          onChange={form.handleChange('country')}
+          onBlur={form.handleBlur('country')}
+          error={!!form.errors.country}
           type="text"
           placeholder="United States"
           autoComplete="country-name"

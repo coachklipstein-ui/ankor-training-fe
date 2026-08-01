@@ -1,23 +1,24 @@
 import * as React from 'react';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
 import CssBaseline from '@mui/material/CssBaseline';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormLabel from '@mui/material/FormLabel';
-import FormControl from '@mui/material/FormControl';
 import Link from '@mui/material/Link';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
 import AppTheme from '../theme/AppTheme';
 import ColorModeSelect from '../theme/ColorModeSelect';
-import MenuItem from '@mui/material/MenuItem';
-import { signUp, makeAthleteInput, makeCoachInput } from '../services/signupService';
+import { signUp, CoachSignUp, AthleteSignUp } from '../services/signupService';
 import { useNavigate } from 'react-router-dom';
-import { listPositions, type Position } from '../../athletes/services/positionsService';
+import {
+  ATHLETE_FIELD_CONFIG,
+  AthleteSignUpFormData,
+  COACH_FIELD_CONFIG,
+  CoachSignUpFormData,
+  getEmptyAthleteSignUpFormData,
+  getEmptyCoachSignUpFormData,
+} from './SignUp/signUpFormConfig';
+import { AthleteSignUpForm } from './SignUp/AthleteSignUpForm';
+import { CoachSignUpForm } from './SignUp/CoachSignUpForm';
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -33,8 +34,6 @@ const Card = styled(MuiCard)(({ theme }) => ({
   [theme.breakpoints.up('sm')]: {
     maxWidth: 900,
   },
-
-  /* keep smaller screens scrollable, let desktop breathe */
   maxHeight: '85dvh',
   overflowY: 'auto',
   scrollbarGutter: 'stable',
@@ -42,12 +41,12 @@ const Card = styled(MuiCard)(({ theme }) => ({
     maxHeight: 'none',
     overflowY: 'visible',
   },
-
   ...theme.applyStyles('dark', {
     boxShadow:
       'hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px',
   }),
 }));
+
 const SignUpContainer = styled(Stack)(({ theme }) => ({
   height: 'calc((1 - var(--template-frame-height, 0)) * 100dvh)',
   minHeight: '100%',
@@ -69,279 +68,41 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
   },
 }));
 
-//COACH FORM
-// {
-//     "joinCode": "BOU-LAX-2026A-COACH-1",
-//     "role": "coach",
-//     "email": "cruzdejesusenmanueln@gmail.com",
-//     "password": "Enter2021",
-//     "firstName": "Jose",
-//     "lastName": "Cruz",
-//     "cellNumber": "555-222-3333",
-//     "termsAccepted": true,
-//     "username": "coach_jose"
-//   }
-
-//ATHLETE FORM
-// {
-//     "joinCode": "BOU-LAX-2026A-ATH-1",
-//     "role": "athlete",
-//     "email": "enmanuelcruzdejesus@gmail.com",
-//     "password": "Open2020",
-//     "firstName": "Enmanuel",
-//     "lastName": "Cruz",
-//     "cellNumber": "555-111-2222",
-//     "graduationYear": 2027,
-//     "position_id": "<uuid>",
-//     "termsAccepted": true,
-//     "username": "ecruz"
-//   }
-
-const PASSWORD_MIN_LENGTH = 8;
-
 export default function SignUp(props: { disableCustomTheme?: boolean }) {
-  const navigate = useNavigate(); // ✅ hook
-
+  const navigate = useNavigate();
   const [role, setRole] = React.useState<'athlete' | 'coach'>('athlete');
-  const [typeCodeError, setTypeCodeError] = React.useState(false);
-  const [emailError, setEmailError] = React.useState(false);
-  const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
-  const [passwordError, setPasswordError] = React.useState(false);
-  const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
-  const [confirmPasswordError, setConfirmPasswordError] = React.useState(false);
-  const [confirmPasswordErrorMessage, setConfirmPasswordErrorMessage] = React.useState('');
-  const [firstNameError, setFirstNameError] = React.useState(false);
-  const [firstNameErrorMessage, setFirstNameErrorMessage] = React.useState('');
-  const [lastNameError, setLasNameError] = React.useState(false);
-  const [lastNameErrorMessage, setLastNameErrorMessage] = React.useState('');
-  const [cellNumberError, setCellNumberError] = React.useState(false);
-  const [cellNumberErrorMessage, setCellNumberErrorMessage] = React.useState('');
-  const [nameError, setNameError] = React.useState(false);
-  const [nameErrorMessage, setNameErrorMessage] = React.useState('');
-  const [positions, setPositions] = React.useState<Position[]>([]);
-  const [positionsLoading, setPositionsLoading] = React.useState(false);
-  const [positionsError, setPositionsError] = React.useState<string | null>(null);
-  const [selectedPositionId, setSelectedPositionId] = React.useState('');
-  const [positionError, setPositionError] = React.useState(false);
-  const [positionErrorMessage, setPositionErrorMessage] = React.useState('');
+  const [athleteFormData, setAthleteFormData] = React.useState(getEmptyAthleteSignUpFormData());
+  const [coachFormData, setCoachFormData] = React.useState(getEmptyCoachSignUpFormData());
 
-  const debugOrgId = (import.meta.env.VITE_DEBUG_ORG_ID as string | undefined)?.trim() || '';
-
-  const positionsAuthHeaders = React.useMemo(() => {
-    const anon = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
-    if (!anon) return {};
-    return { apikey: anon, Authorization: `Bearer ${anon}` };
-  }, []);
-
-  React.useEffect(() => {
-    if (role !== 'athlete') {
-      setPositions([]);
-      setPositionsError(null);
-      setPositionsLoading(false);
-      setSelectedPositionId('');
-      setPositionError(false);
-      setPositionErrorMessage('');
-      return;
-    }
-
-    let active = true;
-    const resolvedOrgId = debugOrgId;
-
-    if (!resolvedOrgId) {
-      setPositions([]);
-      setPositionsError('Missing org_id for positions.');
-      setPositionsLoading(false);
-      return () => {
-        active = false;
-      };
-    }
-
-    setPositionsLoading(true);
-    setPositionsError(null);
-
-    listPositions({ orgId: resolvedOrgId, limit: 50, offset: 0 }, undefined, {
-      requireAuth: false,
-      headers: positionsAuthHeaders,
-    })
-      .then(({ items }) => {
-        if (!active) return;
-        setPositions(items);
-      })
-      .catch((err: any) => {
-        if (!active) return;
-        setPositions([]);
-        setPositionsError(err?.message || 'Failed to load positions.');
-      })
-      .finally(() => {
-        if (active) setPositionsLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [role, debugOrgId, positionsAuthHeaders]);
-
-  const positionOptions = React.useMemo(() => {
-    return [...positions].sort((a, b) => a.name.localeCompare(b.name));
-  }, [positions]);
-
-  const positionHelperText = positionsError
-    ? positionsError
-    : positionsLoading
-      ? 'Loading positions...'
-      : positionOptions.length === 0
-        ? 'No positions available.'
-        : '';
-
-  const validateInputs = () => {
-    const email = document.getElementById('email') as HTMLInputElement | null;
-    const password = document.getElementById('password') as HTMLInputElement | null;
-    const confirmPassword = document.getElementById('confirmPassword') as HTMLInputElement | null;
-    const typecode = document.getElementById('typecode') as HTMLInputElement | null;
-    const cellNumber = document.getElementById('cellNumber') as HTMLInputElement | null;
-
-    let isValid = true;
-
-    if (!email?.value || !/\S+@\S+\.\S+/.test(email.value)) {
-      setEmailError(true);
-      setEmailErrorMessage('Please enter a valid email address.');
-      isValid = false;
-    } else {
-      setEmailError(false);
-      setEmailErrorMessage('');
-    }
-
-    if (!password?.value || password.value.length < PASSWORD_MIN_LENGTH) {
-      setPasswordError(true);
-      setPasswordErrorMessage(`Password must be at least ${PASSWORD_MIN_LENGTH} characters long.`);
-      isValid = false;
-    } else {
-      setPasswordError(false);
-      setPasswordErrorMessage('');
-    }
-
-    if (!confirmPassword?.value) {
-      setConfirmPasswordError(true);
-      setConfirmPasswordErrorMessage('Please confirm your password.');
-      isValid = false;
-    } else if (confirmPassword.value !== password?.value) {
-      setConfirmPasswordError(true);
-      setConfirmPasswordErrorMessage('Passwords do not match.');
-      isValid = false;
-    } else {
-      setConfirmPasswordError(false);
-      setConfirmPasswordErrorMessage('');
-    }
-
-    if (!typecode?.value || typecode.value.length < 1) {
-      setNameError(true);
-      setNameErrorMessage('Type code is required.');
-      isValid = false;
-    } else {
-      setNameError(false);
-      setNameErrorMessage('');
-    }
-
-    if (!cellNumber?.value.trim()) {
-      setCellNumberError(true);
-      setCellNumberErrorMessage('Cell number is required.');
-      isValid = false;
-    } else {
-      setCellNumberError(false);
-      setCellNumberErrorMessage('');
-    }
-
-    if (role === 'athlete') {
-      if (!selectedPositionId.trim()) {
-        setPositionError(true);
-        setPositionErrorMessage('Position is required.');
-        isValid = false;
-      } else {
-        setPositionError(false);
-        setPositionErrorMessage('');
-      }
-    } else {
-      setPositionError(false);
-      setPositionErrorMessage('');
-    }
-
-    return isValid;
-  };
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (!validateInputs()) return;
-
-    const form = new FormData(event.currentTarget);
-
-    // map form fields to payload
-    const joinCode = String(form.get('typecode') || '').trim(); // "typecode" input -> joinCode
-    const email = String(form.get('email') || '').trim();
-    const password = String(form.get('password') || '');
-    const confirmPassword = String(form.get('confirmPassword') || '');
-    const firstName = String(form.get('firstName') || '').trim();
-    const lastName = String(form.get('lastName') || '').trim();
-    const cellNumber = String(form.get('cellNumber') || '').trim();
-
-    if (confirmPassword !== password) {
-      setConfirmPasswordError(true);
-      setConfirmPasswordErrorMessage('Passwords do not match.');
-      return;
-    }
-
-    // username may not be present in your current form—fallback to email local-part
-    const usernameField = String(form.get('username') || '').trim();
-    const username = usernameField || (email.includes('@') ? email.split('@')[0] : '');
-
-    // checkbox: FormData returns "on" when checked
-    const termsAccepted =
-      !!form.get('termsAccepted') ||
-      !!(document.getElementById('termsAccepted') as HTMLInputElement | null)?.checked;
-
-    // athlete-only fields (gracefully handle if hidden/not present)
-    const graduationYearStr = String(form.get('graduationYear') || '').trim();
-    const graduationYear = graduationYearStr ? Number(graduationYearStr) : NaN;
-
-    const positionIdRaw = selectedPositionId || String(form.get('position_id') || '');
-    const positionId = positionIdRaw.trim();
-
+  const handleSubmit = async (input: AthleteSignUp | CoachSignUp) => {
     try {
-      if (role === 'athlete') {
-        const input = makeAthleteInput({
-          joinCode,
-          email,
-          password,
-          firstName,
-          lastName,
-          username,
-          cellNumber,
-          termsAccepted,
-          graduationYear,
-          position_id: positionId,
-        });
-        const res = await signUp(input);
-        navigate('/');
-      } else {
-        const input = makeCoachInput({
-          joinCode,
-          email,
-          password,
-          firstName,
-          lastName,
-          username,
-          cellNumber,
-          termsAccepted,
-        });
-        const res = await signUp(input);
-        navigate('/');
-      }
+      await signUp(input);
+      navigate('/');
     } catch (err: any) {
       console.error('Signup error:', err);
-      // minimal feedback without altering UI structure
       alert(err?.message || 'Signup failed');
     }
   };
+
+  const handleChangeRole = (
+    role: 'athlete' | 'coach',
+    data: AthleteSignUpFormData | CoachSignUpFormData,
+  ) => {
+    setRole(role);
+    // sync form data
+    if (role === 'athlete') {
+      setAthleteFormData((prev) => ({
+        ...prev,
+        ...data,
+      }));
+    } else {
+      setCoachFormData((prev) => ({
+        ...prev,
+        ...data,
+      }));
+    }
+  };
+
   return (
     <AppTheme {...props}>
       <CssBaseline enableColorScheme />
@@ -356,199 +117,22 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
             Create Account
           </Typography>
 
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-              gap: 2,
-            }}
-          >
-            <FormControl>
-              <FormLabel htmlFor="name">TypeCode</FormLabel>
-              <TextField
-                autoComplete="off"
-                name="typecode"
-                required
-                fullWidth
-                id="typecode"
-                placeholder="BOU-LAX-2026A-COACH-1"
-                error={nameError}
-                helperText={nameErrorMessage}
-                color={nameError ? 'error' : 'primary'}
-              />
-            </FormControl>
-
-            <FormControl>
-              <FormLabel htmlFor="role">Role</FormLabel>
-              <TextField
-                id="role"
-                name="role"
-                select
-                fullWidth
-                value={role}
-                onChange={(e) => setRole(e.target.value as 'athlete' | 'coach')}
-              >
-                <MenuItem value="athlete">Athlete</MenuItem>
-                <MenuItem value="coach">Coach</MenuItem>
-              </TextField>
-            </FormControl>
-
-            <FormControl>
-              <FormLabel htmlFor="email">Email</FormLabel>
-              <TextField
-                required
-                fullWidth
-                id="email"
-                placeholder="your@email.com"
-                name="email"
-                autoComplete="email"
-                variant="outlined"
-                error={emailError}
-                helperText={emailErrorMessage}
-                color={passwordError ? 'error' : 'primary'}
-              />
-            </FormControl>
-
-            <FormControl>
-              <FormLabel htmlFor="password">Password</FormLabel>
-              <TextField
-                required
-                fullWidth
-                name="password"
-                placeholder="••••••"
-                type="password"
-                id="password"
-                autoComplete="new-password"
-                variant="outlined"
-                error={passwordError}
-                helperText={passwordErrorMessage}
-                color={passwordError ? 'error' : 'primary'}
-              />
-            </FormControl>
-
-            <FormControl>
-              <FormLabel htmlFor="confirmPassword">Confirm password</FormLabel>
-              <TextField
-                required
-                fullWidth
-                name="confirmPassword"
-                type="password"
-                id="confirmPassword"
-                autoComplete="new-password"
-                variant="outlined"
-                error={confirmPasswordError}
-                helperText={confirmPasswordErrorMessage}
-                color={confirmPasswordError ? 'error' : 'primary'}
-              />
-            </FormControl>
-
-            <FormControl>
-              <FormLabel htmlFor="firstName">First name</FormLabel>
-              <TextField
-                autoComplete="given-name"
-                name="firstName"
-                id="firstName"
-                required
-                fullWidth
-                placeholder="Jose"
-              />
-            </FormControl>
-
-            <FormControl>
-              <FormLabel htmlFor="lastName">Last name</FormLabel>
-              <TextField
-                autoComplete="family-name"
-                name="lastName"
-                id="lastName"
-                required
-                fullWidth
-                placeholder="Cruz"
-              />
-            </FormControl>
-
-            {/* ATHLETE-ONLY FIELDS */}
-            {role === 'athlete' && (
-              <>
-                <FormControl>
-                  <FormLabel htmlFor="graduationYear">Graduation year</FormLabel>
-                  <TextField
-                    type="number"
-                    name="graduationYear"
-                    id="graduationYear"
-                    required
-                    fullWidth
-                    placeholder="2026"
-                    inputProps={{ min: 1900, max: 2100 }}
-                  />
-                </FormControl>
-
-                <FormControl>
-                  <FormLabel htmlFor="position_id">Position</FormLabel>
-                  <TextField
-                    id="position_id"
-                    name="position_id"
-                    select
-                    fullWidth
-                    required
-                    value={selectedPositionId}
-                    onChange={(event) => {
-                      setSelectedPositionId(event.target.value);
-                      if (positionError) {
-                        setPositionError(false);
-                        setPositionErrorMessage('');
-                      }
-                    }}
-                    error={positionError || Boolean(positionsError)}
-                    helperText={positionErrorMessage || positionHelperText}
-                    disabled={positionsLoading}
-                  >
-                    <MenuItem value="">Select position</MenuItem>
-                    {positionOptions.map((pos) => (
-                      <MenuItem key={pos.id} value={pos.id}>
-                        {pos.name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </FormControl>
-              </>
-            )}
-
-            <FormControl>
-              <FormLabel htmlFor="cellNumber">Cell number</FormLabel>
-              <TextField
-                type="tel"
-                autoComplete="tel"
-                name="cellNumber"
-                id="cellNumber"
-                required
-                fullWidth
-                placeholder="555-222-3333"
-                error={cellNumberError}
-                helperText={cellNumberErrorMessage}
-                color={cellNumberError ? 'error' : 'primary'}
-              />
-            </FormControl>
-
-            <FormControlLabel
-              sx={{ gridColumn: { sm: '1 / -1' } }}
-              control={
-                <Checkbox name="termsAccepted" id="termsAccepted" color="primary" required />
-              }
-              label="I agree to the Terms of Service and Privacy Policy."
+          {role === 'athlete' ? (
+            <AthleteSignUpForm
+              data={athleteFormData}
+              config={ATHLETE_FIELD_CONFIG}
+              onSubmit={handleSubmit}
+              onChangeRole={handleChangeRole}
             />
+          ) : (
+            <CoachSignUpForm
+              data={coachFormData}
+              config={COACH_FIELD_CONFIG}
+              onSubmit={handleSubmit}
+              onChangeRole={handleChangeRole}
+            />
+          )}
 
-            <Button
-              sx={{ gridColumn: { sm: '1 / -1' } }}
-              type="submit"
-              fullWidth
-              variant="contained"
-              onClick={validateInputs}
-            >
-              Sign up
-            </Button>
-          </Box>
           <Typography sx={{ textAlign: 'center' }}>
             Already have an account?{' '}
             <Link

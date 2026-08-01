@@ -1,6 +1,7 @@
 import * as React from 'react';
 import Grid from '@mui/material/Grid';
 import { styled } from '@mui/material/styles';
+import FormHelperText from '@mui/material/FormHelperText';
 import FormLabel from '@mui/material/FormLabel';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -27,35 +28,33 @@ const FormGrid = styled(Grid)(() => ({
 
 type TeamRow = {
   id: string;
-  sport: string; // kept for serialization / onChange compatibility
+  sport: string;
   name: string;
 };
 
 export default function TeamsForm({
-  onChange,
   sports,
   sportsLoading = false,
   sportsError = null,
+  selectedSport,
+  onSportChange,
+  sportError = '',
   initial = [{ id: crypto.randomUUID?.() ?? String(Date.now()), sport: '', name: '' }],
 }: {
-  onChange?: (rows: TeamRow[]) => void;
   sports?: Sport[];
   sportsLoading?: boolean;
   sportsError?: string | null;
-  initial?: TeamRow[]; // if provided with mixed sports, we default to the first row's sport
+  selectedSport: string;
+  onSportChange: (value: string) => void;
+  sportError?: string;
+  initial?: TeamRow[];
 }) {
-  const initialSport = initial.find((r) => r.sport)?.sport ?? '';
-  const [selectedSport, setSelectedSport] = React.useState<string>(initialSport);
   const [rows, setRows] = React.useState<TeamRow[]>(
-    initial.map((r) => ({ ...r, sport: initialSport })),
+    initial.map((r) => ({ ...r, sport: selectedSport })),
   );
 
-  const applySport = (list: TeamRow[], sport: string) => list.map((r) => ({ ...r, sport }));
-
-  const propagate = (next: TeamRow[], sport = selectedSport) => {
-    const withSport = applySport(next, sport);
-    setRows(withSport);
-    onChange?.(withSport);
+  const propagate = (next: TeamRow[]) => {
+    setRows(next);
   };
 
   const handleAddRow = () => {
@@ -77,12 +76,6 @@ export default function TeamsForm({
     propagate(rows.map((r) => (r.id === id ? { ...r, name: value } : r)));
   };
 
-  const handleSportChange = (value: string) => {
-    setSelectedSport(value);
-    // ensure all rows carry the chosen sport for submission/serialization
-    propagate(rows, value);
-  };
-
   return (
     <Grid container spacing={3}>
       <FormGrid size={{ xs: 12 }}>
@@ -92,8 +85,10 @@ export default function TeamsForm({
           fullWidth
           displayEmpty
           value={selectedSport}
-          onChange={(e) => handleSportChange(e.target.value as string)}
+          autoComplete="off"
           required
+          error={!!sportError}
+          onChange={(e) => onSportChange(e.target.value as string)}
           disabled={sportsLoading || Boolean(sportsError) || !sports?.length}
         >
           <MenuItem value="">
@@ -105,7 +100,10 @@ export default function TeamsForm({
             </MenuItem>
           ))}
         </Select>
-        {sportsError && (
+        {sportError && (
+          <FormHelperText error>{sportError}</FormHelperText>
+        )}
+        {sportsError && !sportError && (
           <Typography color="error" variant="caption" sx={{ mt: 0.75 }}>
             {sportsError}
           </Typography>
@@ -136,8 +134,9 @@ export default function TeamsForm({
                       placeholder="e.g., U14 Girls Blue"
                       value={row.name}
                       name={`teams[${row.id}].name`}
-                      onChange={(e) => handleNameChange(row.id, e.target.value)}
+                      autoComplete="off"
                       required
+                      onChange={(e) => handleNameChange(row.id, e.target.value)}
                     />
                   </TableCell>
                   <TableCell align="right">
@@ -169,7 +168,7 @@ export default function TeamsForm({
         </TableContainer>
       </FormGrid>
 
-      {/* Hidden inputs to help with form posts */}
+      {/* Hidden inputs for form serialization */}
       <input type="hidden" name="teamsSport" value={selectedSport} />
       <input type="hidden" name="teamsJson" value={JSON.stringify(rows)} />
     </Grid>
