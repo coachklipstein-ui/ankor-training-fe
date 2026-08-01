@@ -185,6 +185,7 @@ export default function NewAthletePage() {
         last_name: form.lastName.trim(),
         full_name: [form.firstName, form.lastName].filter(Boolean).join(' ').trim(),
         username: form.username.trim(),
+        cell_number: form.cellNumber.trim() || null,
         graduation_year: toOptionalNumber(form.graduationYear),
         team_id: selectedTeamId.trim() || null,
         position_id: selectedPositionId.trim() || null,
@@ -254,7 +255,6 @@ export default function NewAthletePage() {
           showPassword
           passwordLabel="Password (required)"
           passwordRequired
-          showCellNumber={false}
           showConfirmPassword
           confirmPassword={confirmPassword}
           onConfirmPasswordChange={(event) => setConfirmPassword(event.target.value)}
