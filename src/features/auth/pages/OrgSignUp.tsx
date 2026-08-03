@@ -31,7 +31,8 @@ const STEP_0_FIELDS = {
   adminEmail: {
     label: 'Admin Email',
     required: true,
-    validate: (v: string) => (!/\S+@\S+\.\S+/.test(v) ? 'Please enter a valid email address.' : null),
+    validate: (v: string) =>
+      !/\S+@\S+\.\S+/.test(v) ? 'Please enter a valid email address.' : null,
   },
   adminPhoneNumber: {
     label: 'Admin Phone Number',
@@ -101,7 +102,9 @@ export default function OrgSignUp(props: { disableCustomTheme?: boolean }) {
       }
     }
     loadSports();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const validateCurrentStep = (): string | null => {
@@ -112,7 +115,10 @@ export default function OrgSignUp(props: { disableCustomTheme?: boolean }) {
         const value = form.values[name] ?? '';
         if (def.required && !value.trim()) return `${def.label} is required.`;
         if ('validate' in def && def.validate) {
-          const msg = (def.validate as (v: string, all: Record<string, string>) => string | null)(value, form.values);
+          const msg = (def.validate as (v: string, all: Record<string, string>) => string | null)(
+            value,
+            form.values,
+          );
           if (msg) return msg;
         }
       }
@@ -132,14 +138,20 @@ export default function OrgSignUp(props: { disableCustomTheme?: boolean }) {
 
     if (activeStep < steps.length - 1) {
       const err = validateCurrentStep();
-      if (err) { setServerError(err); return; }
+      if (err) {
+        setServerError(err);
+        return;
+      }
       setActiveStep((s) => s + 1);
       return;
     }
 
     setSportTouched(true);
     const err = validateCurrentStep();
-    if (err) { setServerError(err); return; }
+    if (err) {
+      setServerError(err);
+      return;
+    }
 
     if (!form.validate()) return;
 
@@ -363,12 +375,17 @@ export default function OrgSignUp(props: { disableCustomTheme?: boolean }) {
                     )}
                     <Button
                       variant="contained"
-                      endIcon={activeStep < steps.length - 1 ? <ChevronRightRoundedIcon /> : undefined}
+                      endIcon={
+                        activeStep < steps.length - 1 ? <ChevronRightRoundedIcon /> : undefined
+                      }
                       type="button"
                       onClick={() => {
                         setServerError(null);
                         const err = validateCurrentStep();
-                        if (err) { setServerError(err); return; }
+                        if (err) {
+                          setServerError(err);
+                          return;
+                        }
                         if (activeStep < steps.length - 1) {
                           setActiveStep((s) => s + 1);
                         } else {
@@ -379,7 +396,7 @@ export default function OrgSignUp(props: { disableCustomTheme?: boolean }) {
                       sx={{ width: { xs: '100%', sm: 'fit-content' } }}
                       disabled={submitting}
                     >
-                      {activeStep < steps.length - 1 ? 'Next' : (submitting ? 'Saving…' : 'Save')}
+                      {activeStep < steps.length - 1 ? 'Next' : submitting ? 'Saving…' : 'Save'}
                     </Button>
                   </Box>
                 </React.Fragment>
