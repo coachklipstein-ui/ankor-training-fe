@@ -36,6 +36,11 @@ export type SignUpResponse = {
   team_id?: string;
   athlete_id?: string;
   coach_id?: string;
+  guardian_id?: string | null;
+  parent_linked?: boolean | null;
+  parent_invited?: boolean | null;
+  invite_email_sent?: boolean | null;
+  parent_link_error?: string | null;
   error?: string;
 };
 

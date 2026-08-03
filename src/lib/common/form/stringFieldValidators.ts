@@ -49,9 +49,13 @@ export const phone =
     return null;
   };
 
+export const PASSWORD_MIN_LENGTH = 8;
+
 export const passwordMinLength =
-  <TData extends FormData>(minLength: number): FieldValidator<TData, string> =>
-  (value: string, allValues: TData) => {
+  <TData extends FormData>(
+    minLength: number = PASSWORD_MIN_LENGTH,
+  ): FieldValidator<TData, string> =>
+  (value: string) => {
     if (value.length < minLength) {
       return `Password must be at least ${minLength} characters long.`;
     }

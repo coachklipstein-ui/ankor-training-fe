@@ -10,6 +10,7 @@ export const PATHS = {
   signIn: '/sign-in',
   signUp: '/sign-up',
   orgSignUp: '/org-signup',
+  activate: '/activate',
 } as const;
 
 function RequireAuth({ children }: { children: JSX.Element }) {
@@ -35,6 +36,7 @@ const Login = lazy(() => import('../../features/auth/pages/Login'));
 const SignUp = lazy(() => import('../../features/auth/pages/SignUp'));
 const OrgSignUp = lazy(() => import('../../features/auth/pages/OrgSignUp'));
 const ResetPasswordPage = lazy(() => import('../../features/auth/pages/ResetPasswordPage'));
+const ActivateParentPage = lazy(() => import('../../features/auth/pages/ActivateParentPage'));
 
 // App shell + feature pages
 const HomeLayout = lazy(() => import('../../features/home/pages/HomePage'));
@@ -135,6 +137,7 @@ export default function AppRoutes() {
         <Route path={PATHS.signUp} element={<SignUp />} />
         <Route path={PATHS.orgSignUp} element={<OrgSignUp />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path={PATHS.activate} element={<ActivateParentPage />} />
 
         {/* App shell with side nav & app bar */}
         <Route

@@ -10,8 +10,6 @@ import {
 import { required } from '../../../../lib/common/form/validationCommon';
 import { FormFieldConfig } from '../../../../lib/common/form/types';
 
-const PASSWORD_MIN_LENGTH = 8;
-
 type Role = 'athlete' | 'coach';
 export const Roles: Role[] = ['athlete', 'coach'];
 
@@ -49,7 +47,7 @@ const createCommonFieldConfig = <TData extends CommonFormData>(): Pick<
   },
   password: {
     label: 'Password',
-    validators: [required(), passwordMinLength(PASSWORD_MIN_LENGTH)],
+    validators: [required(), passwordMinLength()],
   },
   confirmPassword: {
     label: 'Confirm password',
