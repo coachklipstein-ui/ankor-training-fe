@@ -21,7 +21,7 @@ import AnkorBrandPanel from '../components/AnkorBrandPanel';
 
 import { buildOrgSignupPayload, submitOrgSignupJson } from '../services/orgSignUpService';
 import { listSports, type Sport } from '../services/sportsService';
-import { useFormValidation } from '../hooks/useFormValidation';
+import { useFormValidation } from '../../../lib/common/form/useFormValidation';
 
 const steps = ['Admin Info', 'Organization', 'Teams'];
 
