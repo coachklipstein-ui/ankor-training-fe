@@ -716,11 +716,7 @@ export default function EditEvaluationsPage() {
       console.warn('Missing org_id from profile.');
       return;
     }
-    if (!coachId) {
-      console.warn('Missing coach id from profile.');
-      return;
-    }
-
+    
     if (hasExceededLowRatings) {
       showToast('You can only give 5 ratings below 3.', 'error');
       return;

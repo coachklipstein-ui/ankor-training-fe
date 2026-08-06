@@ -76,7 +76,7 @@ export default function CoachEvaluationReportListPage() {
         evaluationId: row.evaluation_id,
         athleteId: row.athlete_id,
         athleteName: row.athlete_full_name || row.athletes_name || 'Unknown athlete',
-        evaluatorName: row.coach_name || 'Unknown coach',
+        evaluatorName: row.coach_name || 'Administrator',
         scorecardTemplate: row.scorecard_name || 'Scorecard',
         evaluatedAt: row.date,
       })),
