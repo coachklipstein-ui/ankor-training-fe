@@ -35,6 +35,7 @@ import AnchorIcon from '@mui/icons-material/Anchor';
 
 import { listInvited, listPlansByType, type PracticePlan } from '../services/practicePlanService';
 import { useRole } from '../../../shared/auth/roles';
+import { formatHeaderTimestamp } from '../utils/formatHeaderTimestamp';
 
 type TabKey = 'my' | 'invited' | 'prebuilt';
 
@@ -55,26 +56,6 @@ const TAB_META: Array<{
   { key: 'invited', label: 'Invited', icon: <MailOutlineIcon /> },
   { key: 'prebuilt', label: 'Prebuilt Plans', icon: <AutoAwesomeMosaicIcon /> },
 ];
-
-function safeFormatTimestamp(iso: string) {
-  try {
-    const d = new Date(iso);
-    const date = new Intl.DateTimeFormat(undefined, {
-      month: 'long',
-      day: '2-digit',
-      year: 'numeric',
-    }).format(d);
-
-    const time = new Intl.DateTimeFormat(undefined, {
-      hour: 'numeric',
-      minute: '2-digit',
-    }).format(d);
-
-    return `${date} at ${time}`.toUpperCase();
-  } catch {
-    return iso;
-  }
-}
 
 function tabTitle(tab: TabKey) {
   switch (tab) {
@@ -413,7 +394,7 @@ export default function PracticePlansListPage() {
                           color="text.secondary"
                           sx={{ fontWeight: 800, letterSpacing: 0.2 }}
                         >
-                          {safeFormatTimestamp(row.updated_at)}
+                          {formatHeaderTimestamp(row.updated_at)}
                         </Typography>
                       }
                       secondary={
