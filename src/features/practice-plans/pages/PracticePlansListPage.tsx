@@ -21,7 +21,6 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../app/providers/AuthProvider';
 
 import AddIcon from '@mui/icons-material/Add';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
@@ -33,19 +32,11 @@ import AutoAwesomeMosaicIcon from '@mui/icons-material/AutoAwesomeMosaic';
 
 import AnchorIcon from '@mui/icons-material/Anchor';
 
-import { listInvited, listPlansByType, type PracticePlan } from '../services/practicePlanService';
-import { useRole } from '../../../shared/auth/roles';
+import usePracticePlansListPage, {
+  type PracticePlanRow,
+  type TabKey,
+} from '../hooks/usePracticePlansListPage';
 import { formatHeaderTimestamp } from '../utils/formatHeaderTimestamp';
-
-type TabKey = 'my' | 'invited' | 'prebuilt';
-
-type PracticePlanRow = {
-  id: string;
-  name: string;
-  updated_at: string; // ISO
-};
-
-type TabState<T> = Record<TabKey, T>;
 
 const TAB_META: Array<{
   key: TabKey;
@@ -70,198 +61,24 @@ function tabTitle(tab: TabKey) {
   }
 }
 
-function normalizePlanRows(plans: PracticePlan[]): PracticePlanRow[] {
-  return plans.map((plan) => ({
-    id: plan.id,
-    name: plan.name?.trim() || 'Untitled plan',
-    updated_at: plan.updated_at || plan.created_at || '',
-  }));
-}
-
 export default function PracticePlansListPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
-  const userId = user?.id ?? '';
-  const orgId = profile?.default_org_id?.trim() || null;
-  const { isCoach } = useRole(profile?.role);
 
-  const [tab, setTab] = React.useState<TabKey>('my');
-  const [search, setSearch] = React.useState('');
-
-  const [myPlans, setMyPlans] = React.useState<PracticePlanRow[]>([]);
-  const [invitedPlans, setInvitedPlans] = React.useState<PracticePlanRow[]>([]);
-  const [prebuiltPlans, setPrebuiltPlans] = React.useState<PracticePlanRow[]>([]);
-  const [loadingByTab, setLoadingByTab] = React.useState<TabState<boolean>>({
-    my: false,
-    invited: false,
-    prebuilt: false,
-  });
-  const [errorByTab, setErrorByTab] = React.useState<TabState<string | null>>({
-    my: null,
-    invited: null,
-    prebuilt: null,
-  });
+  const {
+    tab,
+    setTab,
+    search,
+    setSearch,
+    rows,
+    activeLoading,
+    activeError,
+    canEdit,
+  } = usePracticePlansListPage();
 
   const [menuAnchorEl, setMenuAnchorEl] = React.useState<null | HTMLElement>(null);
   const [menuRow, setMenuRow] = React.useState<PracticePlanRow | null>(null);
-
-  const setTabLoading = (key: TabKey, value: boolean) => {
-    setLoadingByTab((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const setTabError = (key: TabKey, value: string | null) => {
-    setErrorByTab((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const setPlansForTab = (key: TabKey, rows: PracticePlanRow[]) => {
-    if (key === 'my') {
-      setMyPlans(rows);
-    } else if (key === 'invited') {
-      setInvitedPlans(rows);
-    } else {
-      setPrebuiltPlans(rows);
-    }
-  };
-
-  React.useEffect(() => {
-    let active = true;
-
-    const fetchTab = async (
-      key: TabKey,
-      type: 'custom-plans' | 'invited-plans' | 'prebuild',
-      filter: { user_id?: string } = {},
-    ) => {
-      setTabLoading(key, true);
-      setTabError(key, null);
-      if (!orgId) {
-        setPlansForTab(key, []);
-        setTabError(key, 'Missing org_id. Please sign in again.');
-        setTabLoading(key, false);
-        return;
-      }
-
-      try {
-        const { items } = await listPlansByType({ type, orgId, ...filter });
-        if (!active) return;
-        setPlansForTab(key, normalizePlanRows(items));
-      } catch (err: any) {
-        if (!active) return;
-        setPlansForTab(key, []);
-        setTabError(key, err?.message || 'Failed to load plans.');
-      } finally {
-        if (active) setTabLoading(key, false);
-      }
-    };
-
-    fetchTab('prebuilt', 'prebuild');
-
-    return () => {
-      active = false;
-    };
-  }, [orgId]);
-
-  React.useEffect(() => {
-    if (tab !== 'my') return;
-
-    let active = true;
-    setTabLoading('my', true);
-    setTabError('my', null);
-
-    if (!userId) {
-      setPlansForTab('my', []);
-      setTabError('my', 'Missing user id. Please sign in again.');
-      setTabLoading('my', false);
-      return () => {
-        active = false;
-      };
-    }
-    if (!orgId) {
-      setPlansForTab('my', []);
-      setTabError('my', 'Missing org_id. Please sign in again.');
-      setTabLoading('my', false);
-      return () => {
-        active = false;
-      };
-    }
-
-    listPlansByType({ type: 'custom', orgId, user_id: userId })
-      .then(({ items }) => {
-        if (!active) return;
-        setPlansForTab('my', normalizePlanRows(items));
-      })
-      .catch((err: any) => {
-        if (!active) return;
-        setPlansForTab('my', []);
-        setTabError('my', err?.message || 'Failed to load my plans.');
-      })
-      .finally(() => {
-        if (active) setTabLoading('my', false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [tab, userId, orgId]);
-
-  React.useEffect(() => {
-    if (tab !== 'invited') return;
-
-    let active = true;
-    setTabLoading('invited', true);
-    setTabError('invited', null);
-
-    if (!userId) {
-      setPlansForTab('invited', []);
-      setTabError('invited', 'Missing user id. Please sign in again.');
-      setTabLoading('invited', false);
-      return () => {
-        active = false;
-      };
-    }
-    if (!orgId) {
-      setPlansForTab('invited', []);
-      setTabError('invited', 'Missing org_id. Please sign in again.');
-      setTabLoading('invited', false);
-      return () => {
-        active = false;
-      };
-    }
-
-    listInvited({ user_id: userId, orgId })
-      .then(({ items }) => {
-        if (!active) return;
-        setPlansForTab('invited', normalizePlanRows(items));
-      })
-      .catch((err: any) => {
-        if (!active) return;
-        setPlansForTab('invited', []);
-        setTabError('invited', err?.message || 'Failed to load invited plans.');
-      })
-      .finally(() => {
-        if (active) setTabLoading('invited', false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [tab, userId, orgId]);
-
-  const rows = React.useMemo(() => {
-    const source = tab === 'my' ? myPlans : tab === 'invited' ? invitedPlans : prebuiltPlans;
-    const q = search.trim().toLowerCase();
-
-    const searched = !q ? source : source.filter((p) => p.name.toLowerCase().includes(q));
-
-    return [...searched].sort(
-      (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
-    );
-  }, [tab, search, myPlans, invitedPlans, prebuiltPlans]);
-
-  const activeLoading = loadingByTab[tab];
-  const activeError = errorByTab[tab];
-  const canEdit = tab !== 'prebuilt' && (tab !== 'invited' || isCoach);
 
   const openMenu = (evt: React.MouseEvent<HTMLElement>, row: PracticePlanRow) => {
     evt.stopPropagation();
