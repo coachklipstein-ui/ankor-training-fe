@@ -429,7 +429,7 @@ export async function listLatestEvaluations(params: {
     userId,
     baseUrl = DEFAULT_BASE_URL,
     orgId = null,
-    limit = 10,
+    limit = null,
     offset = 0,
     scorecardName,
     coach,

@@ -26,6 +26,7 @@ export default function EvaluationReportListPage() {
   const [error, setError] = React.useState<string | null>(null);
   const role = (profile?.role ?? '').trim().toLowerCase();
   const isParent = role.includes('parent');
+  const isAdmin = role.includes('admin');
   const userId = profile?.id ?? user?.id ?? null;
 
   const loadReports = React.useCallback(async () => {
@@ -37,7 +38,7 @@ export default function EvaluationReportListPage() {
     }
 
     const requiredId = isParent ? userId : athleteId;
-    if (!requiredId) {
+    if (!requiredId && !isAdmin) {
       setRows([]);
       setError(`Missing ${isParent ? 'user' : 'athlete'} id for this account.`);
       setLoading(false);
@@ -47,17 +48,17 @@ export default function EvaluationReportListPage() {
     try {
       setLoading(true);
       setError(null);
-      const { rows: data } = await listLatestEvaluations(
+      const { rows: data } = isAdmin ? await listLatestEvaluations({ orgId }) : await listLatestEvaluations(
         isParent
           ? {
               orgId,
-              userId: requiredId,
+              userId: requiredId!,
               limit: 10,
               offset: 0,
             }
           : {
               orgId,
-              athleteId: requiredId,
+              athleteId: requiredId!,
               limit: 10,
               offset: 0,
             },
