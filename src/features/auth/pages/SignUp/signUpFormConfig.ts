@@ -1,5 +1,7 @@
 import {
   email,
+  emailWhenPresent,
+  notEqualToField,
   number,
   passwordMatch,
   passwordMinLength,
@@ -7,8 +9,6 @@ import {
 } from '../../../../lib/common/form/stringFieldValidators';
 import { required } from '../../../../lib/common/form/validationCommon';
 import { FormFieldConfig } from '../../../../lib/common/form/types';
-
-const PASSWORD_MIN_LENGTH = 8;
 
 type Role = 'athlete' | 'coach';
 export const Roles: Role[] = ['athlete', 'coach'];
@@ -28,6 +28,7 @@ type CommonFormData = {
 export type AthleteSignUpFormData = CommonFormData & {
   graduationYear: string;
   position_id: string;
+  parentEmail: string;
 };
 
 export type CoachSignUpFormData = CommonFormData;
@@ -46,7 +47,7 @@ const createCommonFieldConfig = <TData extends CommonFormData>(): Pick<
   },
   password: {
     label: 'Password',
-    validators: [required(), passwordMinLength(PASSWORD_MIN_LENGTH)],
+    validators: [required(), passwordMinLength()],
   },
   confirmPassword: {
     label: 'Confirm password',
@@ -65,6 +66,15 @@ export const ATHLETE_FIELD_CONFIG: FormFieldConfig<AthleteSignUpFormData> = {
   ...createCommonFieldConfig<AthleteSignUpFormData>(),
   graduationYear: { label: 'Graduation year', validators: [required(), number()] },
   position_id: { label: 'Position', validators: [required()] },
+  parentEmail: {
+    label: 'Parent email',
+    validators: [
+      emailWhenPresent(),
+      notEqualToField('email', 'Parent email must be different from your email.', {
+        caseInsensitive: true,
+      }),
+    ],
+  },
 } as const;
 
 export const COACH_FIELD_CONFIG: FormFieldConfig<CoachSignUpFormData> = {
@@ -89,6 +99,7 @@ export const getEmptyAthleteSignUpFormData = (): AthleteSignUpFormData => {
     ...getEmptyCommonFormData(),
     graduationYear: '',
     position_id: '',
+    parentEmail: '',
   };
 };
 
