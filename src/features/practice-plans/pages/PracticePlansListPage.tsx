@@ -34,6 +34,7 @@ import AutoAwesomeMosaicIcon from '@mui/icons-material/AutoAwesomeMosaic';
 import AnchorIcon from '@mui/icons-material/Anchor';
 
 import { listInvited, listPlansByType, type PracticePlan } from '../services/practicePlanService';
+import { useRole } from '../../../shared/auth/roles';
 
 type TabKey = 'my' | 'invited' | 'prebuilt';
 
@@ -103,7 +104,7 @@ export default function PracticePlansListPage() {
   const { user, profile } = useAuth();
   const userId = user?.id ?? '';
   const orgId = profile?.default_org_id?.trim() || null;
-  const isCoach = (profile?.role ?? '').trim().toLowerCase().includes('coach');
+  const { isCoach } = useRole(profile?.role);
 
   const [tab, setTab] = React.useState<TabKey>('my');
   const [search, setSearch] = React.useState('');

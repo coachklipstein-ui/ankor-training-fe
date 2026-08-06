@@ -7,6 +7,7 @@ import {
   type LatestEvaluationRow,
 } from '../../evaluations/api/evaluationsApi';
 import { useAuth } from '../../../app/providers/AuthProvider';
+import { useRole } from '../../../shared/auth/roles';
 
 type EvaluationReportSummary = {
   id: string;
@@ -24,9 +25,7 @@ export default function EvaluationReportListPage() {
   const [rows, setRows] = React.useState<LatestEvaluationRow[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const role = (profile?.role ?? '').trim().toLowerCase();
-  const isParent = role.includes('parent');
-  const isAdmin = role.includes('admin');
+  const { isParent, isAdmin } = useRole(profile?.role);
   const userId = profile?.id ?? user?.id ?? null;
 
   const loadReports = React.useCallback(async () => {
@@ -48,21 +47,23 @@ export default function EvaluationReportListPage() {
     try {
       setLoading(true);
       setError(null);
-      const { rows: data } = isAdmin ? await listLatestEvaluations({ orgId }) : await listLatestEvaluations(
-        isParent
-          ? {
-              orgId,
-              userId: requiredId!,
-              limit: 10,
-              offset: 0,
-            }
-          : {
-              orgId,
-              athleteId: requiredId!,
-              limit: 10,
-              offset: 0,
-            },
-      );
+      const { rows: data } = isAdmin
+        ? await listLatestEvaluations({ orgId })
+        : await listLatestEvaluations(
+            isParent
+              ? {
+                  orgId,
+                  userId: requiredId!,
+                  limit: 10,
+                  offset: 0,
+                }
+              : {
+                  orgId,
+                  athleteId: requiredId!,
+                  limit: 10,
+                  offset: 0,
+                },
+          );
       setRows(data ?? []);
     } catch (err) {
       console.error('Failed to load evaluation reports', err);

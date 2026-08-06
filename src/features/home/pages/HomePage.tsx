@@ -59,6 +59,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import { Link as RouterLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../app/providers/AuthProvider';
 import { supabase } from '../../../lib/supabaseClient';
+import { parseRole, Role } from '../../../shared/auth/roles';
 
 const DRAWER_WIDTH = 280;
 const LOGO_SRC = '/logo-ankor.png'; // put your logo file under /public as logo-ankor.png
@@ -104,14 +105,21 @@ const ATHLETE_MENU_KEYS = new Set<MenuKey>([
 
 type RoleBucket = 'admin' | 'coach' | 'athlete' | 'unknown';
 
-function getRoleBucket(role?: string | null): RoleBucket {
-  const normalized = (role ?? '').trim().toLowerCase();
-  if (!normalized) return 'unknown';
-  if (normalized.includes('admin')) return 'admin';
-  if (normalized.includes('coach')) return 'coach';
-  if (normalized.includes('parent')) return 'athlete';
-  if (normalized.includes('athlete')) return 'athlete';
-  return 'unknown';
+function getRoleBucket(role?: Role | null): RoleBucket {
+  switch (role) {
+    case undefined:
+    case null:
+      return 'unknown';
+    case 'admin':
+      return 'admin';
+    case 'coach':
+      return 'coach';
+    case 'athlete':
+    case 'parent':
+      return 'athlete';
+    default:
+      return 'unknown';
+  }
 }
 
 function formatRoleLabel(role?: string | null) {
@@ -564,7 +572,7 @@ export default function HomeLayout() {
   const location = useLocation();
   const { profile, user, signOut } = useAuth();
 
-  const roleBucket = React.useMemo(() => getRoleBucket(profile?.role), [profile?.role]);
+  const roleBucket = React.useMemo(() => getRoleBucket(parseRole(profile?.role)), [profile?.role]);
 
   const canAccess = React.useCallback(
     (key: MenuKey) => {

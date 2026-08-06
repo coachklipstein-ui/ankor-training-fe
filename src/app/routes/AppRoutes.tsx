@@ -1,9 +1,8 @@
 // src/routes/AppRoutes.tsx
 import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import NewPlanPage from '../../features/practice-plans/pages/NewPlanPage';
 import { useAuth } from '../providers/AuthProvider';
-import { isAdminRole } from '../../shared/auth/roles';
+import { isAdminRole, useRole } from '../../shared/auth/roles';
 
 // Centralize paths here (kept local to this file)
 export const PATHS = {
@@ -117,9 +116,7 @@ export default function AppRoutes() {
   function HomeIndexRoute() {
     const { loading, profile } = useAuth();
     if (loading) return null;
-    const role = (profile?.role ?? '').toLowerCase();
-    const isAthlete = role.includes('athlete') || role.includes('parent');
-    const isCoach = role.includes('coach');
+    const { role, isAthlete, isCoach } = useRole(profile?.role);
     if (isAthlete || !role) {
       return <HomeDashboardPage />;
     }
