@@ -1,10 +1,5 @@
 import { apiFetch } from '../../../shared/api/apiClient';
-import { getOrgId } from '../../../shared/auth/authClient';
-
-const DEFAULT_BASE_URL =
-  ((typeof import.meta !== 'undefined' &&
-    (import.meta as any).env &&
-    (import.meta as any).env.VITE_BACKEND_URL) as string) || 'http://localhost:8000';
+import { apiUrl } from '../../../shared/api/apiUrl';
 
 export type NotificationType =
   | "evaluation_completed"
@@ -115,28 +110,22 @@ export async function listNotifications(opts?: {
   limit?: number;
   offset?: number;
 }): Promise<{ items: NotificationItem[]; count: number }> {
-  const orgId = getOrgId();
+  const query: Record<string, string> = {};
 
-  const u = new URLSearchParams();
-  if (orgId) u.set('org_id', orgId);
   if (opts?.type) {
     const types = Array.isArray(opts.type) ? opts.type : [opts.type];
-    u.set('type', types.join(','));
+    query.type = types.join(',');
   }
-  if (opts?.unreadOnly) u.set('unread_only', 'true');
-  if (Number.isFinite(opts?.limit)) u.set('limit', String(opts.limit));
-  if (Number.isFinite(opts?.offset)) u.set('offset', String(opts.offset));
+  if (opts?.unreadOnly) query.unread_only = 'true';
+  if (Number.isFinite(opts?.limit)) query.limit = String(opts.limit);
+  if (Number.isFinite(opts?.offset)) query.offset = String(opts.offset);
 
-  const qs = u.toString();
-  const url =
-    qs.length > 0
-      ? `${DEFAULT_BASE_URL}/functions/v1/api/notifications/list?${qs}`
-      : `${DEFAULT_BASE_URL}/functions/v1/api/notifications/list`;
+  const url = apiUrl('notifications/list', { query });
 
   const res = await apiFetch(url, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
-    orgId,
+    includeOrgId: false,
   });
 
   const data = (await res.json().catch(() => undefined)) as NotificationsListResponse | undefined;
@@ -159,8 +148,7 @@ export async function listNotifications(opts?: {
  * PATCH /functions/v1/api/notifications/read-all
  */
 export async function markAllNotificationsAsRead(): Promise<{ count: number }> {
-
-  const url = `${DEFAULT_BASE_URL}/functions/v1/api/notifications/read-all`;
+  const url = apiUrl('notifications/read-all');
 
   const res = await apiFetch(url, {
     method: 'PATCH',
@@ -186,7 +174,7 @@ export async function markAllNotificationsAsRead(): Promise<{ count: number }> {
 export async function markNotificationAsRead(id: string): Promise<NotificationItem> {
   if (!id?.trim()) throw new Error('id is required.');
 
-  const url = `${DEFAULT_BASE_URL}/functions/v1/api/notifications/${encodeURIComponent(id.trim())}/read`;
+  const url = apiUrl(`notifications/${encodeURIComponent(id.trim())}/read`);
 
   const res = await apiFetch(url, {
     method: 'PATCH',
