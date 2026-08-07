@@ -34,6 +34,7 @@ import SaveIcon from '@mui/icons-material/Save';
 
 import { createPlan } from '../services/practicePlanService';
 import DrillPickerDialog, { type DialogDrill } from '../components/DrillPickerDialog';
+import { formatHeaderTimestamp } from '../utils/formatHeaderTimestamp';
 
 import {
   DndContext,
@@ -68,21 +69,6 @@ function uid() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const c: any = globalThis.crypto;
   return c?.randomUUID?.() ?? `seg_${Math.random().toString(16).slice(2)}_${Date.now()}`;
-}
-
-function formatHeaderTimestamp(iso: string) {
-  // Similar to screenshot “DECEMBER 18, 2025 AT 11:19 AM”
-  const d = new Date(iso);
-  const date = new Intl.DateTimeFormat(undefined, {
-    month: 'long',
-    day: '2-digit',
-    year: 'numeric',
-  }).format(d);
-  const time = new Intl.DateTimeFormat(undefined, {
-    hour: 'numeric',
-    minute: '2-digit',
-  }).format(d);
-  return `${date} at ${time}`.toUpperCase();
 }
 
 /* ---------------------------------------
