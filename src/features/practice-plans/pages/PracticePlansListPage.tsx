@@ -59,7 +59,6 @@ export default function PracticePlansListPage() {
     usePracticePlansListPage();
 
   const onOpenPlan = (row: PracticePlanRow) => {
-    console.log('open plan');
     navigate(`/practice-plans/${row.id}`);
   };
 

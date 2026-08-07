@@ -1,11 +1,7 @@
 import * as React from 'react';
 import { useAuth } from '../../../app/providers/AuthProvider';
 import { useRole } from '../../../shared/auth/roles';
-import {
-  listInvited,
-  listPlansByType,
-  type PracticePlan,
-} from '../services/practicePlanService';
+import { listInvited, listPlansByType, type PracticePlan } from '../services/practicePlanService';
 
 export type TabKey = 'my' | 'invited' | 'prebuilt';
 
@@ -15,7 +11,25 @@ export type PracticePlanRow = {
   readonly updated_at: string; // ISO
 };
 
-type TabState<T> = Record<TabKey, T>;
+type TabState = {
+  readonly isLoading: boolean;
+  readonly error: string | null;
+  readonly plans: readonly PracticePlanRow[];
+};
+
+type TabsState = Record<TabKey, TabState>;
+
+const EMPTY_TAB_STATE: TabState = {
+  isLoading: false,
+  error: null,
+  plans: [],
+};
+
+const INITIAL_TABS_STATE: TabsState = {
+  my: EMPTY_TAB_STATE,
+  invited: EMPTY_TAB_STATE,
+  prebuilt: EMPTY_TAB_STATE,
+};
 
 const normalizePlanRows = (plans: PracticePlan[]): PracticePlanRow[] =>
   plans.map((plan) => ({
@@ -27,6 +41,18 @@ const normalizePlanRows = (plans: PracticePlan[]): PracticePlanRow[] =>
 const getErrorMessage = (err: unknown, fallback: string): string =>
   err instanceof Error && err.message ? err.message : fallback;
 
+const filterAndSortPlans = (
+  plans: readonly PracticePlanRow[],
+  search: string,
+): PracticePlanRow[] => {
+  const q = search.trim().toLowerCase();
+  const searched = !q ? plans : plans.filter((p) => p.name.toLowerCase().includes(q));
+
+  return [...searched].sort(
+    (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
+  );
+};
+
 export default function usePracticePlansListPage() {
   const { user, orgId: authOrgId, profile, loading: authLoading } = useAuth();
   const userId = user?.id ?? '';
@@ -35,37 +61,13 @@ export default function usePracticePlansListPage() {
 
   const [tab, setTab] = React.useState<TabKey>('my');
   const [search, setSearch] = React.useState('');
+  const [tabsState, setTabsState] = React.useState<TabsState>(INITIAL_TABS_STATE);
 
-  const [myPlans, setMyPlans] = React.useState<PracticePlanRow[]>([]);
-  const [invitedPlans, setInvitedPlans] = React.useState<PracticePlanRow[]>([]);
-  const [prebuiltPlans, setPrebuiltPlans] = React.useState<PracticePlanRow[]>([]);
-  const [loadingByTab, setLoadingByTab] = React.useState<TabState<boolean>>({
-    my: false,
-    invited: false,
-    prebuilt: false,
-  });
-  const [errorByTab, setErrorByTab] = React.useState<TabState<string | null>>({
-    my: null,
-    invited: null,
-    prebuilt: null,
-  });
-
-  const setTabLoading = (key: TabKey, value: boolean) => {
-    setLoadingByTab((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const setTabError = (key: TabKey, value: string | null) => {
-    setErrorByTab((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const setPlansForTab = (key: TabKey, rows: PracticePlanRow[]) => {
-    if (key === 'my') {
-      setMyPlans(rows);
-    } else if (key === 'invited') {
-      setInvitedPlans(rows);
-    } else {
-      setPrebuiltPlans(rows);
-    }
+  const patchTab = (key: TabKey, patch: Partial<TabState>) => {
+    setTabsState((prev) => ({
+      ...prev,
+      [key]: { ...prev[key], ...patch },
+    }));
   };
 
   React.useEffect(() => {
@@ -78,25 +80,27 @@ export default function usePracticePlansListPage() {
       type: 'custom-plans' | 'invited-plans' | 'prebuild',
       filter: { user_id?: string } = {},
     ) => {
-      setTabLoading(key, true);
-      setTabError(key, null);
+      patchTab(key, { isLoading: true, error: null });
       if (!orgId) {
-        setPlansForTab(key, []);
-        setTabError(key, 'Missing org_id. Please sign in again.');
-        setTabLoading(key, false);
+        patchTab(key, {
+          plans: [],
+          error: 'Missing org_id. Please sign in again.',
+          isLoading: false,
+        });
         return;
       }
 
       try {
         const { items } = await listPlansByType({ type, orgId, ...filter });
         if (!active) return;
-        setPlansForTab(key, normalizePlanRows(items));
+        patchTab(key, { plans: normalizePlanRows(items), isLoading: false });
       } catch (err: unknown) {
         if (!active) return;
-        setPlansForTab(key, []);
-        setTabError(key, getErrorMessage(err, 'Failed to load plans.'));
-      } finally {
-        if (active) setTabLoading(key, false);
+        patchTab(key, {
+          plans: [],
+          error: getErrorMessage(err, 'Failed to load plans.'),
+          isLoading: false,
+        });
       }
     };
 
@@ -112,21 +116,24 @@ export default function usePracticePlansListPage() {
     if (tab !== 'my') return;
 
     let active = true;
-    setTabLoading('my', true);
-    setTabError('my', null);
+    patchTab('my', { isLoading: true, error: null });
 
     if (!userId) {
-      setPlansForTab('my', []);
-      setTabError('my', 'Missing user id. Please sign in again.');
-      setTabLoading('my', false);
+      patchTab('my', {
+        plans: [],
+        error: 'Missing user id. Please sign in again.',
+        isLoading: false,
+      });
       return () => {
         active = false;
       };
     }
     if (!orgId) {
-      setPlansForTab('my', []);
-      setTabError('my', 'Missing org_id. Please sign in again.');
-      setTabLoading('my', false);
+      patchTab('my', {
+        plans: [],
+        error: 'Missing org_id. Please sign in again.',
+        isLoading: false,
+      });
       return () => {
         active = false;
       };
@@ -135,15 +142,15 @@ export default function usePracticePlansListPage() {
     listPlansByType({ type: 'custom', orgId, user_id: userId })
       .then(({ items }) => {
         if (!active) return;
-        setPlansForTab('my', normalizePlanRows(items));
+        patchTab('my', { plans: normalizePlanRows(items), isLoading: false });
       })
       .catch((err: unknown) => {
         if (!active) return;
-        setPlansForTab('my', []);
-        setTabError('my', getErrorMessage(err, 'Failed to load my plans.'));
-      })
-      .finally(() => {
-        if (active) setTabLoading('my', false);
+        patchTab('my', {
+          plans: [],
+          error: getErrorMessage(err, 'Failed to load my plans.'),
+          isLoading: false,
+        });
       });
 
     return () => {
@@ -156,21 +163,24 @@ export default function usePracticePlansListPage() {
     if (tab !== 'invited') return;
 
     let active = true;
-    setTabLoading('invited', true);
-    setTabError('invited', null);
+    patchTab('invited', { isLoading: true, error: null });
 
     if (!userId) {
-      setPlansForTab('invited', []);
-      setTabError('invited', 'Missing user id. Please sign in again.');
-      setTabLoading('invited', false);
+      patchTab('invited', {
+        plans: [],
+        error: 'Missing user id. Please sign in again.',
+        isLoading: false,
+      });
       return () => {
         active = false;
       };
     }
     if (!orgId) {
-      setPlansForTab('invited', []);
-      setTabError('invited', 'Missing org_id. Please sign in again.');
-      setTabLoading('invited', false);
+      patchTab('invited', {
+        plans: [],
+        error: 'Missing org_id. Please sign in again.',
+        isLoading: false,
+      });
       return () => {
         active = false;
       };
@@ -179,15 +189,15 @@ export default function usePracticePlansListPage() {
     listInvited({ user_id: userId, orgId })
       .then(({ items }) => {
         if (!active) return;
-        setPlansForTab('invited', normalizePlanRows(items));
+        patchTab('invited', { plans: normalizePlanRows(items), isLoading: false });
       })
       .catch((err: unknown) => {
         if (!active) return;
-        setPlansForTab('invited', []);
-        setTabError('invited', getErrorMessage(err, 'Failed to load invited plans.'));
-      })
-      .finally(() => {
-        if (active) setTabLoading('invited', false);
+        patchTab('invited', {
+          plans: [],
+          error: getErrorMessage(err, 'Failed to load invited plans.'),
+          isLoading: false,
+        });
       });
 
     return () => {
@@ -195,19 +205,15 @@ export default function usePracticePlansListPage() {
     };
   }, [authLoading, tab, userId, orgId]);
 
-  const rows = React.useMemo(() => {
-    const source = tab === 'my' ? myPlans : tab === 'invited' ? invitedPlans : prebuiltPlans;
-    const q = search.trim().toLowerCase();
+  const activeTabState = tabsState[tab];
 
-    const searched = !q ? source : source.filter((p) => p.name.toLowerCase().includes(q));
+  const rows = React.useMemo(
+    () => filterAndSortPlans(activeTabState.plans, search),
+    [activeTabState.plans, search],
+  );
 
-    return [...searched].sort(
-      (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
-    );
-  }, [tab, search, myPlans, invitedPlans, prebuiltPlans]);
-
-  const activeLoading = authLoading || loadingByTab[tab];
-  const activeError = errorByTab[tab];
+  const activeLoading = authLoading || activeTabState.isLoading;
+  const activeError = activeTabState.error;
   const canEdit = tab !== 'prebuilt' && (tab !== 'invited' || isCoach);
 
   return {
