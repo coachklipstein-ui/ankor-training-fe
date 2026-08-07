@@ -19,6 +19,42 @@ type TabState = {
 
 type TabsState = Record<TabKey, TabState>;
 
+type LoadContext = {
+  readonly orgId: string;
+  readonly userId: string;
+};
+
+type TabPolicy = {
+  readonly mode: 'eager' | 'lazy';
+  readonly needsUserId: boolean;
+  readonly load: (ctx: LoadContext) => Promise<PracticePlan[]>;
+};
+
+const TAB_CONFIG = {
+  my: {
+    mode: 'lazy',
+    needsUserId: true,
+    load: ({ orgId, userId }: LoadContext) =>
+      listPlansByType({ type: 'custom', orgId, user_id: userId }).then((r) => r.items),
+  },
+  invited: {
+    mode: 'lazy',
+    needsUserId: true,
+    load: ({ orgId, userId }: LoadContext) =>
+      listInvited({ user_id: userId, orgId }).then((r) => r.items),
+  },
+  prebuilt: {
+    mode: 'eager',
+    needsUserId: false,
+    load: ({ orgId }: LoadContext) =>
+      listPlansByType({ type: 'prebuild', orgId }).then((r) => r.items),
+  },
+} as const satisfies Record<TabKey, TabPolicy>;
+
+const TAB_KEYS = Object.keys(TAB_CONFIG) as TabKey[];
+
+const EAGER_TABS = TAB_KEYS.filter((key) => TAB_CONFIG[key].mode === 'eager');
+
 const EMPTY_TAB_STATE: TabState = {
   isLoading: false,
   error: null,
@@ -63,24 +99,17 @@ export default function usePracticePlansListPage() {
   const [search, setSearch] = React.useState('');
   const [tabsState, setTabsState] = React.useState<TabsState>(INITIAL_TABS_STATE);
 
-  const patchTab = (key: TabKey, patch: Partial<TabState>) => {
+  const patchTab = React.useCallback((key: TabKey, patch: Partial<TabState>) => {
     setTabsState((prev) => ({
       ...prev,
       [key]: { ...prev[key], ...patch },
     }));
-  };
+  }, []);
 
-  React.useEffect(() => {
-    if (authLoading) return;
+  const loadTab = React.useCallback(
+    async (key: TabKey, isActive: () => boolean) => {
+      const policy = TAB_CONFIG[key];
 
-    let active = true;
-
-    const fetchTab = async (
-      key: TabKey,
-      type: 'custom-plans' | 'invited-plans' | 'prebuild',
-      filter: { user_id?: string } = {},
-    ) => {
-      patchTab(key, { isLoading: true, error: null });
       if (!orgId) {
         patchTab(key, {
           plans: [],
@@ -90,120 +119,57 @@ export default function usePracticePlansListPage() {
         return;
       }
 
-      try {
-        const { items } = await listPlansByType({ type, orgId, ...filter });
-        if (!active) return;
-        patchTab(key, { plans: normalizePlanRows(items), isLoading: false });
-      } catch (err: unknown) {
-        if (!active) return;
+      if (policy.needsUserId && !userId) {
         patchTab(key, {
           plans: [],
-          error: getErrorMessage(err, 'Failed to load plans.'),
+          error: 'Missing user id. Please sign in again.',
+          isLoading: false,
+        });
+        return;
+      }
+
+      patchTab(key, { isLoading: true, error: null });
+
+      try {
+        const items = await policy.load({ orgId, userId });
+        if (!isActive()) return;
+        patchTab(key, { plans: normalizePlanRows(items), isLoading: false });
+      } catch (err: unknown) {
+        if (!isActive()) return;
+        patchTab(key, {
+          plans: [],
+          error: getErrorMessage(err, `Failed to load ${key} plans.`),
           isLoading: false,
         });
       }
-    };
-
-    void fetchTab('prebuilt', 'prebuild');
-
-    return () => {
-      active = false;
-    };
-  }, [authLoading, orgId]);
+    },
+    [orgId, userId, patchTab],
+  );
 
   React.useEffect(() => {
     if (authLoading) return;
-    if (tab !== 'my') return;
 
-    let active = true;
-    patchTab('my', { isLoading: true, error: null });
-
-    if (!userId) {
-      patchTab('my', {
-        plans: [],
-        error: 'Missing user id. Please sign in again.',
-        isLoading: false,
-      });
-      return () => {
-        active = false;
-      };
+    let alive = true;
+    for (const key of EAGER_TABS) {
+      void loadTab(key, () => alive);
     }
-    if (!orgId) {
-      patchTab('my', {
-        plans: [],
-        error: 'Missing org_id. Please sign in again.',
-        isLoading: false,
-      });
-      return () => {
-        active = false;
-      };
-    }
-
-    listPlansByType({ type: 'custom', orgId, user_id: userId })
-      .then(({ items }) => {
-        if (!active) return;
-        patchTab('my', { plans: normalizePlanRows(items), isLoading: false });
-      })
-      .catch((err: unknown) => {
-        if (!active) return;
-        patchTab('my', {
-          plans: [],
-          error: getErrorMessage(err, 'Failed to load my plans.'),
-          isLoading: false,
-        });
-      });
 
     return () => {
-      active = false;
+      alive = false;
     };
-  }, [authLoading, tab, userId, orgId]);
+  }, [authLoading, orgId, loadTab]);
 
   React.useEffect(() => {
     if (authLoading) return;
-    if (tab !== 'invited') return;
+    if (TAB_CONFIG[tab].mode !== 'lazy') return;
 
-    let active = true;
-    patchTab('invited', { isLoading: true, error: null });
-
-    if (!userId) {
-      patchTab('invited', {
-        plans: [],
-        error: 'Missing user id. Please sign in again.',
-        isLoading: false,
-      });
-      return () => {
-        active = false;
-      };
-    }
-    if (!orgId) {
-      patchTab('invited', {
-        plans: [],
-        error: 'Missing org_id. Please sign in again.',
-        isLoading: false,
-      });
-      return () => {
-        active = false;
-      };
-    }
-
-    listInvited({ user_id: userId, orgId })
-      .then(({ items }) => {
-        if (!active) return;
-        patchTab('invited', { plans: normalizePlanRows(items), isLoading: false });
-      })
-      .catch((err: unknown) => {
-        if (!active) return;
-        patchTab('invited', {
-          plans: [],
-          error: getErrorMessage(err, 'Failed to load invited plans.'),
-          isLoading: false,
-        });
-      });
+    let alive = true;
+    void loadTab(tab, () => alive);
 
     return () => {
-      active = false;
+      alive = false;
     };
-  }, [authLoading, tab, userId, orgId]);
+  }, [authLoading, tab, userId, orgId, loadTab]);
 
   const activeTabState = tabsState[tab];
 
