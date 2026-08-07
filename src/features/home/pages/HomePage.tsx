@@ -60,6 +60,7 @@ import { Link as RouterLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../app/providers/AuthProvider';
 import { supabase } from '../../../lib/supabaseClient';
 import { parseRole, Role } from '../../../shared/auth/roles';
+import { listNotifications, markAllNotificationsAsRead, markNotificationAsRead } from '../services/notificationService';
 
 const DRAWER_WIDTH = 280;
 const LOGO_SRC = '/logo-ankor.png'; // put your logo file under /public as logo-ankor.png
@@ -280,36 +281,23 @@ function NotificationBell() {
   const unreadCount = items.filter((n) => !n.read).length;
   const userId = user?.id ?? null;
 
-  React.useEffect(() => {
-    let cancelled = false;
 
+  React.useEffect(() => {
     if (!userId) {
       setItems([]);
-      setLoading(false);
       return;
     }
 
-    const loadNotifications = async () => {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(50);
+    let cancelled = false;
 
-      if (cancelled) return;
-      if (error) {
-        console.error('Failed to load notifications', error);
-        setItems([]);
-      } else {
-        const mapped = (data ?? []).map((row) => toNotificationItem(row as NotificationRow));
-        setItems(mapped);
-      }
-      setLoading(false);
-    };
-
-    loadNotifications();
+    listNotifications({ limit: 50 })
+      .then(({ items: fetched }) => {
+        if (!cancelled) setItems(fetched);
+      })
+      .catch((err) => {
+        console.error('Failed to load notifications', err);
+        if (!cancelled) setItems([]);
+      });
 
     return () => {
       cancelled = true;
@@ -323,19 +311,11 @@ function NotificationBell() {
       .channel(`notifications:${userId}`)
       .on(
         'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${userId}`,
-        },
-        (payload) => {
-          const row = payload.new as NotificationRow;
-          const nextItem = toNotificationItem(row);
-          setItems((prev) => {
-            if (prev.some((item) => item.id === nextItem.id)) return prev;
-            return [nextItem, ...prev];
-          });
+        { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
+        () => {
+          listNotifications({ limit: 50 })
+            .then(({ items: fresh }) => setItems(fresh))
+            .catch((err) => console.error('Failed to refresh notifications', err));
         },
       )
       .subscribe();
@@ -345,20 +325,26 @@ function NotificationBell() {
     };
   }, [userId]);
 
-  const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
+
+  const handleOpen = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
+
+  const handleMarkAllRead = async () => {
+    try {
+      await markAllNotificationsAsRead();
+      setItems((prev) => prev.map((n) => ({ ...n, read: true })));
+    } catch (err) {
+      console.error('Failed to mark all as read', err);
+    }
   };
 
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleMarkAllRead = () => {
-    setItems((prev) => prev.map((n) => ({ ...n, read: true })));
-  };
-
-  const handleItemClick = (id: string) => {
-    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+  const handleItemClick = async (id: string) => {
+    try {
+      await markNotificationAsRead(id);
+      setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    } catch (err) {
+      console.error('Failed to mark as read', err);
+    }
     handleClose();
   };
 
@@ -380,26 +366,12 @@ function NotificationBell() {
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         PaperProps={{ sx: { minWidth: 320, maxWidth: 360 } }}
       >
-        <Box
-          sx={{
-            px: 2,
-            pt: 1.5,
-            pb: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
+        <Box sx={{ px: 2, pt: 1.5, pb: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Typography variant="subtitle1" fontWeight={700}>
             Notifications
           </Typography>
           {items.length > 0 && unreadCount > 0 && (
-            <Typography
-              variant="caption"
-              color="primary"
-              sx={{ cursor: 'pointer' }}
-              onClick={handleMarkAllRead}
-            >
+            <Typography variant="caption" color="primary" sx={{ cursor: 'pointer' }} onClick={handleMarkAllRead}>
               Mark all as read
             </Typography>
           )}
@@ -408,19 +380,13 @@ function NotificationBell() {
 
         {loading && items.length === 0 && (
           <MenuItem disabled>
-            <ListItemText
-              primary="Loading notifications..."
-              secondary="Fetching the latest updates."
-            />
+            <ListItemText primary="Loading notifications..." secondary="Fetching the latest updates." />
           </MenuItem>
         )}
 
         {!loading && items.length === 0 && (
           <MenuItem disabled>
-            <ListItemText
-              primary="No notifications yet"
-              secondary="You'll see evaluation reports and updates here."
-            />
+            <ListItemText primary="No notifications yet" secondary="You'll see evaluation reports and updates here." />
           </MenuItem>
         )}
 
@@ -430,30 +396,26 @@ function NotificationBell() {
             onClick={() => handleItemClick(n.id)}
             component={RouterLink}
             to={n.link ?? '/reports/evaluation-reports'}
-            sx={{
-              alignItems: 'flex-start',
-              ...(n.read ? {} : { bgcolor: 'action.hover' }),
-            }}
+            sx={{ alignItems: 'flex-start', ...(n.read ? {} : { bgcolor: 'action.hover' }) }}
           >
             <ListItemIcon sx={{ minWidth: 32, mt: 0.5 }}>
-              <AssignmentIcon fontSize="small" />
-            </ListItemIcon>
+    <AssignmentIcon fontSize="small" />
+  </ListItemIcon>
             <ListItemText
               primary={
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                   <Typography variant="body2" fontWeight={n.read ? 400 : 600} noWrap>
                     {n.title}
                   </Typography>
-                  <Chip size="small" label={n.topic} sx={{ textTransform: 'capitalize' }} />
                 </Box>
               }
               secondary={
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  noWrap
-                  sx={{ display: 'block', mt: 0.25 }}
-                >
+                <Typography variant="caption" color="text.secondary"  sx={{
+          mt: 0.25,
+          whiteSpace: 'normal',
+          wordBreak: 'break-word',
+          overflowWrap: 'break-word',
+        }}>
                   {n.description}
                 </Typography>
               }
