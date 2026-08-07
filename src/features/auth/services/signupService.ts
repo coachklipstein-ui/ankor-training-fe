@@ -3,6 +3,8 @@
 // POSTs to https://<project>.supabase.co/functions/v1/api/auth/signup
 // Use from your component but do NOT modify the component here.
 
+import { apiUrl, DEFAULT_BACKEND_URL } from '../../../shared/api/apiUrl';
+
 export type Role = 'athlete' | 'coach';
 
 type CommonFields = {
@@ -83,14 +85,11 @@ function toBackendPayload(input: SignUpInput) {
 
 /**
  * Calls your backend for signup.
- * Defaults to https://<project>.supabase.co; override with VITE_BACKEND_URL if desired.
+ * Defaults to http://localhost:8000; override with VITE_BACKEND_URL if desired.
  */
 export async function signUp(
   input: SignUpInput,
-  baseUrl = (typeof import.meta !== 'undefined' &&
-    (import.meta as any).env &&
-    (import.meta as any).env.VITE_BACKEND_URL) ||
-    'https://<project>.supabase.co',
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<SignUpResponse> {
   // Basic client-side validation to avoid obvious round-trips
   assertCommonFields(input);
@@ -111,7 +110,7 @@ export async function signUp(
 
   const payload = toBackendPayload(input);
 
-  const res = await fetch(`${baseUrl}/functions/v1/api/auth/signup`, {
+  const res = await fetch(apiUrl('auth/signup', baseUrl), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),

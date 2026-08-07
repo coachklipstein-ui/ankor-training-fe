@@ -1,6 +1,7 @@
 // src/services/practicePlanService.ts
 // Fetch wrappers to call the practice plan endpoints.
 
+import { apiUrl, DEFAULT_BACKEND_URL } from '../../../shared/api/apiUrl';
 import { apiFetch } from '../../../shared/api/apiClient';
 
 export type PlanListType =
@@ -99,11 +100,6 @@ export type InvitePlanResponse =
       skipped_user_ids?: string[];
     }
   | { ok: false; error: string };
-
-const DEFAULT_BASE_URL =
-  ((typeof import.meta !== 'undefined' &&
-    (import.meta as any).env &&
-    (import.meta as any).env.VITE_BACKEND_URL) as string) || 'http://localhost:8000';
 
 function coerceInteger(value: unknown, field: string): number {
   const parsed =
@@ -474,7 +470,7 @@ function normalizeCount(value: unknown): number | undefined {
  */
 export async function listInvited(
   params: ListInvitedPlansParams,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<{ items: InvitedPlan[]; count?: number }> {
   if (!params?.user_id?.trim()) {
     throw new Error('user_id (UUID) is required for invited plans.');
@@ -488,7 +484,7 @@ export async function listInvited(
   sp.set('limit', String(limit));
   sp.set('offset', String(offset));
 
-  const url = `${baseUrl}/functions/v1/api/plans/invited?${sp.toString()}`;
+  const url = apiUrl('plans/invited', { baseUrl, query: sp });
 
   const res = await apiFetch(url, {
     method: 'GET',
@@ -518,10 +514,10 @@ export async function listInvited(
  */
 export async function listPlansByType(
   filter: PlanListFilter,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<{ items: PracticePlan[]; count?: number }> {
   const qs = buildListQuery(filter);
-  const url = `${baseUrl}/functions/v1/api/plans/list?${qs}`;
+  const url = apiUrl('plans/list', { baseUrl, query: qs });
 
   const res = await apiFetch(url, {
     method: 'GET',
@@ -557,8 +553,8 @@ export async function getPlanById(
     throw new Error('planId is required.');
   }
 
-  const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
-  const url = `${baseUrl}/functions/v1/api/plans/${planId}`;
+  const { orgId = null, baseUrl = DEFAULT_BACKEND_URL } = options;
+  const url = apiUrl(`plans/${planId}`, baseUrl);
 
   const res = await apiFetch(url, {
     method: 'GET',
@@ -589,10 +585,10 @@ export async function getPlanById(
  */
 export async function createPlan(
   input: CreatePlanInput,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<PracticePlan> {
   const payload = normalizeCreatePayload(input);
-  const url = `${baseUrl}/functions/v1/api/plans`;
+  const url = apiUrl('plans', baseUrl);
 
   const res = await apiFetch(url, {
     method: 'POST',
@@ -631,9 +627,9 @@ export async function updatePlan(
     throw new Error('planId is required.');
   }
 
-  const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
+  const { orgId = null, baseUrl = DEFAULT_BACKEND_URL } = options;
   const payload = normalizeUpdatePayload(input);
-  const url = `${baseUrl}/functions/v1/api/plans/${planId}`;
+  const url = apiUrl(`plans/${planId}`, baseUrl);
 
   const res = await apiFetch(url, {
     method: 'PATCH',
@@ -667,7 +663,7 @@ export async function invitePlanUsers(
   planId: string,
   org_id: string,
   input: InvitePlanInput,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<InvitePlanResult> {
   if (!planId?.trim()) {
     throw new Error('planId is required.');
@@ -680,7 +676,7 @@ export async function invitePlanUsers(
   const sp = new URLSearchParams();
   sp.set('org_id', org_id.trim());
 
-  const url = `${baseUrl}/functions/v1/api/plans/${planId}/invite?${sp.toString()}`;
+  const url = apiUrl(`plans/${planId}/invite`, { baseUrl, query: sp });
 
   const res = await apiFetch(url, {
     method: 'POST',

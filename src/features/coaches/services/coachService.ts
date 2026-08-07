@@ -1,6 +1,7 @@
 // src/services/coachService.ts
 // Fetch wrapper for /functions/v1/api/coaches/* endpoints.
 
+import { apiUrl, DEFAULT_BACKEND_URL } from '../../../shared/api/apiUrl';
 import { apiFetch } from '../../../shared/api/apiClient';
 
 export type CoachListItem = {
@@ -64,11 +65,6 @@ export type ListCoachesParams = {
   limit?: number;
   offset?: number;
 };
-
-const DEFAULT_BASE_URL =
-  ((typeof import.meta !== 'undefined' &&
-    (import.meta as any).env &&
-    (import.meta as any).env.VITE_BACKEND_URL) as string) || 'http://localhost:8000';
 
 function buildListQuery(params: ListCoachesParams) {
   const u = new URLSearchParams();
@@ -194,7 +190,7 @@ export async function getCoachSummary(
     limit?: number;
     offset?: number;
   },
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<CoachSummaryData> {
   if (!params.coachId?.trim()) {
     throw new Error('coachId is required.');
@@ -205,7 +201,7 @@ export async function getCoachSummary(
   if (Number.isFinite(params.offset)) search.set('offset', String(params.offset));
 
   const query = search.toString();
-  const url = `${baseUrl}/functions/v1/api/coaches/${params.coachId.trim()}/summary${query ? `?${query}` : ''}`;
+  const url = apiUrl(`coaches/${params.coachId.trim()}/summary`, { baseUrl, query });
 
   const res = await apiFetch(url, {
     method: 'GET',
@@ -231,14 +227,14 @@ export async function getCoachSummary(
  */
 export async function listCoaches(
   params: ListCoachesParams,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<{ items: CoachListItem[]; count?: number }> {
   if (!params.orgId?.trim()) {
     throw new Error('orgId is required.');
   }
 
   const qs = buildListQuery(params);
-  const url = `${baseUrl}/functions/v1/api/coaches/list?${qs}`;
+  const url = apiUrl('coaches/list', { baseUrl, query: qs });
 
   const res = await apiFetch(url, {
     method: 'GET',
@@ -280,8 +276,8 @@ export async function getCoachById(
     throw new Error('coachId is required.');
   }
 
-  const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
-  const url = `${baseUrl}/functions/v1/api/coaches/${coachId.trim()}`;
+  const { orgId = null, baseUrl = DEFAULT_BACKEND_URL } = options;
+  const url = apiUrl(`coaches/${coachId.trim()}`, baseUrl);
 
   const res = await apiFetch(url, {
     method: 'GET',
@@ -312,10 +308,10 @@ export async function getCoachById(
  */
 export async function createCoach(
   input: CreateCoachInput,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<CoachListItem> {
   const payload = normalizeCreatePayload(input);
-  const url = `${baseUrl}/functions/v1/api/coaches/`;
+  const url = apiUrl('coaches/', baseUrl);
 
   const res = await apiFetch(url, {
     method: 'POST',
@@ -354,9 +350,9 @@ export async function updateCoach(
     throw new Error('coachId is required.');
   }
 
-  const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
+  const { orgId = null, baseUrl = DEFAULT_BACKEND_URL } = options;
   const payload = normalizeUpdatePayload(input);
-  const url = `${baseUrl}/functions/v1/api/coaches/${coachId.trim()}`;
+  const url = apiUrl(`coaches/${coachId.trim()}`, baseUrl);
 
   const res = await apiFetch(url, {
     method: 'PATCH',
@@ -397,9 +393,9 @@ export async function deleteCoach(
     throw new Error('orgId is required.');
   }
 
-  const baseUrl = options.baseUrl || DEFAULT_BASE_URL;
+  const baseUrl = options.baseUrl || DEFAULT_BACKEND_URL;
   const qs = new URLSearchParams({ org_id: options.orgId.trim() });
-  const url = `${baseUrl}/functions/v1/api/coaches/${encodeURIComponent(coachId.trim())}?${qs.toString()}`;
+  const url = apiUrl(`coaches/${encodeURIComponent(coachId.trim())}`, { baseUrl, query: qs });
 
   const res = await apiFetch(url, {
     method: 'DELETE',

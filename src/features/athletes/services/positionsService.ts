@@ -1,12 +1,8 @@
 // src/services/positionsService.ts
 // Fetch wrapper for /functions/v1/api/positions/list
 
+import { apiUrl, DEFAULT_BACKEND_URL } from '../../../shared/api/apiUrl';
 import { apiFetch } from '../../../shared/api/apiClient';
-
-const DEFAULT_BASE_URL =
-  ((typeof import.meta !== 'undefined' &&
-    (import.meta as any).env &&
-    (import.meta as any).env.VITE_BACKEND_URL) as string) || 'http://localhost:8000';
 
 export type Position = {
   id: string;
@@ -52,7 +48,7 @@ function normalizePosition(raw: any): Position {
  */
 export async function listPositions(
   params: ListPositionsParams,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
   options: ListPositionsOptions = {},
 ): Promise<{ items: Position[]; count?: number }> {
   if (!params.orgId?.trim()) {
@@ -60,10 +56,7 @@ export async function listPositions(
   }
 
   const qs = buildPositionsQuery(params);
-  const url =
-    qs.length > 0
-      ? `${baseUrl}/functions/v1/api/positions/list?${qs}`
-      : `${baseUrl}/functions/v1/api/positions/list`;
+  const url = apiUrl('positions/list', { baseUrl, query: qs });
 
   const headers = { 'Content-Type': 'application/json', ...(options.headers ?? {}) };
 

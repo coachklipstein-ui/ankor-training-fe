@@ -1,9 +1,5 @@
+import { apiUrl, DEFAULT_BACKEND_URL } from '../../../shared/api/apiUrl';
 import { apiFetch } from '../../../shared/api/apiClient';
-
-const DEFAULT_BASE_URL =
-  ((typeof import.meta !== 'undefined' &&
-    (import.meta as any).env &&
-    (import.meta as any).env.VITE_BACKEND_URL) as string) || 'http://localhost:8000';
 
 export type ScorecardTemplateRow = {
   id: string;
@@ -486,17 +482,14 @@ function normalizeUpdatePayload(input: UpdateScorecardTemplateInput) {
 
 async function fetchScorecardTemplates(
   params: ListScorecardTemplatesParams,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<{ items: ScorecardTemplateRow[]; count?: number }> {
   if (!params.orgId?.trim()) {
     throw new Error('orgId is required.');
   }
 
   const qs = buildScorecardListQuery(params);
-  const url =
-    qs.length > 0
-      ? `${baseUrl}/functions/v1/api/scorecard/list?${qs}`
-      : `${baseUrl}/functions/v1/api/scorecard/list`;
+  const url = apiUrl('scorecard/list', { baseUrl, query: qs });
 
   const res = await apiFetch(url, {
     method: 'GET',
@@ -529,7 +522,7 @@ async function fetchScorecardTemplates(
 
 export async function listScorecardTemplates(
   params: ListScorecardTemplatesParams,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<ScorecardTemplateRow[]> {
   const result = await fetchScorecardTemplates(params, baseUrl);
   return result.items;
@@ -537,21 +530,21 @@ export async function listScorecardTemplates(
 
 export async function listScorecardTemplatesPage(
   params: ListScorecardTemplatesParams,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<{ items: ScorecardTemplateRow[]; count?: number }> {
   return fetchScorecardTemplates(params, baseUrl);
 }
 
 export async function listScorecardCategoriesByTemplate(
   params: ListScorecardCategoriesParams,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<ScorecardCategory[]> {
   if (!params.scorecardTemplateId?.trim()) {
     throw new Error('scorecardTemplateId is required.');
   }
 
   const qs = buildCategoriesQuery(params);
-  const url = `${baseUrl}/functions/v1/api/scorecard/categories?${qs}`;
+  const url = apiUrl('scorecard/categories', { baseUrl, query: qs });
 
   const res = await apiFetch(url, {
     method: 'GET',
@@ -577,14 +570,14 @@ export async function listScorecardCategoriesByTemplate(
 
 export async function listScorecardSubskillsByCategory(
   params: ListScorecardSubskillsParams,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<ScorecardSubskillRow[]> {
   if (!params.categoryId?.trim()) {
     throw new Error('categoryId is required.');
   }
 
   const qs = buildSubskillsQuery(params);
-  const url = `${baseUrl}/functions/v1/api/scorecard/subskills?${qs}`;
+  const url = apiUrl('scorecard/subskills', { baseUrl, query: qs });
 
   const res = await apiFetch(url, {
     method: 'GET',
@@ -614,8 +607,8 @@ export async function getScorecardTemplateDetail(
     throw new Error('templateId is required.');
   }
 
-  const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
-  const url = `${baseUrl}/functions/v1/api/scorecard/${templateId.trim()}/`;
+  const { orgId = null, baseUrl = DEFAULT_BACKEND_URL } = options;
+  const url = apiUrl(`scorecard/${templateId.trim()}/`, baseUrl);
 
   const res = await apiFetch(url, {
     method: 'GET',
@@ -644,8 +637,8 @@ export async function createScorecardTemplate(
   options: { baseUrl?: string } = {},
 ): Promise<ScorecardTemplateDetail> {
   const payload = normalizeUpdatePayload(input);
-  const baseUrl = options.baseUrl || DEFAULT_BASE_URL;
-  const url = `${baseUrl}/functions/v1/api/scorecard`;
+  const baseUrl = options.baseUrl || DEFAULT_BACKEND_URL;
+  const url = apiUrl('scorecard', baseUrl);
 
   const res = await apiFetch(url, {
     method: 'POST',
@@ -681,8 +674,8 @@ export async function updateScorecardTemplate(
   }
 
   const payload = normalizeUpdatePayload(input);
-  const baseUrl = options.baseUrl || DEFAULT_BASE_URL;
-  const url = `${baseUrl}/functions/v1/api/scorecard/${templateId.trim()}/`;
+  const baseUrl = options.baseUrl || DEFAULT_BACKEND_URL;
+  const url = apiUrl(`scorecard/${templateId.trim()}/`, baseUrl);
 
   const res = await apiFetch(url, {
     method: 'PATCH',
@@ -723,9 +716,9 @@ export async function deleteScorecardTemplate(
     throw new Error('orgId is required.');
   }
 
-  const baseUrl = options.baseUrl || DEFAULT_BASE_URL;
+  const baseUrl = options.baseUrl || DEFAULT_BACKEND_URL;
   const qs = new URLSearchParams({ org_id: options.orgId.trim() });
-  const url = `${baseUrl}/functions/v1/api/scorecard/${encodeURIComponent(templateId.trim())}?${qs.toString()}`;
+  const url = apiUrl(`scorecard/${encodeURIComponent(templateId.trim())}`, { baseUrl, query: qs });
 
   const res = await apiFetch(url, {
     method: 'DELETE',

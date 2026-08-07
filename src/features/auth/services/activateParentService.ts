@@ -1,4 +1,5 @@
 import { apiFetch } from '../../../shared/api/apiClient';
+import { apiUrl, DEFAULT_BACKEND_URL } from '../../../shared/api/apiUrl';
 
 export type ActivateParentPayload = {
   firstName: string;
@@ -14,12 +15,9 @@ export type ActivateParentResponse = {
 
 export async function activateParentProfile(
   payload: ActivateParentPayload,
-  baseUrl = (typeof import.meta !== 'undefined' &&
-    (import.meta as any).env &&
-    (import.meta as any).env.VITE_BACKEND_URL) ||
-    'https://<project>.supabase.co',
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<ActivateParentResponse> {
-  const res = await apiFetch(`${baseUrl}/functions/v1/api/auth/activate-parent`, {
+  const res = await apiFetch(apiUrl('auth/activate-parent', baseUrl), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

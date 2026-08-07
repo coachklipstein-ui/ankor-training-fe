@@ -2,6 +2,7 @@
 // Pure fetch wrapper to call your Deno edge function: /functions/v1/skills-list
 // Mirrors the style of signupService.ts (typed, no Supabase client here).
 
+import { apiUrl, DEFAULT_BACKEND_URL } from '../../../shared/api/apiUrl';
 import { apiFetch } from '../../../shared/api/apiClient';
 
 export type SkillMediaType = 'image' | 'video' | 'document' | 'link' | string;
@@ -214,11 +215,6 @@ function buildQuery(params: ListSkillsParams) {
   return u.toString();
 }
 
-const DEFAULT_BASE_URL =
-  ((typeof import.meta !== 'undefined' &&
-    (import.meta as any).env &&
-    (import.meta as any).env.VITE_BACKEND_URL) as string) || 'http://localhost:8000';
-
 function normalizeSkillMedia(raw: unknown): SkillMedia[] {
   if (!Array.isArray(raw)) return [];
   return raw
@@ -346,14 +342,14 @@ function normalizeUpdatePayload(input: UpdateSkillInput) {
 
 async function fetchSkills(
   params: ListSkillsParams,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<{ items: Skill[]; count?: number }> {
   if (!params.orgId?.trim()) {
     throw new Error('orgId is required.');
   }
 
   const qs = buildQuery(params);
-  const url = `${baseUrl}/functions/v1/api/skills/list?${qs}`;
+  const url = apiUrl('skills/list', { baseUrl, query: qs });
 
   const res = await apiFetch(url, {
     method: 'GET',
@@ -392,7 +388,7 @@ async function fetchSkills(
  */
 export async function listSkills(
   params: ListSkillsParams,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<Skill[]> {
   const result = await fetchSkills(params, baseUrl);
   return result.items;
@@ -400,7 +396,7 @@ export async function listSkills(
 
 export async function listSkillsPage(
   params: ListSkillsParams,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<{ items: Skill[]; count?: number }> {
   return fetchSkills(params, baseUrl);
 }
@@ -410,10 +406,10 @@ export async function listSkillsPage(
  */
 export async function createSkill(
   input: CreateSkillInput,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<CreateSkillResponse> {
   const payload = normalizeCreatePayload(input);
-  const url = `${baseUrl}/functions/v1/api/skills`;
+  const url = apiUrl('skills', baseUrl);
 
   const res = await apiFetch(url, {
     method: 'POST',
@@ -446,8 +442,8 @@ export async function getSkillById(
     throw new Error('skillId is required.');
   }
 
-  const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
-  const url = `${baseUrl}/functions/v1/api/skills/${skillId}`;
+  const { orgId = null, baseUrl = DEFAULT_BACKEND_URL } = options;
+  const url = apiUrl(`skills/${skillId}`, baseUrl);
 
   const res = await apiFetch(url, {
     method: 'GET',
@@ -484,8 +480,8 @@ export async function getSkillDrillMap(
     throw new Error('skillId is required.');
   }
 
-  const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
-  const url = `${baseUrl}/functions/v1/api/skill-drill-map/${skillId}`;
+  const { orgId = null, baseUrl = DEFAULT_BACKEND_URL } = options;
+  const url = apiUrl(`skill-drill-map/${skillId}`, baseUrl);
 
   const res = await apiFetch(url, {
     method: 'GET',
@@ -519,7 +515,7 @@ export async function getSkillDrillMap(
  */
 export async function bulkUpdateSkillDrillMap(
   input: BulkUpdateSkillDrillMapInput,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<BulkUpdateSkillDrillMapResponse> {
   if (!input.org_id?.trim()) {
     throw new Error('org_id is required.');
@@ -539,7 +535,7 @@ export async function bulkUpdateSkillDrillMap(
     level: input.level ?? 1,
   };
 
-  const url = `${baseUrl}/functions/v1/api/skill-drill-map/bulk`;
+  const url = apiUrl('skill-drill-map/bulk', baseUrl);
 
   const res = await apiFetch(url, {
     method: 'POST',
@@ -574,9 +570,9 @@ export async function updateSkill(
     throw new Error('skillId is required.');
   }
 
-  const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
+  const { orgId = null, baseUrl = DEFAULT_BACKEND_URL } = options;
   const payload = normalizeUpdatePayload(input);
-  const url = `${baseUrl}/functions/v1/api/skills/${skillId}`;
+  const url = apiUrl(`skills/${skillId}`, baseUrl);
 
   const res = await apiFetch(url, {
     method: 'PATCH',
@@ -608,9 +604,9 @@ export async function updateSkill(
  */
 export async function createSkillMediaUploadUrl(
   payload: SkillMediaUploadUrlInput,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<SkillMediaUploadUrlResponse> {
-  const url = `${baseUrl}/functions/v1/api/skills/media/upload-url`;
+  const url = apiUrl('skills/media/upload-url', baseUrl);
 
   const res = await apiFetch(url, {
     method: 'POST',
@@ -640,13 +636,13 @@ export async function createSkillMediaUploadUrl(
  */
 export async function createSkillMedia(
   payload: CreateSkillMediaInput,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<CreateSkillMediaResponse> {
   if (!payload?.skill_id?.trim()) {
     throw new Error('skill_id is required.');
   }
 
-  const url = `${baseUrl}/functions/v1/api/skills/media`;
+  const url = apiUrl('skills/media', baseUrl);
 
   const res = await apiFetch(url, {
     method: 'POST',
@@ -681,7 +677,7 @@ export async function uploadSkillMediaBatch(
     file: File;
     title?: string | null;
   },
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<SkillMediaBatchUploadResponse> {
   if (!input.org_id?.trim()) {
     throw new Error('org_id is required.');
@@ -707,7 +703,7 @@ export async function uploadSkillMediaBatch(
   );
   formData.append('video', input.file, input.file.name);
 
-  const url = `${baseUrl}/functions/v1/api/skills/media/batch-upload`;
+  const url = apiUrl('skills/media/batch-upload', baseUrl);
 
   const res = await apiFetch(url, {
     method: 'POST',
@@ -740,8 +736,8 @@ export async function getSkillMediaPlay(
     throw new Error('skillId is required.');
   }
 
-  const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
-  const url = `${baseUrl}/functions/v1/api/skills/media/${skillId}/play`;
+  const { orgId = null, baseUrl = DEFAULT_BACKEND_URL } = options;
+  const url = apiUrl(`skills/media/${skillId}/play`, baseUrl);
 
   const res = await apiFetch(url, {
     method: 'GET',

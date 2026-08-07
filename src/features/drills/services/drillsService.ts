@@ -2,6 +2,7 @@
 // Pure fetch wrappers to call your Deno edge functions under /functions/v1/api/drills/*
 
 import { apiFetch } from '../../../shared/api/apiClient';
+import { apiUrl, DEFAULT_BACKEND_URL } from '../../../shared/api/apiUrl';
 
 export type DrillMediaType = 'image' | 'video' | 'document' | 'link';
 
@@ -180,26 +181,7 @@ export type ListDrillsParams = {
   offset?: number;
 };
 
-const DEFAULT_BASE_URL =
-  ((typeof import.meta !== 'undefined' &&
-    (import.meta as any).env &&
-    (import.meta as any).env.VITE_BACKEND_URL) as string) || 'http://localhost:8000';
-
 const RE_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-function drillsApiUrl(path: string, baseUrl = DEFAULT_BASE_URL) {
-  const normalizedBase = baseUrl.replace(/\/$/, '');
-  const normalizedPath = path ? (path.startsWith('/') ? path : `/${path}`) : '';
-
-  if (normalizedBase.endsWith('/functions/v1')) {
-    return `${normalizedBase}/api/drills${normalizedPath}`;
-  }
-  if (normalizedBase.includes('.supabase.co')) {
-    return `${normalizedBase}/functions/v1/api/drills${normalizedPath}`;
-  }
-
-  return `${normalizedBase}/api/drills${normalizedPath}`;
-}
 
 function normalizeCreatePayload(input: CreateDrillInput) {
   if (!input.org_id?.trim()) throw new Error('org_id is required.');
@@ -556,10 +538,10 @@ function normalizeDrillDetail(raw: any): DrillItem {
  */
 export async function createDrill(
   input: CreateDrillInput,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<CreateDrillResponse> {
   const payload = normalizeCreatePayload(input);
-  const url = drillsApiUrl('', baseUrl);
+  const url = apiUrl('drills', baseUrl);
 
   const res = await apiFetch(url, {
     method: 'POST',
@@ -593,9 +575,9 @@ export async function updateDrill(
     throw new Error('drillId is required.');
   }
 
-  const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
+  const { orgId = null, baseUrl = DEFAULT_BACKEND_URL } = options;
   const payload = normalizeUpdatePayload(input);
-  const url = drillsApiUrl(`/${drillId}`, baseUrl);
+  const url = apiUrl(`drills/${drillId}`, baseUrl);
 
   const res = await apiFetch(url, {
     method: 'PATCH',
@@ -627,9 +609,9 @@ export async function updateDrill(
  */
 export async function createDrillMediaUploadUrl(
   payload: DrillMediaUploadUrlInput,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<DrillMediaUploadUrlResponse> {
-  const url = drillsApiUrl('/media/upload-url', baseUrl);
+  const url = apiUrl('drills/media/upload-url', baseUrl);
 
   const res = await apiFetch(url, {
     method: 'POST',
@@ -659,13 +641,13 @@ export async function createDrillMediaUploadUrl(
  */
 export async function createDrillMedia(
   payload: CreateDrillMediaInput,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<CreateDrillMediaResponse> {
   if (!payload?.drill_id?.trim()) {
     throw new Error('drill_id is required.');
   }
 
-  const url = drillsApiUrl('/media', baseUrl);
+  const url = apiUrl('drills/media', baseUrl);
 
   const res = await apiFetch(url, {
     method: 'POST',
@@ -701,8 +683,8 @@ export async function getDrillMediaPlay(
     throw new Error('drillId is required.');
   }
 
-  const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
-  const url = drillsApiUrl(`/media/${drillId}/play`, baseUrl);
+  const { orgId = null, baseUrl = DEFAULT_BACKEND_URL } = options;
+  const url = apiUrl(`drills/media/${drillId}/play`, baseUrl);
 
   const res = await apiFetch(url, {
     method: 'GET',
@@ -731,14 +713,14 @@ export async function getDrillMediaPlay(
  */
 export async function listDrills(
   params: ListDrillsParams,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<{ items: DrillItem[]; count?: number }> {
   if (!params.orgId?.trim()) {
     throw new Error('orgId is required.');
   }
 
   const qs = buildListQuery(params);
-  const url = `${drillsApiUrl('/list', baseUrl)}?${qs}`;
+  const url = apiUrl('drills/list', { baseUrl, query: qs });
 
   const res = await apiFetch(url, {
     method: 'GET',
@@ -780,8 +762,8 @@ export async function getDrilById(
     throw new Error('drillId is required.');
   }
 
-  const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
-  const url = drillsApiUrl(`/${drillId}`, baseUrl);
+  const { orgId = null, baseUrl = DEFAULT_BACKEND_URL } = options;
+  const url = apiUrl(`drills/${drillId}`, baseUrl);
 
   const res = await apiFetch(url, {
     method: 'GET',
@@ -814,8 +796,8 @@ export async function getDrilById(
 export async function listDrillSegments(
   params: { orgId?: string | null; baseUrl?: string } = {},
 ): Promise<DrillSegment[]> {
-  const { orgId = null, baseUrl = DEFAULT_BASE_URL } = params;
-  const url = drillsApiUrl('/segments', baseUrl);
+  const { orgId = null, baseUrl = DEFAULT_BACKEND_URL } = params;
+  const url = apiUrl('drills/segments', baseUrl);
 
   const res = await apiFetch(url, {
     method: 'GET',
@@ -842,8 +824,8 @@ export async function listDrillSegments(
 export async function listDrillTags(
   params: { orgId?: string | null; baseUrl?: string } = {},
 ): Promise<DrillTag[]> {
-  const { orgId = null, baseUrl = DEFAULT_BASE_URL } = params;
-  const url = drillsApiUrl('/tags', baseUrl);
+  const { orgId = null, baseUrl = DEFAULT_BACKEND_URL } = params;
+  const url = apiUrl('drills/tags', baseUrl);
 
   const res = await apiFetch(url, {
     method: 'GET',

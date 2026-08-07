@@ -6,12 +6,8 @@
 // Types
 // ---------------------------------------------------------------------
 
+import { apiUrl, DEFAULT_BACKEND_URL } from '../../../shared/api/apiUrl';
 import { apiFetch } from '../../../shared/api/apiClient';
-
-const DEFAULT_BASE_URL =
-  ((typeof import.meta !== 'undefined' &&
-    (import.meta as any).env &&
-    (import.meta as any).env.VITE_BACKEND_URL) as string) || 'http://localhost:8000';
 
 export type Team = {
   id: string;
@@ -181,13 +177,10 @@ export function athleteLabel(a: TeamAthlete) {
  */
 export async function getAllTeams(
   params: ListTeamsParams = {},
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<Team[]> {
   const qs = buildTeamsQuery(params);
-  const url =
-    qs.length > 0
-      ? `${baseUrl}/functions/v1/api/teams/list?${qs}`
-      : `${baseUrl}/functions/v1/api/teams/list`;
+  const url = apiUrl('teams/list', { baseUrl, query: qs });
 
   const res = await apiFetch(url, {
     method: 'GET',
@@ -215,10 +208,10 @@ export async function getAllTeams(
  */
 export async function createTeam(
   input: CreateTeamInput,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<Team> {
   const payload = normalizeCreatePayload(input);
-  const url = `${baseUrl}/functions/v1/api/teams`;
+  const url = apiUrl('teams', baseUrl);
 
   const res = await apiFetch(url, {
     method: 'POST',
@@ -261,8 +254,8 @@ export async function getTeamById(
     throw new Error('teamId is required.');
   }
 
-  const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
-  const url = `${baseUrl}/functions/v1/api/teams/${teamId}`;
+  const { orgId = null, baseUrl = DEFAULT_BACKEND_URL } = options;
+  const url = apiUrl(`teams/${teamId}`, baseUrl);
 
   const res = await apiFetch(url, {
     method: 'GET',
@@ -305,9 +298,9 @@ export async function updateTeam(
     throw new Error('teamId is required.');
   }
 
-  const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
+  const { orgId = null, baseUrl = DEFAULT_BACKEND_URL } = options;
   const payload = normalizeUpdatePayload(input);
-  const url = `${baseUrl}/functions/v1/api/teams/${teamId}`;
+  const url = apiUrl(`teams/${teamId}`, baseUrl);
 
   const res = await apiFetch(url, {
     method: 'PATCH',
@@ -353,9 +346,9 @@ export async function deleteTeam(
     throw new Error('orgId is required.');
   }
 
-  const baseUrl = options.baseUrl || DEFAULT_BASE_URL;
+  const baseUrl = options.baseUrl || DEFAULT_BACKEND_URL;
   const qs = new URLSearchParams({ org_id: options.orgId.trim() });
-  const url = `${baseUrl}/functions/v1/api/teams/${encodeURIComponent(teamId.trim())}?${qs.toString()}`;
+  const url = apiUrl(`teams/${encodeURIComponent(teamId.trim())}`, { baseUrl, query: qs });
 
   const res = await apiFetch(url, {
     method: 'DELETE',
@@ -392,12 +385,12 @@ export async function getAthletesByTeam(
     throw new Error('teamId is required.');
   }
 
-  const baseUrl = params.baseUrl || DEFAULT_BASE_URL;
+  const baseUrl = params.baseUrl || DEFAULT_BACKEND_URL;
 
   const sp = new URLSearchParams();
   sp.set('team_id', teamId.trim());
 
-  const url = `${baseUrl}/functions/v1/api/teams/athletes-by-team?${sp.toString()}`;
+  const url = apiUrl('teams/athletes-by-team', { baseUrl, query: sp });
 
   const res = await apiFetch(url, {
     method: 'GET',

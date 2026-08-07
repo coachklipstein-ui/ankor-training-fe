@@ -26,6 +26,7 @@ import type {
   RpcBulkCreateEvaluationsResponse,
   SubmitEvaluationResponse,
 } from './types';
+import { apiUrl, DEFAULT_BACKEND_URL } from '../../../shared/api/apiUrl';
 import { apiFetch, type ApiFetchOptions } from '../../../shared/api/apiClient';
 
 export type {
@@ -65,11 +66,6 @@ export type {
 } from './types';
 
 // ---------- Helpers ----------
-
-const DEFAULT_BASE_URL =
-  ((typeof import.meta !== 'undefined' &&
-    (import.meta as any).env &&
-    (import.meta as any).env.VITE_BACKEND_URL) as string) || 'http://localhost:8000';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' };
 
@@ -160,7 +156,7 @@ export async function getWorkoutSummary(
   options: { baseUrl?: string } = {},
 ): Promise<WorkoutSummaryData> {
   const { orgId, athleteId, limit, offset } = params;
-  const baseUrl = options.baseUrl ?? DEFAULT_BASE_URL;
+  const baseUrl = options.baseUrl ?? DEFAULT_BACKEND_URL;
 
   if (!orgId?.trim()) {
     throw new Error('orgId is required.');
@@ -174,7 +170,7 @@ export async function getWorkoutSummary(
   if (Number.isFinite(offset)) query.set('offset', String(offset));
   query.set('athlete_id', athleteId.trim());
 
-  const url = `${baseUrl}/functions/v1/api/evaluations/workout-summary?${query.toString()}`;
+  const url = apiUrl('evaluations/workout-summary', { baseUrl, query });
 
   const data = await fetchJson<WorkoutSummaryResponse>(url, {
     method: 'GET',
@@ -224,7 +220,7 @@ export async function getLatestWorkoutDrills(
   options: { baseUrl?: string } = {},
 ): Promise<{ levels: WorkoutDrillLevel[]; count?: number }> {
   const { orgId, athleteId, limit, offset } = params;
-  const baseUrl = options.baseUrl ?? DEFAULT_BASE_URL;
+  const baseUrl = options.baseUrl ?? DEFAULT_BACKEND_URL;
 
   if (!orgId?.trim()) {
     throw new Error('orgId is required.');
@@ -238,7 +234,7 @@ export async function getLatestWorkoutDrills(
   if (Number.isFinite(offset)) query.set('offset', String(offset));
   query.set('athlete_id', athleteId.trim());
 
-  const url = `${baseUrl}/functions/v1/api/evaluations/workout-drills/latest?${query.toString()}`;
+  const url = apiUrl('evaluations/workout-drills/latest', { baseUrl, query });
 
   const data = await fetchJson<WorkoutDrillsLatestResponse>(url, {
     method: 'GET',
@@ -269,8 +265,8 @@ export async function rpcBulkCreateEvaluations(
   payload: { evaluations: EvaluationInput[] },
   options: { orgId?: string | null; baseUrl?: string } = {},
 ): Promise<RpcBulkCreateEvaluationsResponse> {
-  const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
-  const url = `${baseUrl}/functions/v1/api/evaluations/bulk-create`;
+  const { orgId = null, baseUrl = DEFAULT_BACKEND_URL } = options;
+  const url = apiUrl('evaluations/bulk-create', baseUrl);
 
   const data = await fetchJson<RpcBulkCreateEvaluationsResponse>(url, {
     method: 'POST',
@@ -293,8 +289,8 @@ export async function rpcBulkUpdateEvaluations(
   payload: EvaluationMatrixUpdatePayload,
   options: { orgId?: string | null; baseUrl?: string } = {},
 ): Promise<EvaluationDetailRow> {
-  const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
-  const url = `${baseUrl}/functions/v1/api/evaluations/eval/${evaluationId}/matrix`;
+  const { orgId = null, baseUrl = DEFAULT_BACKEND_URL } = options;
+  const url = apiUrl(`evaluations/eval/${evaluationId}/matrix`, baseUrl);
 
   const json = await fetchJson<any>(url, {
     method: 'PATCH',
@@ -327,8 +323,8 @@ export async function submitEvaluation(
   evaluationId: string,
   options: { orgId?: string | null; baseUrl?: string } = {},
 ): Promise<EvaluationDetailRow | null> {
-  const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
-  const url = `${baseUrl}/functions/v1/api/evaluations/${evaluationId}/submit`;
+  const { orgId = null, baseUrl = DEFAULT_BACKEND_URL } = options;
+  const url = apiUrl(`evaluations/${evaluationId}/submit`, baseUrl);
 
   const json = await fetchJson<SubmitEvaluationResponse | any>(url, {
     method: 'POST',
@@ -362,9 +358,9 @@ export async function deleteEvaluation(
     throw new Error('orgId is required.');
   }
 
-  const baseUrl = options.baseUrl || DEFAULT_BASE_URL;
+  const baseUrl = options.baseUrl || DEFAULT_BACKEND_URL;
   const qs = new URLSearchParams({ org_id: options.orgId.trim() });
-  const url = `${baseUrl}/functions/v1/api/evaluations/${encodeURIComponent(evaluationId.trim())}?${qs.toString()}`;
+  const url = apiUrl(`evaluations/${encodeURIComponent(evaluationId.trim())}`, { baseUrl, query: qs });
 
   const json = await fetchJson<DeleteEvaluationResponse | any>(url, {
     method: 'DELETE',
@@ -387,8 +383,8 @@ export async function listEvaluations(
     orgId?: string | null;
   } = {},
 ): Promise<EvaluationListRow[]> {
-  const { baseUrl = DEFAULT_BASE_URL, orgId = null } = params;
-  const url = `${baseUrl}/functions/v1/api/evaluations/list`;
+  const { baseUrl = DEFAULT_BACKEND_URL, orgId = null } = params;
+  const url = apiUrl('evaluations/list', baseUrl);
 
   const json = await fetchJson<ListEvaluationsHttpPayload | any>(url, {
     method: 'GET',
@@ -427,7 +423,7 @@ export async function listLatestEvaluations(params: {
   const {
     athleteId,
     userId,
-    baseUrl = DEFAULT_BASE_URL,
+    baseUrl = DEFAULT_BACKEND_URL,
     orgId = null,
     limit = null,
     offset = 0,
@@ -446,7 +442,7 @@ export async function listLatestEvaluations(params: {
   if (date) search.set('date', date);
 
   const query = search.toString();
-  const url = `${baseUrl}/functions/v1/api/evaluations/latest${query ? `?${query}` : ''}`;
+  const url = apiUrl('evaluations/latest', { baseUrl, query });
 
   const json = await fetchJson<LatestEvaluationsResponse | any>(url, {
     method: 'GET',
@@ -479,7 +475,7 @@ export async function listLatestEvaluationsByEvaluation(params: {
   const {
     evaluationId,
     athleteId,
-    baseUrl = DEFAULT_BASE_URL,
+    baseUrl = DEFAULT_BACKEND_URL,
     orgId = null,
     limit = 200,
     offset = 0,
@@ -492,7 +488,7 @@ export async function listLatestEvaluationsByEvaluation(params: {
   if (typeof offset === 'number') search.set('offset', String(offset));
 
   const query = search.toString();
-  const url = `${baseUrl}/functions/v1/api/evaluations/latest/by-evaluation${query ? `?${query}` : ''}`;
+  const url = apiUrl('evaluations/latest/by-evaluation', { baseUrl, query });
 
   const json = await fetchJson<LatestEvaluationsResponse | any>(url, {
     method: 'GET',
@@ -525,7 +521,7 @@ export async function listEvaluationImprovementSkills(params: {
   const {
     evaluationId,
     athleteId,
-    baseUrl = DEFAULT_BASE_URL,
+    baseUrl = DEFAULT_BACKEND_URL,
     orgId = null,
     limit = 200,
     offset = 0,
@@ -537,7 +533,7 @@ export async function listEvaluationImprovementSkills(params: {
   if (typeof offset === 'number') search.set('offset', String(offset));
 
   const query = search.toString();
-  const url = `${baseUrl}/functions/v1/api/evaluations/${evaluationId}/improvement-skills${query ? `?${query}` : ''}`;
+  const url = apiUrl(`evaluations/${evaluationId}/improvement-skills`, { baseUrl, query });
 
   const json = await fetchJson<EvaluationImprovementSkillsResponse | any>(url, {
     method: 'GET',
@@ -570,7 +566,7 @@ export async function listEvaluationSkillVideos(params: {
   const {
     evaluationId,
     athleteId,
-    baseUrl = DEFAULT_BASE_URL,
+    baseUrl = DEFAULT_BACKEND_URL,
     orgId = null,
     limit = 200,
     offset = 0,
@@ -582,7 +578,7 @@ export async function listEvaluationSkillVideos(params: {
   if (typeof offset === 'number') search.set('offset', String(offset));
 
   const query = search.toString();
-  const url = `${baseUrl}/functions/v1/api/evaluations/${evaluationId}/skill-videos${query ? `?${query}` : ''}`;
+  const url = apiUrl(`evaluations/${evaluationId}/skill-videos`, { baseUrl, query });
 
   const json = await fetchJson<EvaluationSkillVideosResponse | any>(url, {
     method: 'GET',
@@ -615,7 +611,7 @@ export async function listEvaluationSubskillRatings(params: {
   const {
     evaluationId,
     athleteId,
-    baseUrl = DEFAULT_BASE_URL,
+    baseUrl = DEFAULT_BACKEND_URL,
     orgId = null,
     limit = 200,
     offset = 0,
@@ -627,7 +623,7 @@ export async function listEvaluationSubskillRatings(params: {
   if (typeof offset === 'number') search.set('offset', String(offset));
 
   const query = search.toString();
-  const url = `${baseUrl}/functions/v1/api/evaluations/${evaluationId}/subskill-ratings${query ? `?${query}` : ''}`;
+  const url = apiUrl(`evaluations/${evaluationId}/subskill-ratings`, { baseUrl, query });
 
   const json = await fetchJson<EvaluationSubskillRatingsResponse | any>(url, {
     method: 'GET',
@@ -660,7 +656,7 @@ export async function listEvaluationWorkoutProgress(params: {
   const {
     evaluationId,
     athleteId,
-    baseUrl = DEFAULT_BASE_URL,
+    baseUrl = DEFAULT_BACKEND_URL,
     orgId = null,
     limit = 200,
     offset = 0,
@@ -672,7 +668,7 @@ export async function listEvaluationWorkoutProgress(params: {
   if (typeof offset === 'number') search.set('offset', String(offset));
 
   const query = search.toString();
-  const url = `${baseUrl}/functions/v1/api/evaluations/${evaluationId}/workout-progress${query ? `?${query}` : ''}`;
+  const url = apiUrl(`evaluations/${evaluationId}/workout-progress`, { baseUrl, query });
 
   const json = await fetchJson<EvaluationWorkoutProgressResponse | any>(url, {
     method: 'GET',
@@ -705,7 +701,7 @@ export async function updateEvaluationWorkoutProgress(params: {
   const {
     evaluationId,
     athleteId,
-    baseUrl = DEFAULT_BASE_URL,
+    baseUrl = DEFAULT_BACKEND_URL,
     orgId = null,
     limit = 200,
     offset = 0,
@@ -717,7 +713,7 @@ export async function updateEvaluationWorkoutProgress(params: {
   if (typeof offset === 'number') search.set('offset', String(offset));
 
   const query = search.toString();
-  const url = `${baseUrl}/functions/v1/api/evaluations/${evaluationId}/workout-progress${query ? `?${query}` : ''}`;
+  const url = apiUrl(`evaluations/${evaluationId}/workout-progress`, { baseUrl, query });
 
   const json = await fetchJson<EvaluationWorkoutProgressUpdateResponse | any>(url, {
     method: 'POST',
@@ -750,7 +746,7 @@ export async function listEvaluationWorkoutDrills(params: {
   const {
     evaluationId,
     athleteId,
-    baseUrl = DEFAULT_BASE_URL,
+    baseUrl = DEFAULT_BACKEND_URL,
     orgId = null,
     limit = 200,
     offset = 0,
@@ -762,7 +758,7 @@ export async function listEvaluationWorkoutDrills(params: {
   if (typeof offset === 'number') search.set('offset', String(offset));
 
   const query = search.toString();
-  const url = `${baseUrl}/functions/v1/api/evaluations/${evaluationId}/workout-drills${query ? `?${query}` : ''}`;
+  const url = apiUrl(`evaluations/${evaluationId}/workout-drills`, { baseUrl, query });
 
   const json = await fetchJson<EvaluationWorkoutDrillsResponse | any>(url, {
     method: 'GET',
@@ -805,8 +801,8 @@ export async function getEvaluationById(
   evaluationId: string,
   options: { orgId?: string | null; baseUrl?: string } = {},
 ): Promise<EvaluationDetailRow> {
-  const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
-  const url = `${baseUrl}/functions/v1/api/evaluations/eval/${evaluationId}`;
+  const { orgId = null, baseUrl = DEFAULT_BACKEND_URL } = options;
+  const url = apiUrl(`evaluations/eval/${evaluationId}`, baseUrl);
 
   const json = await fetchJson<any>(url, {
     method: 'GET',

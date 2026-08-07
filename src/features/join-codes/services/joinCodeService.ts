@@ -1,12 +1,8 @@
 // src/features/join-codes/services/joinCodeService.ts
 // Pure fetch wrappers to call /functions/v1/api/join-codes endpoints.
 
+import { apiUrl, DEFAULT_BACKEND_URL } from '../../../shared/api/apiUrl';
 import { apiFetch } from '../../../shared/api/apiClient';
-
-const DEFAULT_BASE_URL =
-  ((typeof import.meta !== 'undefined' &&
-    (import.meta as any).env &&
-    (import.meta as any).env.VITE_BACKEND_URL) as string) || 'http://localhost:8000';
 
 export type JoinCode = {
   code: string;
@@ -136,13 +132,10 @@ function normalizeCreatePayload(input: CreateJoinCodeInput) {
  */
 export async function listJoinCodes(
   params: ListJoinCodesParams = {},
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<{ items: JoinCode[]; count?: number }> {
   const qs = buildListQuery(params);
-  const url =
-    qs.length > 0
-      ? `${baseUrl}/functions/v1/api/join-codes/list?${qs}`
-      : `${baseUrl}/functions/v1/api/join-codes/list`;
+  const url = apiUrl('join-codes/list', { baseUrl, query: qs });
 
   const res = await apiFetch(url, {
     method: 'GET',
@@ -172,10 +165,10 @@ export async function listJoinCodes(
  */
 export async function createJoinCode(
   input: CreateJoinCodeInput,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<JoinCode> {
   const payload = normalizeCreatePayload(input);
-  const url = `${baseUrl}/functions/v1/api/join-codes`;
+  const url = apiUrl('join-codes', baseUrl);
 
   const res = await apiFetch(url, {
     method: 'POST',
@@ -221,9 +214,9 @@ export async function deleteJoinCode(
     throw new Error('orgId is required.');
   }
 
-  const baseUrl = options.baseUrl || DEFAULT_BASE_URL;
+  const baseUrl = options.baseUrl || DEFAULT_BACKEND_URL;
   const qs = new URLSearchParams({ org_id: options.orgId.trim() });
-  const url = `${baseUrl}/functions/v1/api/join-codes/${encodeURIComponent(code.trim())}?${qs.toString()}`;
+  const url = apiUrl(`join-codes/${encodeURIComponent(code.trim())}`, { baseUrl, query: qs });
 
   const res = await apiFetch(url, {
     method: 'DELETE',

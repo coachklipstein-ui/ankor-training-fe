@@ -1,3 +1,5 @@
+import { apiUrl, DEFAULT_BACKEND_URL } from '../../../shared/api/apiUrl';
+
 export type OrgSignupPayload = {
   admin: {
     firstName: string;
@@ -17,20 +19,6 @@ export type OrgSignupPayload = {
 export type OrgSignupResponse =
   | { ok: true; userId: string; orgId: string; profileId: string; teamIds?: string[] }
   | { ok: false; error: string; details?: unknown };
-
-const pickUrl = () => {
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
-  if (!backendUrl) {
-    throw new Error('Missing VITE_BACKEND_URL for org signup.');
-  }
-
-  const normalized = backendUrl.replace(/\/$/, '');
-  if (normalized.includes('/functions/v1')) {
-    return `${normalized.replace(/\/$/, '')}/org-signup`;
-  }
-
-  return `${normalized}/functions/v1/api/org/signup`;
-};
 
 export function buildOrgSignupPayload(form: HTMLFormElement): OrgSignupPayload {
   // We only READ from the form; we are NOT sending multipart.
@@ -70,7 +58,7 @@ export function buildOrgSignupPayload(form: HTMLFormElement): OrgSignupPayload {
 }
 
 export async function submitOrgSignupJson(payload: OrgSignupPayload): Promise<OrgSignupResponse> {
-  const url = pickUrl();
+  const url = apiUrl('org/signup', DEFAULT_BACKEND_URL);
 
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   // Only if your edge function requires a JWT:

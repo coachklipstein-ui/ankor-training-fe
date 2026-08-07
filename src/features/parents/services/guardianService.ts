@@ -1,6 +1,7 @@
 // src/services/guardianService.ts
 // Fetch wrapper for /functions/v1/api/guardians/* endpoints.
 
+import { apiUrl, DEFAULT_BACKEND_URL } from '../../../shared/api/apiUrl';
 import { apiFetch } from '../../../shared/api/apiClient';
 
 export type GuardianAthlete = {
@@ -80,11 +81,6 @@ export type ListGuardiansParams = {
   limit?: number;
   offset?: number;
 };
-
-const DEFAULT_BASE_URL =
-  ((typeof import.meta !== 'undefined' &&
-    (import.meta as any).env &&
-    (import.meta as any).env.VITE_BACKEND_URL) as string) || 'http://localhost:8000';
 
 function buildListQuery(params: ListGuardiansParams) {
   const u = new URLSearchParams();
@@ -301,8 +297,8 @@ export async function getGuardianById(
     throw new Error('guardianId is required.');
   }
 
-  const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
-  const url = `${baseUrl}/functions/v1/api/guardians/${guardianId.trim()}`;
+  const { orgId = null, baseUrl = DEFAULT_BACKEND_URL } = options;
+  const url = apiUrl(`guardians/${guardianId.trim()}`, baseUrl);
 
   const res = await apiFetch(url, {
     method: 'GET',
@@ -333,14 +329,14 @@ export async function getGuardianById(
  */
 export async function listGuardians(
   params: ListGuardiansParams,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<{ items: GuardianListItem[]; count?: number }> {
   if (!params.orgId?.trim()) {
     throw new Error('orgId is required.');
   }
 
   const qs = buildListQuery(params);
-  const url = `${baseUrl}/functions/v1/api/guardians/list?${qs}`;
+  const url = apiUrl('guardians/list', { baseUrl, query: qs });
 
   const res = await apiFetch(url, {
     method: 'GET',
@@ -376,10 +372,10 @@ export async function listGuardians(
  */
 export async function createGuardian(
   input: CreateGuardianInput,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<GuardianListItem> {
   const payload = normalizeCreatePayload(input);
-  const url = `${baseUrl}/functions/v1/api/guardians`;
+  const url = apiUrl('guardians', baseUrl);
 
   const res = await apiFetch(url, {
     method: 'POST',
@@ -418,9 +414,9 @@ export async function updateGuardian(
     throw new Error('guardianId is required.');
   }
 
-  const { orgId = null, baseUrl = DEFAULT_BASE_URL } = options;
+  const { orgId = null, baseUrl = DEFAULT_BACKEND_URL } = options;
   const payload = normalizeUpdatePayload(input);
-  const url = `${baseUrl}/functions/v1/api/guardians/${guardianId.trim()}`;
+  const url = apiUrl(`guardians/${guardianId.trim()}`, baseUrl);
 
   const res = await apiFetch(url, {
     method: 'PATCH',
@@ -461,9 +457,9 @@ export async function deleteGuardian(
     throw new Error('orgId is required.');
   }
 
-  const baseUrl = options.baseUrl || DEFAULT_BASE_URL;
+  const baseUrl = options.baseUrl || DEFAULT_BACKEND_URL;
   const qs = new URLSearchParams({ org_id: options.orgId.trim() });
-  const url = `${baseUrl}/functions/v1/api/guardians/${encodeURIComponent(guardianId.trim())}?${qs.toString()}`;
+  const url = apiUrl(`guardians/${encodeURIComponent(guardianId.trim())}`, { baseUrl, query: qs });
 
   const res = await apiFetch(url, {
     method: 'DELETE',

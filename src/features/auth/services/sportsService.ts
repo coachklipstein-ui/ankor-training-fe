@@ -1,7 +1,4 @@
-const DEFAULT_BASE_URL =
-  ((typeof import.meta !== 'undefined' &&
-    (import.meta as any).env &&
-    (import.meta as any).env.VITE_BACKEND_URL) as string) || 'http://localhost:8000';
+import { apiUrl, DEFAULT_BACKEND_URL } from '../../../shared/api/apiUrl';
 
 export type Sport = {
   id: string;
@@ -20,19 +17,10 @@ function normalizeSport(raw: any): Sport {
   };
 }
 
-function sportsListUrl(baseUrl = DEFAULT_BASE_URL) {
-  const normalized = baseUrl.replace(/\/$/, '');
-  if (normalized.includes('/functions/v1')) {
-    return `${normalized}/api/sports/list`;
-  }
-
-  return `${normalized}/functions/v1/api/sports/list`;
-}
-
 export async function listSports(
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<{ items: Sport[]; count?: number }> {
-  const res = await fetch(sportsListUrl(baseUrl), {
+  const res = await fetch(apiUrl('sports/list', baseUrl), {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
   });

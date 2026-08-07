@@ -1,6 +1,7 @@
 // src/services/usersService.ts
 // Pure fetch wrapper to call your Deno edge functions under /functions/v1/api/users/*
 
+import { apiUrl, DEFAULT_BACKEND_URL } from '../../../shared/api/apiUrl';
 import { apiFetch } from '../../../shared/api/apiClient';
 export type UserRole = 'coach' | 'athlete' | string;
 export type ManagedOrgRole =
@@ -67,11 +68,6 @@ export type ListUsersParams = {
   limit?: number;
   offset?: number;
 };
-
-const DEFAULT_BASE_URL =
-  ((typeof import.meta !== 'undefined' &&
-    (import.meta as any).env &&
-    (import.meta as any).env.VITE_BACKEND_URL) as string) || 'http://localhost:8000';
 
 function buildListQuery(params: ListUsersParams) {
   const u = new URLSearchParams();
@@ -161,14 +157,14 @@ function normalizeManagedUser(raw: any): ManagedUser {
  */
 export async function listUsers(
   params: ListUsersParams,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<{ items: UserListItem[]; count?: number }> {
   if (!params.orgId?.trim()) {
     throw new Error('orgId is required.');
   }
 
   const qs = buildListQuery(params);
-  const url = `${baseUrl}/functions/v1/api/users/list?${qs}`;
+  const url = apiUrl('users/list', { baseUrl, query: qs });
 
   const res = await apiFetch(url, {
     method: 'GET',
@@ -204,7 +200,7 @@ export async function listUsers(
  */
 export async function getManagedUser(
   params: { userId: string; orgId: string },
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<ManagedUser> {
   if (!params.userId?.trim()) {
     throw new Error('userId is required.');
@@ -214,7 +210,7 @@ export async function getManagedUser(
   }
 
   const qs = new URLSearchParams({ org_id: params.orgId.trim() });
-  const url = `${baseUrl}/functions/v1/api/users/${encodeURIComponent(params.userId.trim())}?${qs.toString()}`;
+  const url = apiUrl(`users/${encodeURIComponent(params.userId.trim())}`, { baseUrl, query: qs });
 
   const res = await apiFetch(url, {
     method: 'GET',
@@ -241,7 +237,7 @@ export async function getManagedUser(
 export async function updateManagedUser(
   userId: string,
   input: UpdateManagedUserInput,
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<ManagedUser> {
   if (!userId?.trim()) {
     throw new Error('userId is required.');
@@ -250,7 +246,7 @@ export async function updateManagedUser(
     throw new Error('org_id is required.');
   }
 
-  const url = `${baseUrl}/functions/v1/api/users/${encodeURIComponent(userId.trim())}`;
+  const url = apiUrl(`users/${encodeURIComponent(userId.trim())}`, baseUrl);
   const res = await apiFetch(url, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
@@ -276,7 +272,7 @@ export async function updateManagedUser(
  */
 export async function deleteManagedUser(
   params: { userId: string; orgId: string; hardDelete?: boolean },
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<void> {
   if (!params.userId?.trim()) {
     throw new Error('userId is required.');
@@ -290,7 +286,7 @@ export async function deleteManagedUser(
     qs.set('hard_delete', 'true');
   }
 
-  const url = `${baseUrl}/functions/v1/api/users/${encodeURIComponent(params.userId.trim())}?${qs.toString()}`;
+  const url = apiUrl(`users/${encodeURIComponent(params.userId.trim())}`, { baseUrl, query: qs });
   const res = await apiFetch(url, {
     method: 'DELETE',
     headers: { 'Content-Type': 'application/json' },
@@ -313,13 +309,13 @@ export async function deleteManagedUser(
  */
 export async function loginUser(
   params: { userId: string },
-  baseUrl = DEFAULT_BASE_URL,
+  baseUrl = DEFAULT_BACKEND_URL,
 ): Promise<AuthLoginUser> {
   if (!params.userId?.trim()) {
     throw new Error('userId is required.');
   }
 
-  const url = `${baseUrl}/functions/v1/api/auth/login`;
+  const url = apiUrl('auth/login', baseUrl);
 
   const res = await apiFetch(url, {
     method: 'POST',
