@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Divider, IconButton, Menu, MenuItem } from '@mui/material';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import type { PracticePlanRow } from '../hooks/usePracticePlansListPage';
+import type { PracticePlanRow } from '../types';
 
 type PracticePlanRowMenuProps = {
   readonly row: PracticePlanRow;

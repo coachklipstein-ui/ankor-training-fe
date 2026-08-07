@@ -22,33 +22,16 @@ import { useNavigate } from 'react-router-dom';
 
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
-
-import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
-import MailOutlineIcon from '@mui/icons-material/MailOutline';
-import AutoAwesomeMosaicIcon from '@mui/icons-material/AutoAwesomeMosaic';
-
 import AnchorIcon from '@mui/icons-material/Anchor';
 
 import PracticePlanRowMenu from '../components/PracticePlanRowMenu';
-import usePracticePlansListPage, {
-  type PracticePlanRow,
-  type TabKey,
-} from '../hooks/usePracticePlansListPage';
+import {
+  PRACTICE_PLAN_LIST_TAB_KEYS,
+  PRACTICE_PLAN_LIST_TABS,
+} from '../constants/practicePlanTabs';
+import usePracticePlansListPage from '../hooks/usePracticePlansListPage';
+import type { PracticePlanListTabKey, PracticePlanRow } from '../types';
 import { formatHeaderTimestamp } from '../utils/formatHeaderTimestamp';
-
-type TabMeta = {
-  key: TabKey;
-  label: string;
-  icon: React.ReactElement;
-};
-
-const TABS: Record<TabKey, TabMeta> = {
-  my: { key: 'my', label: 'My Plans', icon: <LibraryBooksIcon /> },
-  invited: { key: 'invited', label: 'Invited', icon: <MailOutlineIcon /> },
-  prebuilt: { key: 'prebuilt', label: 'Prebuilt Plans', icon: <AutoAwesomeMosaicIcon /> },
-};
-
-const TAB_META = Object.values(TABS);
 
 export default function PracticePlansListPage() {
   const theme = useTheme();
@@ -75,28 +58,32 @@ export default function PracticePlansListPage() {
       <Paper square elevation={0} sx={{ borderBottom: `1px solid ${theme.palette.divider}` }}>
         <Tabs
           value={tab}
-          onChange={(_, v: TabKey) => setTab(v)}
+          onChange={(_, v: PracticePlanListTabKey) => setTab(v)}
           variant="scrollable"
           allowScrollButtonsMobile
           scrollButtons={isMobile ? 'auto' : false}
         >
-          {TAB_META.map((t) => (
-            <Tab
-              key={t.key}
-              value={t.key}
-              icon={t.icon}
-              iconPosition="start"
-              label={t.label}
-              sx={{ textTransform: 'none', fontWeight: 700 }}
-            />
-          ))}
+          {PRACTICE_PLAN_LIST_TAB_KEYS.map((key) => {
+            const listTab = PRACTICE_PLAN_LIST_TABS[key];
+            const Icon = listTab.icon;
+            return (
+              <Tab
+                key={key}
+                value={key}
+                icon={<Icon />}
+                iconPosition="start"
+                label={listTab.label}
+                sx={{ textTransform: 'none', fontWeight: 700 }}
+              />
+            );
+          })}
         </Tabs>
       </Paper>
 
       <Box sx={{ p: 2 }}>
         <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
           <Typography variant="h5" sx={{ fontWeight: 900, flex: 1 }}>
-            {TABS[tab].label}
+            {PRACTICE_PLAN_LIST_TABS[tab].label}
           </Typography>
 
           {tab === 'my' && (
