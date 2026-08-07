@@ -1,6 +1,6 @@
 import type { PracticePlan } from './services/practicePlanService';
 
-export type PracticePlanListTabKey = 'my' | 'invited' | 'prebuilt';
+export type PracticePlanListTabKey = 'my' | 'invited' | 'prebuilt' | 'org';
 
 export type PracticePlanRow = {
   readonly id: string;

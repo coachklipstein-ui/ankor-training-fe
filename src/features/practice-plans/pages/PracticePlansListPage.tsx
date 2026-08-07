@@ -25,10 +25,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import AnchorIcon from '@mui/icons-material/Anchor';
 
 import PracticePlanRowMenu from '../components/PracticePlanRowMenu';
-import {
-  PRACTICE_PLAN_LIST_TAB_KEYS,
-  PRACTICE_PLAN_LIST_TABS,
-} from '../constants/practicePlanTabs';
+import { PRACTICE_PLAN_LIST_TABS } from '../constants/practicePlanTabs';
 import usePracticePlansListPage from '../hooks/usePracticePlansListPage';
 import type { PracticePlanListTabKey, PracticePlanRow } from '../types';
 import { formatHeaderTimestamp } from '../utils/formatHeaderTimestamp';
@@ -38,8 +35,17 @@ export default function PracticePlansListPage() {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
 
-  const { tab, setTab, search, setSearch, rows, activeLoading, activeError, canEdit } =
-    usePracticePlansListPage();
+  const {
+    tab,
+    setTab,
+    search,
+    setSearch,
+    rows,
+    activeLoading,
+    activeError,
+    canEdit,
+    visibleTabKeys,
+  } = usePracticePlansListPage();
 
   const onOpenPlan = (row: PracticePlanRow) => {
     navigate(`/practice-plans/${row.id}`);
@@ -63,7 +69,7 @@ export default function PracticePlansListPage() {
           allowScrollButtonsMobile
           scrollButtons={isMobile ? 'auto' : false}
         >
-          {PRACTICE_PLAN_LIST_TAB_KEYS.map((key) => {
+          {visibleTabKeys.map((key) => {
             const listTab = PRACTICE_PLAN_LIST_TABS[key];
             const Icon = listTab.icon;
             return (

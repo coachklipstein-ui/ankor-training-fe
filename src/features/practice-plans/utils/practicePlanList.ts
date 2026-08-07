@@ -1,3 +1,4 @@
+import { isAdminRole } from '../../../shared/auth/roles';
 import type { PracticePlan } from '../services/practicePlanService';
 import type { PracticePlanListTabKey, PracticePlanRow } from '../types';
 
@@ -23,7 +24,20 @@ export const filterAndSortPlans = (
   );
 };
 
+export const canViewOrgPracticePlans = (rawRole?: string | null): boolean => isAdminRole(rawRole);
+
 export const canEditPracticePlanTab = (
   tab: PracticePlanListTabKey,
   isCoach: boolean,
-): boolean => tab !== 'prebuilt' && (tab !== 'invited' || isCoach);
+): boolean => {
+  if (tab === 'prebuilt' || tab === 'org') return false;
+  return tab !== 'invited' || isCoach;
+};
+
+export const getVisiblePracticePlanTabKeys = (
+  rawRole?: string | null,
+): PracticePlanListTabKey[] => {
+  const keys: PracticePlanListTabKey[] = ['my', 'invited', 'prebuilt'];
+  if (canViewOrgPracticePlans(rawRole)) keys.push('org');
+  return keys;
+};

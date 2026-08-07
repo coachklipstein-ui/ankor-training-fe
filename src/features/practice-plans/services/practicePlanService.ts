@@ -4,8 +4,7 @@
 import { apiUrl, DEFAULT_BACKEND_URL } from '../../../shared/api/apiUrl';
 import { apiFetch } from '../../../shared/api/apiClient';
 
-export type PlanListType =
-  'custom' | 'custom-plans' | 'org-plans' | 'prebuild' | 'invited-plans' | (string & {});
+export type PlanListType = 'prebuild' | 'custom' | 'org';
 
 export type PlanListFilter = {
   type: PlanListType;
@@ -443,8 +442,8 @@ function buildListQuery(filter: PlanListFilter) {
     throw new Error('type is required.');
   }
 
-  if ((type === 'custom-plans' || type === 'custom') && !filter.user_id?.trim()) {
-    throw new Error('user_id (UUID) is required for type=custom/custom-plans');
+  if (type === 'custom' && !filter.user_id?.trim()) {
+    throw new Error('user_id (UUID) is required for type=custom');
   }
 
   params.set('type', type);

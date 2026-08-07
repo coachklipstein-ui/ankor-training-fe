@@ -7,6 +7,7 @@ import {
   canEditPracticePlanTab,
   filterAndSortPlans,
   getErrorMessage,
+  getVisiblePracticePlanTabKeys,
   normalizePlanRows,
 } from '../utils/practicePlanList';
 
@@ -20,6 +21,7 @@ const INITIAL_TABS_STATE: PracticePlanTabsState = {
   my: EMPTY_TAB_STATE,
   invited: EMPTY_TAB_STATE,
   prebuilt: EMPTY_TAB_STATE,
+  org: EMPTY_TAB_STATE,
 };
 
 export default function usePracticePlansListPage() {
@@ -31,6 +33,17 @@ export default function usePracticePlansListPage() {
   const [tab, setTab] = React.useState<PracticePlanListTabKey>('my');
   const [search, setSearch] = React.useState('');
   const [tabsState, setTabsState] = React.useState<PracticePlanTabsState>(INITIAL_TABS_STATE);
+
+  const visibleTabKeys = React.useMemo(
+    () => getVisiblePracticePlanTabKeys(profile?.role),
+    [profile?.role],
+  );
+
+  React.useEffect(() => {
+    if (!visibleTabKeys.includes(tab)) {
+      setTab('my');
+    }
+  }, [tab, visibleTabKeys]);
 
   const patchTab = React.useCallback(
     (key: PracticePlanListTabKey, patch: Partial<PracticePlanTabState>) => {
@@ -44,6 +57,8 @@ export default function usePracticePlansListPage() {
 
   const loadTab = React.useCallback(
     async (key: PracticePlanListTabKey, isActive: () => boolean) => {
+      if (!visibleTabKeys.includes(key)) return;
+
       const policy = PRACTICE_PLAN_TAB_POLICY[key];
 
       if (!orgId) {
@@ -79,7 +94,7 @@ export default function usePracticePlansListPage() {
         });
       }
     },
-    [orgId, userId, patchTab],
+    [orgId, userId, patchTab, visibleTabKeys],
   );
 
   React.useEffect(() => {
@@ -87,17 +102,19 @@ export default function usePracticePlansListPage() {
 
     let alive = true;
     for (const key of EAGER_PRACTICE_PLAN_TABS) {
+      if (!visibleTabKeys.includes(key)) continue;
       void loadTab(key, () => alive);
     }
 
     return () => {
       alive = false;
     };
-  }, [authLoading, orgId, loadTab]);
+  }, [authLoading, orgId, loadTab, visibleTabKeys]);
 
   React.useEffect(() => {
     if (authLoading) return;
     if (PRACTICE_PLAN_TAB_POLICY[tab].mode !== 'lazy') return;
+    if (!visibleTabKeys.includes(tab)) return;
 
     let alive = true;
     void loadTab(tab, () => alive);
@@ -105,7 +122,7 @@ export default function usePracticePlansListPage() {
     return () => {
       alive = false;
     };
-  }, [authLoading, tab, userId, orgId, loadTab]);
+  }, [authLoading, tab, userId, orgId, loadTab, visibleTabKeys]);
 
   const activeTabState = tabsState[tab];
 
@@ -127,5 +144,6 @@ export default function usePracticePlansListPage() {
     activeLoading,
     activeError,
     canEdit,
+    visibleTabKeys,
   };
 }
