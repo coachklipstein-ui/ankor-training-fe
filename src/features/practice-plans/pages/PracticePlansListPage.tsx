@@ -9,8 +9,6 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Menu,
-  MenuItem,
   Paper,
   Stack,
   Tab,
@@ -23,7 +21,6 @@ import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 
 import AddIcon from '@mui/icons-material/Add';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import SearchIcon from '@mui/icons-material/Search';
 
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
@@ -32,81 +29,42 @@ import AutoAwesomeMosaicIcon from '@mui/icons-material/AutoAwesomeMosaic';
 
 import AnchorIcon from '@mui/icons-material/Anchor';
 
+import PracticePlanRowMenu from '../components/PracticePlanRowMenu';
 import usePracticePlansListPage, {
   type PracticePlanRow,
   type TabKey,
 } from '../hooks/usePracticePlansListPage';
 import { formatHeaderTimestamp } from '../utils/formatHeaderTimestamp';
 
-const TAB_META: Array<{
+type TabMeta = {
   key: TabKey;
   label: string;
   icon: React.ReactElement;
-}> = [
-  { key: 'my', label: 'My Plans', icon: <LibraryBooksIcon /> },
-  { key: 'invited', label: 'Invited', icon: <MailOutlineIcon /> },
-  { key: 'prebuilt', label: 'Prebuilt Plans', icon: <AutoAwesomeMosaicIcon /> },
-];
+};
 
-function tabTitle(tab: TabKey) {
-  switch (tab) {
-    case 'my':
-      return 'My Plans';
-    case 'invited':
-      return 'Invited Plans';
-    case 'prebuilt':
-      return 'Prebuilt Plans';
-    default:
-      return 'Plans';
-  }
-}
+const TABS: Record<TabKey, TabMeta> = {
+  my: { key: 'my', label: 'My Plans', icon: <LibraryBooksIcon /> },
+  invited: { key: 'invited', label: 'Invited', icon: <MailOutlineIcon /> },
+  prebuilt: { key: 'prebuilt', label: 'Prebuilt Plans', icon: <AutoAwesomeMosaicIcon /> },
+};
+
+const TAB_META = Object.values(TABS);
 
 export default function PracticePlansListPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
 
-  const {
-    tab,
-    setTab,
-    search,
-    setSearch,
-    rows,
-    activeLoading,
-    activeError,
-    canEdit,
-  } = usePracticePlansListPage();
-
-  const [menuAnchorEl, setMenuAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [menuRow, setMenuRow] = React.useState<PracticePlanRow | null>(null);
-
-  const openMenu = (evt: React.MouseEvent<HTMLElement>, row: PracticePlanRow) => {
-    evt.stopPropagation();
-    setMenuAnchorEl(evt.currentTarget);
-    setMenuRow(row);
-  };
-
-  const closeMenu = () => {
-    setMenuAnchorEl(null);
-    setMenuRow(null);
-  };
+  const { tab, setTab, search, setSearch, rows, activeLoading, activeError, canEdit } =
+    usePracticePlansListPage();
 
   const onOpenPlan = (row: PracticePlanRow) => {
-    closeMenu();
+    console.log('open plan');
     navigate(`/practice-plans/${row.id}`);
   };
 
   const onEditPlan = (row: PracticePlanRow) => {
-    closeMenu();
     navigate(`/practice-plans/${row.id}/edit`);
-  };
-
-  const onDuplicate = () => {
-    closeMenu();
-  };
-
-  const onDelete = () => {
-    closeMenu();
   };
 
   const onCreate = () => {
@@ -139,7 +97,7 @@ export default function PracticePlansListPage() {
       <Box sx={{ p: 2 }}>
         <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
           <Typography variant="h5" sx={{ fontWeight: 900, flex: 1 }}>
-            {tabTitle(tab)}
+            {TABS[tab].label}
           </Typography>
 
           {tab === 'my' && (
@@ -254,14 +212,7 @@ export default function PracticePlansListPage() {
                       )}
                     </Stack>
 
-                    <IconButton
-                      edge="end"
-                      aria-label="more"
-                      onClick={(e) => openMenu(e, row)}
-                      sx={{ alignSelf: 'center' }}
-                    >
-                      <MoreHorizIcon />
-                    </IconButton>
+                    <PracticePlanRowMenu row={row} onOpen={onOpenPlan} />
                   </ListItemButton>
 
                   {idx !== rows.length - 1 && <Divider />}
@@ -270,21 +221,6 @@ export default function PracticePlansListPage() {
             </List>
           )}
         </Paper>
-
-        <Menu
-          anchorEl={menuAnchorEl}
-          open={Boolean(menuAnchorEl)}
-          onClose={closeMenu}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        >
-          <MenuItem onClick={() => menuRow && onOpenPlan(menuRow)}>Open</MenuItem>
-          <MenuItem onClick={onDuplicate}>Duplicate</MenuItem>
-          <Divider />
-          <MenuItem onClick={onDelete} sx={{ color: 'error.main' }}>
-            Delete
-          </MenuItem>
-        </Menu>
       </Box>
     </Box>
   );
